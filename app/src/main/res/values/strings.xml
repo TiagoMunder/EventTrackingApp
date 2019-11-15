@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">EventTrackingApp</string>
+    <string name="fire_store_users">Users</string>
+</resources>

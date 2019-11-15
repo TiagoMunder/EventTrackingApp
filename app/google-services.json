@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "62577109197",
+    "firebase_url": "https://eventtacking.firebaseio.com",
+    "project_id": "eventtacking",
+    "storage_bucket": "eventtacking.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:62577109197:android:52cff3d58d2681359ba184",
+        "android_client_info": {
+          "package_name": "pt.ubi.eventtrackingapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "62577109197-sean8bfnlq450mnq6uqedekuipflacgj.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "pt.ubi.eventtrackingapp",
+            "certificate_hash": "5208532b4376eab2699b7ef2db46c23742056b96"
+          }
+        },
+        {
+          "client_id": "62577109197-1j6he1ok8kdla1ldm6oue31aimb8jsis.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCiv31UaOc06aHKdzwl2UQFIV2MOMVxoJE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "62577109197-1j6he1ok8kdla1ldm6oue31aimb8jsis.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

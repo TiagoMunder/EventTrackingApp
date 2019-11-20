@@ -32,13 +32,13 @@ public class DashboardActivity extends AppCompatActivity {
                 startActivity(new Intent(DashboardActivity.this, CreateEvent.class));
             }
         });
-        /*
+
         btn_participateEvent.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 startActivity(new Intent(DashboardActivity.this, ChatActivity.class));
             }
         });
-        */
+
     }
 }

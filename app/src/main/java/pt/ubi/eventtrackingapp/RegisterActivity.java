@@ -8,22 +8,17 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.Toast;
-
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.FirebaseFirestoreSettings;
 
-import org.json.JSONException;
-import org.json.JSONObject;
 
-import java.util.HashMap;
-import java.util.Map;
+
 
 
 public class RegisterActivity extends AppCompatActivity {
@@ -68,7 +63,6 @@ public class RegisterActivity extends AppCompatActivity {
     }
 
     private boolean validateInfo() {
-        final String email=this.email.getText().toString().trim();
         final String password=this.password.getText().toString().trim();
         final String c_password = this.c_password.getText().toString().trim();
         if(password.length() < 6) {
@@ -89,8 +83,6 @@ public class RegisterActivity extends AppCompatActivity {
         final String email=this.email.getText().toString().trim();
         final String password=this.password.getText().toString().trim();
 
-
-
         FirebaseAuth.getInstance().createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                     @Override
@@ -99,21 +91,21 @@ public class RegisterActivity extends AppCompatActivity {
                         if (task.isSuccessful()){
                             Log.d(TAG, "onComplete: AuthState: " + FirebaseAuth.getInstance().getCurrentUser().getUid());
                             User user = new User();
-
                             user.setEmail(email);
                             user.setUsername(username.getText().toString().trim());
                             user.setUser_id(FirebaseAuth.getInstance().getUid());
                             user.setPassword(password);
                             session.setUsername(username.getText().toString().trim());
 
-                            FirebaseFirestoreSettings settings = new FirebaseFirestoreSettings.Builder()
-                                    .setTimestampsInSnapshotsEnabled(true)
-                                    .build();
-                            mDb.setFirestoreSettings(settings);
-
                             DocumentReference newUserRef = mDb
                                     .collection(getString(R.string.fire_store_users))
                                     .document(FirebaseAuth.getInstance().getUid());
+
+                            FirebaseUser userteste = FirebaseAuth.getInstance().getCurrentUser();
+                            if (userteste != null) {
+                                Log.d(TAG,"working");
+
+                            }
 
                             newUserRef.set(user).addOnCompleteListener(new OnCompleteListener<Void>() {
                                 @Override
@@ -121,24 +113,27 @@ public class RegisterActivity extends AppCompatActivity {
                                     btn_regist.setVisibility(View.VISIBLE);
 
                                     if(task.isSuccessful()){
-                                        startActivity(new Intent(RegisterActivity.this, LoginActivity.class));
+                                        Intent loginIntent = new Intent(RegisterActivity.this, LoginActivity.class);
+                                        loginIntent.putExtra("email",email);
+                                        loginIntent.putExtra("username", username.getText().toString().trim());
+                                        startActivity(loginIntent);
                                     }else{
                                         Toast.makeText(RegisterActivity.this, "Register Failed! " , Toast.LENGTH_SHORT);
                                     }
                                 }
                             });
-
-
                         }
                         else {
-                            View parentLayout = findViewById(android.R.id.content);
+
                             Toast.makeText(RegisterActivity.this, "Register Failed!", Toast.LENGTH_SHORT);
                             btn_regist.setVisibility(View.VISIBLE);
                         }
 
-                        // ...
+
                     }
                 });
+
+
     }
 
 }

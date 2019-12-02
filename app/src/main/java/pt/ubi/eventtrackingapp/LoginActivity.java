@@ -18,16 +18,22 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreSettings;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
+
 
 public class LoginActivity extends AppCompatActivity {
 
     private FirebaseAuth mAuth;
-    private FirebaseAuth.AuthStateListener mAuthListener;
     private Session session;
     private EditText email, password;
     private Button btn_login;
     private TextView link_regist;
     private static final String TAG = "LoginActivity";
+    private FirebaseFirestore mDb;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,19 +44,16 @@ public class LoginActivity extends AppCompatActivity {
         password = findViewById(R.id.password);
         btn_login = findViewById(R.id.btn_login);
         link_regist = findViewById(R.id.link_regist);
+        mDb = FirebaseFirestore.getInstance();
         mAuth = FirebaseAuth.getInstance();
-
-        mAuthListener = new FirebaseAuth.AuthStateListener() {
-            @Override
-            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
-                FirebaseUser user = firebaseAuth.getCurrentUser();
-                if (user != null) {
-                    String name = user.getDisplayName();
-                    String email = user.getEmail();
-                   startActivity(new Intent(LoginActivity.this, DashboardActivity.class));
-                }
-            }
-        };
+        FirebaseUser user = mAuth.getCurrentUser();
+        Intent registerIntent = getIntent(); // gets the previously created intent
+        String createdEmail = registerIntent.getStringExtra("email");
+        String createdUsername = registerIntent.getStringExtra("username");
+        if (user != null && !createdEmail.isEmpty() &&  !createdUsername.isEmpty()) {
+            session.setUsername(createdUsername);
+            startActivity(new Intent(LoginActivity.this, DashboardActivity.class));
+        }
 
         btn_login.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -85,12 +88,9 @@ public class LoginActivity extends AppCompatActivity {
                         @Override
                         public void onComplete(@NonNull Task<AuthResult> task) {
                             if (task.isSuccessful()) {
-
                                 Log.d(TAG, "signInWithEmail:success");
-                                FirebaseUser user = mAuth.getCurrentUser();
-                                session.setUsername(user.getDisplayName());
+                                saveUser(email);
                                 startActivity(new Intent(LoginActivity.this, DashboardActivity.class));
-
                             } else {
                                 // If sign in fails, display a message to the user.
                                 Log.w(TAG, "signInWithEmail:failure", task.getException());
@@ -109,6 +109,30 @@ public class LoginActivity extends AppCompatActivity {
                 }
             });
 
+    }
+
+
+    private void saveUser(String email){
+            FirebaseFirestoreSettings settings = new FirebaseFirestoreSettings.Builder()
+                    .setTimestampsInSnapshotsEnabled(true)
+                    .build();
+            mDb.setFirestoreSettings(settings);
+            mDb.collection("Users")
+                    .whereEqualTo("email", email)
+                    .get()
+                    .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                        @Override
+                        public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                            if (task.isSuccessful()) {
+                                for (QueryDocumentSnapshot document : task.getResult()) {
+                                    Log.d(TAG, document.getId() + " => " + document.get("username"));
+                                    session.setUsername(document.get("username").toString().trim());
+                                }
+                            } else {
+                                Log.d(TAG, "Error getting documents: ", task.getException());
+                            }
+                        }
+                    });
     }
 
 }

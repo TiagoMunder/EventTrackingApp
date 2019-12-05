@@ -41,8 +41,6 @@ public class EventsListAdapter extends ArrayAdapter<Event> {
         String owner = getItem(position).getOwner();
         String description = getItem(position).getDescription();
 
-        Event event = new Event(owner, name, description);
-
         final View result;
         ViewHolder holder;
         if(convertView == null) {

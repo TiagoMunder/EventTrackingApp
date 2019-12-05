@@ -50,7 +50,7 @@ public class LoginActivity extends AppCompatActivity {
         Intent registerIntent = getIntent(); // gets the previously created intent
         String createdEmail = registerIntent.getStringExtra("email");
         String createdUsername = registerIntent.getStringExtra("username");
-        if (user != null && !createdEmail.isEmpty() &&  !createdUsername.isEmpty()) {
+        if (user != null && createdEmail!= null &&  createdUsername!= null) {
             session.setUsername(createdUsername);
             startActivity(new Intent(LoginActivity.this, DashboardActivity.class));
         }

@@ -1,5 +1,6 @@
 package pt.ubi.eventtrackingapp;
 
+import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
@@ -37,6 +38,7 @@ public class ChatActivity extends AppCompatActivity {
     private FirebaseFirestore mDb;
     private ImageButton btn_send;
     private Session session;
+    private String  eventID;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,6 +47,14 @@ public class ChatActivity extends AppCompatActivity {
         editChatForm = (EditText) findViewById(R.id.chatForm);
         btn_send = (ImageButton) findViewById(R.id.btn_send);
         mDb = FirebaseFirestore.getInstance();
+        Intent intent = getIntent();
+
+        eventID = intent.getStringExtra("eventID");
+        if(eventID == null){
+            Log.d(TAG, " Error getting Event");
+            startActivity(new Intent(ChatActivity.this, DashboardActivity.class));
+        }
+
         getMessagesFromServer();
 
         session = new Session(ChatActivity.this);
@@ -71,7 +81,7 @@ public class ChatActivity extends AppCompatActivity {
                 .build();
         mDb.setFirestoreSettings(settings);
         Long tsLong = System.currentTimeMillis()/1000;
-        MessageServer message = new MessageServer("Tiago", messageBody, "23456", tsLong.toString());
+        MessageServer message = new MessageServer("Tiago", messageBody, eventID, tsLong.toString());
         DocumentReference newMessageRef = mDb.collection("Chat").document();
 
         newMessageRef.set(message).addOnCompleteListener(new OnCompleteListener<Void>() {
@@ -92,7 +102,7 @@ public class ChatActivity extends AppCompatActivity {
                 .build();
             mDb.setFirestoreSettings(settings);
         mDb.collection("Chat")
-                .whereEqualTo("eventId", "23456").orderBy("time")
+                .whereEqualTo("eventId", eventID).orderBy("time")
                 .addSnapshotListener(new EventListener<QuerySnapshot>() {
                     @Override
                     public void onEvent(@Nullable QuerySnapshot value,
@@ -113,7 +123,6 @@ public class ChatActivity extends AppCompatActivity {
                         }
                         MessageAdapter adapter = new MessageAdapter(ChatActivity.this,0, messageList);
                         myListView.setAdapter(adapter);
-                        Log.d(TAG, "Current cites in CA: " );
                     }
                 });
     }

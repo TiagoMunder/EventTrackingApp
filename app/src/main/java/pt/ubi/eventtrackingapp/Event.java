@@ -3,7 +3,7 @@ package pt.ubi.eventtrackingapp;
 import java.util.Date;
 
 public class Event {
-    private String owner;
+    private String owner, eventID;
     private String name;
     private String description;
     private String street, city, country, date;
@@ -16,7 +16,25 @@ public class Event {
         this.description = description;
     }
 
+    public Event(String owner, String name, String description, String eventID) {
+        this.eventID =  eventID;
+        this.owner = owner;
+        this.name = name;
+        this.description = description;
+    }
+
+    public Event(String owner, String name, String description, String street, String city, String country, String date, String eventID) {
+        this.eventID = eventID;
+        this.owner = owner;
+        this.name = name;
+        this.description = description;
+        this.street = street;
+        this.city = city;
+        this.country = country;
+        this.date = date;
+    }
     public Event(String owner, String name, String description, String street, String city, String country, String date) {
+        this.eventID = eventID;
         this.owner = owner;
         this.name = name;
         this.description = description;
@@ -80,5 +98,13 @@ public class Event {
 
     public void setDate(String date) {
         this.date = date;
+    }
+
+    public String getEventID() {
+        return eventID;
+    }
+
+    public void setEventID(String eventID) {
+        this.eventID = eventID;
     }
 }

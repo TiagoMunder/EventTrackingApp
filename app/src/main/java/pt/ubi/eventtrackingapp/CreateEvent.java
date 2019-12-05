@@ -21,6 +21,8 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreSettings;
 
 import java.util.Calendar;
+import java.util.HashMap;
+import java.util.Map;
 
 public class CreateEvent extends AppCompatActivity {
 
@@ -110,6 +112,9 @@ public class CreateEvent extends AppCompatActivity {
                 .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
                     @Override
                     public void onSuccess(DocumentReference documentReference) {
+                        Map<String, Object> eventID = new HashMap<>();
+                        eventID.put("eventID",documentReference.getId());
+                        documentReference.set(eventID);
                         Log.d(TAG, "DocumentSnapshot written with ID: " + documentReference.getId());
                     }
                 })

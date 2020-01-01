@@ -12,7 +12,6 @@ import android.widget.ListView;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.FirebaseFirestoreSettings;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
@@ -32,11 +31,6 @@ public class EventsListActivity extends AppCompatActivity {
     }
 
     private void getEvents() {
-        FirebaseFirestoreSettings settings = new FirebaseFirestoreSettings.Builder()
-                .setTimestampsInSnapshotsEnabled(true)
-                .build();
-        mDb.setFirestoreSettings(settings);
-
         mDb.collection("Events")
                 .get()
                 .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {

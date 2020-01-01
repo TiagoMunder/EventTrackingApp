@@ -12,12 +12,25 @@ public class Session {
     public Session(Context cntx) {
         prefs = PreferenceManager.getDefaultSharedPreferences(cntx);
     }
-    public void setUsername(String username) {
-        prefs.edit().putString("USERNAME", username).apply();
+
+    public void setUserInfo(User user) {
+        Gson gson = new Gson();
+        String jsonUser = gson.toJson(user);
+        prefs.edit().putString("USERINFO", jsonUser).apply();
     }
+
     public String getUsername() {
-        String username = prefs.getString("USERNAME","");
-        return username;
+        String userInfo = prefs.getString("USERINFO","");
+        Gson gson = new Gson();
+        User obj = gson.fromJson(userInfo, User.class);
+        return obj.getUsername();
+    }
+
+    public User getUser() {
+        String userInfo = prefs.getString("USERINFO","");
+        Gson gson = new Gson();
+        User obj = gson.fromJson(userInfo, User.class);
+        return obj;
     }
 
     public void setEvent(Event event) {
@@ -28,6 +41,7 @@ public class Session {
         prefsEditor.putString("EVENTINFO", json);
         prefsEditor.commit();
     }
+
     public Event getEvent() {
         Gson gson = new Gson();
         String json = prefs.getString("EVENTINFO", "");

@@ -43,7 +43,7 @@ public class DashboardActivity extends AppCompatActivity {
         btn_participateEvent.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(DashboardActivity.this, MapsActivity.class));
+                startActivity(new Intent(DashboardActivity.this, MapViewActivity.class));
             }
         });
 

@@ -6,6 +6,21 @@ class User {
     private String username;
     private String user_id;
 
+    User() {
+
+    }
+
+    User(String email, String username) {
+        this.email =  email;
+        this.username = username;
+    }
+
+    User(String email, String username, String user_id) {
+        this.email =  email;
+        this.username = username;
+        this.user_id = user_id;
+    }
+
     public String getEmail() {
         return email;
     }

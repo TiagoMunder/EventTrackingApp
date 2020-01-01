@@ -82,7 +82,6 @@ public class RegisterActivity extends AppCompatActivity {
     public void registerNewEmail(){
         final String email=this.email.getText().toString().trim();
         final String password=this.password.getText().toString().trim();
-
         FirebaseAuth.getInstance().createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                     @Override
@@ -94,8 +93,9 @@ public class RegisterActivity extends AppCompatActivity {
                             user.setEmail(email);
                             user.setUsername(username.getText().toString().trim());
                             user.setUser_id(FirebaseAuth.getInstance().getUid());
+
                             user.setPassword(password);
-                            session.setUsername(username.getText().toString().trim());
+                            session.setUserInfo(user);
 
                             DocumentReference newUserRef = mDb
                                     .collection(getString(R.string.fire_store_users))

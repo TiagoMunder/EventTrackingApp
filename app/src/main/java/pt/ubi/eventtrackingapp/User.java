@@ -1,6 +1,9 @@
 package pt.ubi.eventtrackingapp;
 
-class User {
+import android.os.Parcel;
+import android.os.Parcelable;
+
+class User implements Parcelable {
     private String email;
     private String password;
     private String username;
@@ -20,6 +23,38 @@ class User {
         this.username = username;
         this.user_id = user_id;
     }
+
+    protected User(Parcel in) {
+        email = in.readString();
+        password = in.readString();
+        username = in.readString();
+        user_id = in.readString();
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(email);
+        dest.writeString(password);
+        dest.writeString(username);
+        dest.writeString(user_id);
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    public static final Creator<User> CREATOR = new Creator<User>() {
+        @Override
+        public User createFromParcel(Parcel in) {
+            return new User(in);
+        }
+
+        @Override
+        public User[] newArray(int size) {
+            return new User[size];
+        }
+    };
 
     public String getEmail() {
         return email;

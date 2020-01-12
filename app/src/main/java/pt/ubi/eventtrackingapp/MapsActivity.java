@@ -1,46 +1,112 @@
 package pt.ubi.eventtrackingapp;
 
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
+import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 
-import com.google.android.gms.maps.CameraUpdateFactory;
-import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.MapView;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 
-public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
+import java.util.ArrayList;
 
-    private GoogleMap mMap;
+
+public class MapsActivity extends AppCompatActivity {
+
+    private static final String TAG = "MapViewActivity";
+    private MapView mMapView;
+    private FirebaseFirestore mDb;
+    private ArrayList<UserLocation> mUserLocations = new ArrayList<>();
+    private ArrayList<User> mUsersList = new ArrayList<>();
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
-        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
-        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
-                .findFragmentById(R.id.map);
-        mapFragment.getMapAsync(this);
+        mDb = FirebaseFirestore.getInstance();
+        getUsersOfTheEvent();
+
+
+
+    }
+
+    private void addFragment(Fragment fragment, boolean addToBackStack, String tag) {
+
+        FragmentManager manager = getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = manager.beginTransaction();
+        Bundle mapBundle = new Bundle();
+        mapBundle.putParcelableArrayList("UserLocations", mUserLocations);
+        mapBundle.putParcelableArrayList("UsersList", mUsersList);
+        fragment.setArguments(mapBundle);
+        if (addToBackStack) {
+            fragmentTransaction.addToBackStack(tag);
+        }
+        fragmentTransaction.replace(R.id.container_frame_back, fragment, tag);
+        fragmentTransaction.commitAllowingStateLoss();
+
+    }
+
+    private void getUsersOfTheEvent() {
+        mDb.collection("Events").document("JoluaQw7PB8usY4KR0A6").collection("Users")
+                .addSnapshotListener(new EventListener<QuerySnapshot>() {
+                    @Override
+                    public void onEvent(@Nullable QuerySnapshot value,
+                                        @Nullable FirebaseFirestoreException e) {
+                        if (e != null) {
+                            Log.w(TAG, "Listen failed.", e);
+                            return;
+                        }
+
+                        for (QueryDocumentSnapshot doc : value) {
+
+                            if (doc.get("username") != null && doc.get("email") != null) {
+
+                                User user = new User(doc.get("email").toString(), doc.get("username").toString(),doc.get("user_id").toString());
+                                mUsersList.add(user);
+                                getUserLocation(user);
+                            }
+                        }
+
+                    }
+                });
+
+    }
+
+    public void getUserLocation(User user) {
+        DocumentReference locationDocumentRef = mDb.collection("User Locations").document(user.getUser_id());
+
+        locationDocumentRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                if(task.isSuccessful()) {
+                    if(task.getResult().toObject(UserLocation.class) != null) {
+                        mUserLocations.add(task.getResult().toObject(UserLocation.class));
+
+                    }
+                    addFragment(new MapViewActivity(),false, "Map");
+                }
+            }
+        });
+
+
     }
 
 
-    /**
-     * Manipulates the map once available.
-     * This callback is triggered when the map is ready to be used.
-     * This is where we can add markers or lines, add listeners or move the camera. In this case,
-     * we just add a marker near Sydney, Australia.
-     * If Google Play services is not installed on the device, the user will be prompted to install
-     * it inside the SupportMapFragment. This method will only be triggered once the user has
-     * installed Google Play services and returned to the app.
-     */
-    @Override
-    public void onMapReady(GoogleMap googleMap) {
-        mMap = googleMap;
 
-        // Add a marker in Sydney and move the camera
-        LatLng sydney = new LatLng(-34, 151);
-        mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
-    }
+
 }

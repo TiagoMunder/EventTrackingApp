@@ -1,21 +1,22 @@
 package pt.ubi.eventtrackingapp;
 
-import android.content.Intent;
+import android.content.Context;
+import android.net.Uri;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ListView;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
-
 import com.google.firebase.firestore.DocumentReference;
-
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
@@ -25,7 +26,14 @@ import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 
-public class ChatActivity extends AppCompatActivity {
+
+
+
+public class ChatFragment extends Fragment {
+    // TODO: Rename parameter arguments, choose names that match
+    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
+    private static final String ARG_PARAM1 = "param1";
+    private static final String ARG_PARAM2 = "param2";
 
     private EditText editChatForm;
     private static final String TAG = "ChatActivity";
@@ -33,29 +41,45 @@ public class ChatActivity extends AppCompatActivity {
     private ImageButton btn_send;
     private Session session;
     private String  eventID;
-    private ArrayList<User> userList = new ArrayList<>();
-    private ArrayList<UserLocation> mUserListLocation = new ArrayList<>();
+    private ArrayList<User> userList;
+    private ArrayList<UserLocation> mUserListLocation;
+    private ListView myListView;
+
+    // TODO: Rename and change types of parameters
+    private String mParam1;
+    private String mParam2;
+
+
+    public ChatFragment() {
+        // Required empty public constructor
+    }
+
+
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_chat);
-        editChatForm = (EditText) findViewById(R.id.chatForm);
-        btn_send = (ImageButton) findViewById(R.id.btn_send);
-        mDb = FirebaseFirestore.getInstance();
-        session = new Session(ChatActivity.this);
-        Intent intent = getIntent();
 
-        eventID = intent.getStringExtra("eventID");
-        if(eventID == null){
-            Log.d(TAG, " Error getting Event");
-            startActivity(new Intent(ChatActivity.this, DashboardActivity.class));
+        if(getArguments() != null) {
+            userList = getArguments().getParcelableArrayList("UsersList");
+            eventID = getArguments().getString("EventId");
         }
-
+        mDb = FirebaseFirestore.getInstance();
+        session = new Session(getActivity());
         getMessagesFromServer();
-        getUsersOfTheEvent();
 
-        session = new Session(ChatActivity.this);
+
+
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.fragment_chat, container, false);
+        editChatForm = (EditText) view.findViewById(R.id.chatForm);
+        btn_send = (ImageButton) view.findViewById(R.id.btn_send);
+         myListView = (ListView) view.findViewById(R.id.messages_view);
+
         btn_send.setOnClickListener( new View.OnClickListener() {
 
             @Override
@@ -71,7 +95,19 @@ public class ChatActivity extends AppCompatActivity {
             }
         });
 
+        // Inflate the layout for this fragment
+
+
+
+        return view;
+
     }
+
+
+
+
+
+
 
     private void addMessage(String messageBody) {
         FirebaseFirestoreSettings settings = new FirebaseFirestoreSettings.Builder()
@@ -105,7 +141,7 @@ public class ChatActivity extends AppCompatActivity {
                             Log.w(TAG, "Listen failed.", e);
                             return;
                         }
-                        ListView myListView = (ListView) findViewById(R.id.messages_view);
+
                         ArrayList<Message> messageList = new ArrayList<>();
                         for (QueryDocumentSnapshot doc : value) {
 
@@ -115,48 +151,9 @@ public class ChatActivity extends AppCompatActivity {
                                 messageList.add(message);
                             }
                         }
-                        MessageAdapter adapter = new MessageAdapter(ChatActivity.this,0, messageList);
+                        MessageAdapter adapter = new MessageAdapter(getActivity(),0, messageList);
                         myListView.setAdapter(adapter);
                     }
                 });
-    }
-
-    private void addUserToEvent() {
-        boolean userAlreadyIntheEvent =false;
-        for (int i=0 ; i<userList.size(); i++){
-            if(userList.get(i).getUsername().equals(session.getUsername()))
-                userAlreadyIntheEvent =  true;
-
-        }
-        if(!userAlreadyIntheEvent) {
-            session.getUser();
-            mDb.collection("Events").document(eventID).collection("Users").add(session.getUser());
-        }
-    }
-
-    private void   getUsersOfTheEvent() {
-        mDb.collection("Events").document(eventID).collection("Users")
-                .addSnapshotListener(new EventListener<QuerySnapshot>() {
-                    @Override
-                    public void onEvent(@Nullable QuerySnapshot value,
-                                        @Nullable FirebaseFirestoreException e) {
-                        if (e != null) {
-                            Log.w(TAG, "Listen failed.", e);
-                            return;
-                        }
-
-                        for (QueryDocumentSnapshot doc : value) {
-
-                            if (doc.get("username") != null && doc.get("email") != null) {
-
-                                User user = new User(doc.get("email").toString(), doc.get("username").toString());
-                                userList.add(user);
-                            }
-                        }
-                        addUserToEvent();
-
-                    }
-                });
-
     }
 }

@@ -47,15 +47,21 @@ public class MapViewActivity extends Fragment implements OnMapReadyCallback {
     private ClusterManager<MyClusterItem> mClusterManager;
     private ArrayList<MyClusterItem> mClusterItems= new ArrayList<>();
 
+    public static MapViewActivity newInstance(){
+        return new MapViewActivity();
+    }
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        mDb = FirebaseFirestore.getInstance();
         super.onCreate(savedInstanceState);
         // still need to make sure the mUserLocations doesn't duplicate when going back
         if(getArguments() != null) {
-            mUserLocations = getArguments().getParcelableArrayList("UserLocations");
             mUsersList = getArguments().getParcelableArrayList("UsersList");
+            mUserLocations = getArguments().getParcelableArrayList("UserLocations");
+
         }
-        setUserPosition();
+
 
     }
 
@@ -130,21 +136,26 @@ public class MapViewActivity extends Fragment implements OnMapReadyCallback {
 
             }
             mClusterManager.cluster();
+            setUserPosition();
+            if(mUserLocation!= null) {
+                setCameraView();
+            }
 
-            setCameraView();
         }
     }
 
     private void setCameraView() {
 
         // Overall map view Window
-        double bottomBoundary = mUserLocation.getGeoPoint().getLatitude() - .1;
-        double leftBoundary = mUserLocation.getGeoPoint().getLongitude() - .1;
-        double rightBoundary = mUserLocation.getGeoPoint().getLongitude() + .1;
-        double topBoundary = mUserLocation.getGeoPoint().getLatitude() + .1;
 
-        mMapBoundary = new LatLngBounds(new LatLng(bottomBoundary, leftBoundary), new LatLng(topBoundary,rightBoundary));
-        mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngBounds(mMapBoundary,0));
+            double bottomBoundary = mUserLocation.getGeoPoint().getLatitude() - .1;
+            double leftBoundary = mUserLocation.getGeoPoint().getLongitude() - .1;
+            double rightBoundary = mUserLocation.getGeoPoint().getLongitude() + .1;
+            double topBoundary = mUserLocation.getGeoPoint().getLatitude() + .1;
+
+            mMapBoundary = new LatLngBounds(new LatLng(bottomBoundary, leftBoundary), new LatLng(topBoundary, rightBoundary));
+            mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngBounds(mMapBoundary, 0));
+
     }
 
 
@@ -214,7 +225,9 @@ public class MapViewActivity extends Fragment implements OnMapReadyCallback {
         map.setOnMapLoadedCallback(new GoogleMap.OnMapLoadedCallback() {
             @Override
             public void onMapLoaded() {
-                addMapMarkers();
+               // for( User user: mUsersList)
+                  //  getUserLocation(user);
+                 addMapMarkers();
             }
         });
 
@@ -302,6 +315,91 @@ public class MapViewActivity extends Fragment implements OnMapReadyCallback {
         }
 
     }
+
+    /*
+    Isto fica comentado por agora porque ainda não sei se uso esta função em vez de enviar logo as localizações do EventMainActivity ou se as vou buscar aqui
+    e vou adicionando ao cluster
+
+    public void getUserLocation(User user) {
+        DocumentReference locationDocumentRef = mDb.collection("User Locations").document(user.getUser_id());
+
+        locationDocumentRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                if(task.isSuccessful()) {
+                    if(task.getResult().toObject(UserLocation.class) != null) {
+                        mUserLocations.add(task.getResult().toObject(UserLocation.class));
+                        // addMapMarker(task.getResult().toObject(UserLocation.class));
+
+                    }
+                }
+            }
+        });
+
+
+    }
+
+    private void addMapMarker(UserLocation userLocation){
+
+        if(mGoogleMap != null){
+
+            if(mClusterManager == null){
+                mClusterManager = new ClusterManager<MyClusterItem>(getActivity().getApplicationContext(), mGoogleMap);
+            }
+            if(clusterManagerRenderer == null){
+                clusterManagerRenderer = new myClusterManagerRenderer(
+                        getActivity(),
+                        mGoogleMap,
+                        mClusterManager
+                );
+                mClusterManager.setRenderer(clusterManagerRenderer);
+            }
+
+                Log.d(TAG, "addMapMarkers: location: " + userLocation.getGeoPoint().toString());
+                try{
+                    String snippet = "";
+                    if(userLocation.getUser().getUser_id().equals(FirebaseAuth.getInstance().getUid())){
+                        snippet = "This is you";
+                    }
+                    else{
+                        snippet = "Determine route to " + userLocation.getUser().getUsername() + "?";
+                    }
+
+                    int avatar = R.drawable.donald;
+
+
+                    Vou ter de criar avatars para cada  user mas por agora ainda não tenho
+
+                    try{
+                        avatar =  R.drawable.donald;
+                    }catch (NumberFormatException e){
+                        Log.d(TAG, "addMapMarkers: no avatar for " + userLocation.getUser().getUsername() + ", setting default.");
+                    }
+
+                    MyClusterItem newClusterMarker = new MyClusterItem(
+                            new LatLng(userLocation.getGeoPoint().getLatitude(), userLocation.getGeoPoint().getLongitude()),
+                            userLocation.getUser().getUsername(),
+                            snippet,
+                            avatar,
+                            userLocation.getUser()
+                    );
+                    mClusterManager.addItem(newClusterMarker);
+                    mClusterItems.add(newClusterMarker);
+
+                }catch (NullPointerException e){
+                    Log.e(TAG, "addMapMarkers: NullPointerException: " + e.getMessage() );
+                }
+
+
+            mClusterManager.cluster();
+            if(mUserLocation!= null) {
+                setCameraView();
+            }
+
+        }
+    }
+    */
+
 
 
 }

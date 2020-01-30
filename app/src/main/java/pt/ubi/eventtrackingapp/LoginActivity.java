@@ -35,6 +35,7 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreSettings;
 import com.google.firebase.firestore.GeoPoint;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
@@ -75,6 +76,11 @@ public class LoginActivity extends AppCompatActivity {
         Intent registerIntent = getIntent(); // gets the previously created intent
         String createdEmail = registerIntent.getStringExtra("email");
         String createdUsername = registerIntent.getStringExtra("username");
+
+        FirebaseFirestoreSettings settings = new FirebaseFirestoreSettings.Builder()
+                .setTimestampsInSnapshotsEnabled(true)
+                .build();
+        mDb.setFirestoreSettings(settings);
 
         if (user != null && createdEmail != null && createdUsername != null) {
             startActivity(new Intent(LoginActivity.this, DashboardActivity.class));
@@ -153,6 +159,10 @@ public class LoginActivity extends AppCompatActivity {
     private void getUserDetails() {
         if(mUserLocation == null){
             mUserLocation = new UserLocation();
+            FirebaseFirestoreSettings settings = new FirebaseFirestoreSettings.Builder()
+                    .setTimestampsInSnapshotsEnabled(true)
+                    .build();
+            mDb.setFirestoreSettings(settings);
 
             DocumentReference userRef = mDb.collection("Users").document(FirebaseAuth.getInstance().getUid());
             userRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
@@ -175,7 +185,7 @@ public class LoginActivity extends AppCompatActivity {
         if(checkMapServices()){
             if(mLocationPermissionGranted){
                 isEverythingOK = true;
-                getUserDetails();
+                // getUserDetails();
             } else{
                 getLocationPermission();
             }
@@ -281,7 +291,7 @@ public class LoginActivity extends AppCompatActivity {
                 == PackageManager.PERMISSION_GRANTED) {
             mLocationPermissionGranted = true;
             isEverythingOK = true;
-            getUserDetails();
+            // getUserDetails();
         } else {
             ActivityCompat.requestPermissions(this,
                     new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
@@ -334,7 +344,7 @@ public class LoginActivity extends AppCompatActivity {
             case PERMISSIONS_REQUEST_ENABLE_GPS: {
                 if(mLocationPermissionGranted){
                     isEverythingOK = true;
-                    getUserDetails();
+                   // getUserDetails();
                 }
                 else{
                     getLocationPermission();

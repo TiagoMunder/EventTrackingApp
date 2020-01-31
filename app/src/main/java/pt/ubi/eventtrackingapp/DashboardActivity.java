@@ -16,10 +16,12 @@ public class DashboardActivity extends AppCompatActivity {
     private String username;
     private TextView link_logOut;
     private FirebaseAuth mAuth;
-
+    private Session session;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        session = new Session(DashboardActivity.this);
+
         setContentView(R.layout.activity_dashboard);
         btn_createEvent = findViewById(R.id.btn_createEvent);
         btn_ListEvents = findViewById(R.id.btn_listEvents);
@@ -43,7 +45,7 @@ public class DashboardActivity extends AppCompatActivity {
         btn_participateEvent.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(DashboardActivity.this, MapsActivity.class));
+                // ainda não sei se vou fazer alguma coisa com isto
             }
         });
 
@@ -52,6 +54,7 @@ public class DashboardActivity extends AppCompatActivity {
             public void onClick(View v) {
                         mAuth = FirebaseAuth.getInstance();
                         mAuth.signOut();
+                        session.reset();
                         startActivity(new Intent(DashboardActivity.this, LoginActivity.class));
                     }
             });

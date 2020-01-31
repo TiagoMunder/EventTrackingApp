@@ -38,8 +38,8 @@ public class Session {
         SharedPreferences.Editor prefsEditor = prefs.edit();
         Gson gson = new Gson();
         String json = gson.toJson(event);
-        prefsEditor.putString("EVENTINFO", json);
-        prefsEditor.commit();
+        prefsEditor.putString("EVENTINFO", json).apply();
+
     }
 
     public Event getEvent() {
@@ -47,6 +47,10 @@ public class Session {
         String json = prefs.getString("EVENTINFO", "");
         Event event = gson.fromJson(json, Event.class);
         return event;
+    }
+
+    public void reset() {
+        prefs.edit().clear().commit();
     }
 
 }

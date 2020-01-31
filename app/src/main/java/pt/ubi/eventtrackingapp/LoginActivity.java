@@ -75,10 +75,10 @@ public class LoginActivity extends AppCompatActivity {
         Intent registerIntent = getIntent(); // gets the previously created intent
         String createdEmail = registerIntent.getStringExtra("email");
         String createdUsername = registerIntent.getStringExtra("username");
-
         if (user != null && createdEmail != null && createdUsername != null) {
             startActivity(new Intent(LoginActivity.this, DashboardActivity.class));
         }
+
 
         btn_login.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -128,6 +128,7 @@ public class LoginActivity extends AppCompatActivity {
                     //  when passing null firebase already sets the correct timestamp
                     mUserLocation.setTimestamp(null);
                     saveUserLocation();
+                    startActivity(new Intent(LoginActivity.this, DashboardActivity.class));
                 }
             }
         });
@@ -151,7 +152,7 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void getUserDetails() {
-        if(mUserLocation == null){
+        if(mUserLocation == null && FirebaseAuth.getInstance().getUid() != null){
             mUserLocation = new UserLocation();
 
             DocumentReference userRef = mDb.collection("Users").document(FirebaseAuth.getInstance().getUid());

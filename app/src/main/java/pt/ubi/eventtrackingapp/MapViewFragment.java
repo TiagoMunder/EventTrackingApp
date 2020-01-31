@@ -33,11 +33,10 @@ import java.util.ArrayList;
 
 import static pt.ubi.eventtrackingapp.Constants.MAPVIEW_BUNDLE_KEY;
 
-public class MapViewActivity extends Fragment implements OnMapReadyCallback {
+public class MapViewFragment extends Fragment implements OnMapReadyCallback {
 
     private static final String TAG = "MapViewFragment";
     private MapView mMapView;
-    private FirebaseFirestore mDb;
     private ArrayList<UserLocation> mUserLocations = new ArrayList<>();
     private ArrayList<User> mUsersList = new ArrayList<>();
     private GoogleMap mGoogleMap;

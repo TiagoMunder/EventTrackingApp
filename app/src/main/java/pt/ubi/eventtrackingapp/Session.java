@@ -49,4 +49,8 @@ public class Session {
         return event;
     }
 
+    public void reset() {
+        prefs.edit().clear().commit();
+    }
+
 }

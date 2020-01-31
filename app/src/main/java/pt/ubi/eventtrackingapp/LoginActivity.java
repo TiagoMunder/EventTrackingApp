@@ -134,6 +134,8 @@ public class LoginActivity extends AppCompatActivity {
                     //  when passing null firebase already sets the correct timestamp
                     mUserLocation.setTimestamp(null);
                     saveUserLocation();
+                    startActivity(new Intent(LoginActivity.this, DashboardActivity.class));
+
                 }
             }
         });
@@ -157,7 +159,7 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void getUserDetails() {
-        if(mUserLocation == null){
+        if(FirebaseAuth.getInstance().getUid() != null){
             mUserLocation = new UserLocation();
             FirebaseFirestoreSettings settings = new FirebaseFirestoreSettings.Builder()
                     .setTimestampsInSnapshotsEnabled(true)
@@ -185,7 +187,7 @@ public class LoginActivity extends AppCompatActivity {
         if(checkMapServices()){
             if(mLocationPermissionGranted){
                 isEverythingOK = true;
-                // getUserDetails();
+                 getUserDetails();
             } else{
                 getLocationPermission();
             }
@@ -291,7 +293,7 @@ public class LoginActivity extends AppCompatActivity {
                 == PackageManager.PERMISSION_GRANTED) {
             mLocationPermissionGranted = true;
             isEverythingOK = true;
-            // getUserDetails();
+             getUserDetails();
         } else {
             ActivityCompat.requestPermissions(this,
                     new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
@@ -344,7 +346,7 @@ public class LoginActivity extends AppCompatActivity {
             case PERMISSIONS_REQUEST_ENABLE_GPS: {
                 if(mLocationPermissionGranted){
                     isEverythingOK = true;
-                   // getUserDetails();
+                    getUserDetails();
                 }
                 else{
                     getLocationPermission();

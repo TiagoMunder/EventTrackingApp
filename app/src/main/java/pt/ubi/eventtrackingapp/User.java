@@ -8,6 +8,7 @@ class User implements Parcelable {
     private String password;
     private String username;
     private String user_id;
+    private String mImageUrl;
 
     User() {
 
@@ -18,10 +19,11 @@ class User implements Parcelable {
         this.username = username;
     }
 
-    User(String email, String username, String user_id) {
+    User(String email, String username, String user_id, String mImageUrl) {
         this.email =  email;
         this.username = username;
         this.user_id = user_id;
+        this.mImageUrl = mImageUrl;
     }
 
     protected User(Parcel in) {
@@ -29,6 +31,7 @@ class User implements Parcelable {
         password = in.readString();
         username = in.readString();
         user_id = in.readString();
+        mImageUrl = in.readString();
     }
 
     @Override
@@ -37,6 +40,7 @@ class User implements Parcelable {
         dest.writeString(password);
         dest.writeString(username);
         dest.writeString(user_id);
+        dest.writeString(mImageUrl);
     }
 
     @Override
@@ -86,5 +90,13 @@ class User implements Parcelable {
 
     public void setUser_id(String user_id) {
         this.user_id = user_id;
+    }
+
+    public String getmImageUrl() {
+        return mImageUrl;
+    }
+
+    public void setmImageUrl(String mImageUrl) {
+        this.mImageUrl = mImageUrl;
     }
 }

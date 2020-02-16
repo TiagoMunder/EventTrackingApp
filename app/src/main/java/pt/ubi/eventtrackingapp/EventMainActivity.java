@@ -160,7 +160,7 @@ public class EventMainActivity extends AppCompatActivity {
 
                             if (doc.get("username") != null && doc.get("email") != null) {
 
-                                User user = new User(doc.get("email").toString(), doc.get("username").toString(),doc.get("user_id").toString());
+                                User user = new User(doc.get("email").toString(), doc.get("username").toString(),doc.get("user_id").toString(),doc.get("mImageUrl")!=null ? doc.get("mImageUrl").toString() : null);
                                 mUsersList.add(user);
                                 addUserToEvent();
                                 getUserLocation(user);

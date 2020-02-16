@@ -2,6 +2,9 @@ package pt.ubi.eventtrackingapp;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -27,9 +30,16 @@ import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.maps.android.clustering.ClusterManager;
+import com.squareup.picasso.Picasso;
+import com.squareup.picasso.Target;
 
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
+import java.util.concurrent.ExecutionException;
 
 import static pt.ubi.eventtrackingapp.Constants.MAPVIEW_BUNDLE_KEY;
 
@@ -46,6 +56,7 @@ public class MapViewActivity extends Fragment implements OnMapReadyCallback {
     private myClusterManagerRenderer clusterManagerRenderer;
     private ClusterManager<MyClusterItem> mClusterManager;
     private ArrayList<MyClusterItem> mClusterItems= new ArrayList<>();
+
 
     public static MapViewActivity newInstance(){
         return new MapViewActivity();
@@ -64,6 +75,7 @@ public class MapViewActivity extends Fragment implements OnMapReadyCallback {
 
 
     }
+
 
     @Nullable
     @Override
@@ -108,18 +120,23 @@ public class MapViewActivity extends Fragment implements OnMapReadyCallback {
                     else{
                         snippet = "Determine route to " + userLocation.getUser().getUsername() + "?";
                     }
+                    Bitmap avatar = null;
+                     Runnable r = new GetBitMapRunnable(userLocation.getUser(), avatar);
+                    new Thread(r).start();
+                    Thread thread = new Thread(r);
+                    thread.start();
+                    String testImageUrl = userLocation.getUser().getmImageUrl();
+                    try {
 
-                    int avatar = R.drawable.donald;
+                        thread.join();
+                    } catch (InterruptedException e) {
 
-                    /*
-                    Vou ter de criar avatars para cada  user mas por agora ainda não tenho
-
-                    try{
-                        avatar =  R.drawable.donald;
-                    }catch (NumberFormatException e){
-                        Log.d(TAG, "addMapMarkers: no avatar for " + userLocation.getUser().getUsername() + ", setting default.");
+                        e.printStackTrace();
                     }
-                    */
+
+
+                    avatar = ((GetBitMapRunnable) r).getAvatar();
+
                     MyClusterItem newClusterMarker = new MyClusterItem(
                             new LatLng(userLocation.getGeoPoint().getLatitude(), userLocation.getGeoPoint().getLongitude()),
                             userLocation.getUser().getUsername(),

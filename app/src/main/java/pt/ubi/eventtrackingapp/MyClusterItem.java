@@ -12,10 +12,10 @@ public class MyClusterItem implements ClusterItem {
     private LatLng position; // required field
     private String title; // required field
     private String snippet; // required field
-    private Bitmap iconPicture;
+    private String iconPicture;
     private User user;
 
-    public MyClusterItem(LatLng position, String title, String snippet, Bitmap iconPicture, User user) {
+    public MyClusterItem(LatLng position, String title, String snippet, String iconPicture, User user) {
         this.position = position;
         this.title = title;
         this.snippet = snippet;
@@ -27,11 +27,11 @@ public class MyClusterItem implements ClusterItem {
 
     }
 
-    public Bitmap getIconPicture() {
+    public String getIconPicture() {
         return iconPicture;
     }
 
-    public void setIconPicture(Bitmap iconPicture) {
+    public void setIconPicture(String iconPicture) {
         this.iconPicture = iconPicture;
     }
 

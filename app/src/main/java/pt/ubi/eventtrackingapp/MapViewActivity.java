@@ -120,22 +120,10 @@ public class MapViewActivity extends Fragment implements OnMapReadyCallback {
                     else{
                         snippet = "Determine route to " + userLocation.getUser().getUsername() + "?";
                     }
-                    Bitmap avatar = null;
-                     Runnable r = new GetBitMapRunnable(userLocation.getUser(), avatar);
-                    new Thread(r).start();
-                    Thread thread = new Thread(r);
-                    thread.start();
-                    String testImageUrl = userLocation.getUser().getmImageUrl();
-                    try {
-
-                        thread.join();
-                    } catch (InterruptedException e) {
-
-                        e.printStackTrace();
-                    }
+                    String avatar = null;
 
 
-                    avatar = ((GetBitMapRunnable) r).getAvatar();
+                    avatar = "https://firebasestorage.googleapis.com/v0/b/eventtacking.appspot.com/o/uploads%2F1581277370519.jpg?alt=media&token=0954bbf1-3549-4765-bcdd-b1d7a1dc610b";
 
                     MyClusterItem newClusterMarker = new MyClusterItem(
                             new LatLng(userLocation.getGeoPoint().getLatitude(), userLocation.getGeoPoint().getLongitude()),

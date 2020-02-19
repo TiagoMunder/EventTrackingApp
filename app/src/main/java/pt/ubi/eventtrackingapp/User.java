@@ -1,5 +1,6 @@
 package pt.ubi.eventtrackingapp;
 
+import android.net.Uri;
 import android.os.Parcel;
 import android.os.Parcelable;
 
@@ -32,6 +33,7 @@ class User implements Parcelable {
         username = in.readString();
         user_id = in.readString();
         mImageUrl = in.readString();
+
     }
 
     @Override
@@ -41,6 +43,7 @@ class User implements Parcelable {
         dest.writeString(username);
         dest.writeString(user_id);
         dest.writeString(mImageUrl);
+
     }
 
     @Override

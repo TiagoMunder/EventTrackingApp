@@ -42,6 +42,7 @@ public class RegisterActivity extends AppCompatActivity {
 
     private Session session;
     private FirebaseFirestore mDb;
+    private  StorageReference fileReference;
 
     private static final String TAG = "RegisterActivity";
     private static final int PICK_IMAGE_REQUEST = 1;
@@ -138,12 +139,18 @@ public class RegisterActivity extends AppCompatActivity {
         // i will change this because i need to send default image if the user doesn't upload any image
         // what i will probably do is have a default image in Storage and just send the imageUrl of that image in that case
         if(mImageUri!=null) {
-            StorageReference fileReference = mStorageRef.child(System.currentTimeMillis()
+          fileReference  = mStorageRef.child(System.currentTimeMillis()
                     + "." + getFileExtension(mImageUri));
             fileReference.putFile(mImageUri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                                                                       @Override
                                                                       public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                                                                          createUserWithFirebase(taskSnapshot.getUploadSessionUri().toString());
+                                                                          fileReference.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                                                                              @Override
+                                                                              public void onSuccess(Uri uri) {
+                                                                                   createUserWithFirebase(uri);
+                                                                              }
+                                                                          });
+
                                                                       }
                                                                   }
             ).addOnFailureListener(new OnFailureListener() {
@@ -159,8 +166,8 @@ public class RegisterActivity extends AppCompatActivity {
 
 
 
-   public void createUserWithFirebase(String imageURL) {
-        final String imageURLFinal = imageURL;
+   public void createUserWithFirebase(Uri imageURL) {
+        final String imageURLFinal = imageURL.toString();
        final String email=this.email.getText().toString().trim();
        final String password=this.password.getText().toString().trim();
 
@@ -175,7 +182,7 @@ public class RegisterActivity extends AppCompatActivity {
                            user.setEmail(email);
                            user.setUsername(username.getText().toString().trim());
                            user.setUser_id(FirebaseAuth.getInstance().getUid());
-                           user.setmImageUrl(imageURLFinal);
+                          user.setmImageUrl(imageURLFinal);
 
                            user.setPassword(password);
                            session.setUserInfo(user);

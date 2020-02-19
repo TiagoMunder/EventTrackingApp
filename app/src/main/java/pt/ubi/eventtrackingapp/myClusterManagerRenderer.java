@@ -2,6 +2,7 @@ package pt.ubi.eventtrackingapp;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.net.Uri;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 
@@ -46,7 +47,8 @@ public class myClusterManagerRenderer extends DefaultClusterRenderer<MyClusterIt
 
     @Override
     protected void onBeforeClusterItemRendered(MyClusterItem item, MarkerOptions markerOptions) {
-        Picasso.get().load(item.getIconPicture()).fit().centerCrop().into(imageView);
+        if(item.getIconPicture()!= null)
+            Picasso.get().load(item.getIconPicture()).fit().centerCrop().into(imageView);
 
         Bitmap icon = iconGenerator.makeIcon();
         markerOptions.icon(BitmapDescriptorFactory.fromBitmap(icon)).title(item.getTitle());

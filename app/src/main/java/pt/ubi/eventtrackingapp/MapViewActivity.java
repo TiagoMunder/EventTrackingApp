@@ -123,8 +123,7 @@ public class MapViewActivity extends Fragment implements OnMapReadyCallback {
                     String avatar = null;
 
 
-                    avatar = "https://firebasestorage.googleapis.com/v0/b/eventtacking.appspot.com/o/uploads%2F1581277370519.jpg?alt=media&token=0954bbf1-3549-4765-bcdd-b1d7a1dc610b";
-
+                    avatar = userLocation.getUser().getmImageUrl();
                     MyClusterItem newClusterMarker = new MyClusterItem(
                             new LatLng(userLocation.getGeoPoint().getLatitude(), userLocation.getGeoPoint().getLongitude()),
                             userLocation.getUser().getUsername(),

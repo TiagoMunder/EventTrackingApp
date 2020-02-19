@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationManager;
+import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -238,7 +239,8 @@ public class LoginActivity extends AppCompatActivity {
                             if (task.isSuccessful()) {
                                 for (QueryDocumentSnapshot document : task.getResult()) {
                                     Log.d(TAG, document.getId() + " => " + document.get("username"));
-                                    session.setUserInfo(new User(document.get("email").toString().trim() ,document.get("username").toString().trim(),document.getId()));
+                                    session.setUserInfo(new User(document.get("email").toString().trim() ,document.get("username").toString().trim(),document.getId(),
+                                            document.get("mImageUrl")!=null ? document.get("mImageUrl").toString() : null));
                                 }
                             } else {
                                 Log.d(TAG, "Error getting documents: ", task.getException());

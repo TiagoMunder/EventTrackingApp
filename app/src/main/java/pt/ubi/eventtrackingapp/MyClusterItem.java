@@ -1,6 +1,8 @@
 package pt.ubi.eventtrackingapp;
 
 
+import android.graphics.Bitmap;
+
 import com.google.android.gms.maps.model.LatLng;
 import com.google.maps.android.clustering.ClusterItem;
 
@@ -10,10 +12,10 @@ public class MyClusterItem implements ClusterItem {
     private LatLng position; // required field
     private String title; // required field
     private String snippet; // required field
-    private int iconPicture;
+    private String iconPicture;
     private User user;
 
-    public MyClusterItem(LatLng position, String title, String snippet, int iconPicture, User user) {
+    public MyClusterItem(LatLng position, String title, String snippet, String iconPicture, User user) {
         this.position = position;
         this.title = title;
         this.snippet = snippet;
@@ -25,11 +27,11 @@ public class MyClusterItem implements ClusterItem {
 
     }
 
-    public int getIconPicture() {
+    public String getIconPicture() {
         return iconPicture;
     }
 
-    public void setIconPicture(int iconPicture) {
+    public void setIconPicture(String iconPicture) {
         this.iconPicture = iconPicture;
     }
 

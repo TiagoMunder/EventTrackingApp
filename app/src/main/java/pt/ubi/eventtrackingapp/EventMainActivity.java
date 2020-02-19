@@ -1,6 +1,7 @@
 package pt.ubi.eventtrackingapp;
 import android.app.ActivityManager;
 import android.content.Intent;
+import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.TabLayout;
@@ -160,7 +161,7 @@ public class EventMainActivity extends AppCompatActivity {
 
                             if (doc.get("username") != null && doc.get("email") != null) {
 
-                                User user = new User(doc.get("email").toString(), doc.get("username").toString(),doc.get("user_id").toString());
+                                User user = new User(doc.get("email").toString(), doc.get("username").toString(),doc.get("user_id").toString(),doc.get("mImageUrl")!=null ? doc.get("mImageUrl").toString() : null);
                                 mUsersList.add(user);
                                 addUserToEvent();
                                 getUserLocation(user);

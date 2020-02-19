@@ -2,9 +2,12 @@ package pt.ubi.eventtrackingapp;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.net.Uri;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.Marker;
@@ -13,6 +16,7 @@ import com.google.maps.android.clustering.Cluster;
 import com.google.maps.android.clustering.ClusterManager;
 import com.google.maps.android.clustering.view.DefaultClusterRenderer;
 import com.google.maps.android.ui.IconGenerator;
+import com.squareup.picasso.Picasso;
 
 public class myClusterManagerRenderer extends DefaultClusterRenderer<MyClusterItem> {
 
@@ -20,6 +24,8 @@ public class myClusterManagerRenderer extends DefaultClusterRenderer<MyClusterIt
     private final ImageView imageView;
     private final int markerWidth;
     private final int markerHeight;
+
+
 
 
     public myClusterManagerRenderer(Context context, GoogleMap map, ClusterManager<MyClusterItem> clusterManager) {
@@ -41,8 +47,9 @@ public class myClusterManagerRenderer extends DefaultClusterRenderer<MyClusterIt
 
     @Override
     protected void onBeforeClusterItemRendered(MyClusterItem item, MarkerOptions markerOptions) {
+        if(item.getIconPicture()!= null)
+            Picasso.get().load(item.getIconPicture()).fit().centerCrop().into(imageView);
 
-        imageView.setImageResource(item.getIconPicture());
         Bitmap icon = iconGenerator.makeIcon();
         markerOptions.icon(BitmapDescriptorFactory.fromBitmap(icon)).title(item.getTitle());
     }

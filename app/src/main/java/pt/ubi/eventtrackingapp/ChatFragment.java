@@ -106,9 +106,6 @@ public class ChatFragment extends Fragment {
 
 
 
-
-
-
     private void addMessage(String messageBody) {
         FirebaseFirestoreSettings settings = new FirebaseFirestoreSettings.Builder()
                 .setTimestampsInSnapshotsEnabled(true)

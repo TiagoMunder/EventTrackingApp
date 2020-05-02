@@ -11,10 +11,13 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -22,6 +25,7 @@ import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -39,11 +43,12 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 import static pt.ubi.eventtrackingapp.Constants.MAPVIEW_BUNDLE_KEY;
 
-public class MapViewActivity extends Fragment implements OnMapReadyCallback {
+public class MapViewActivity extends Fragment implements OnMapReadyCallback, GoogleMap.OnInfoWindowClickListener, GoogleMap.OnMarkerClickListener {
 
     private static final String TAG = "MapViewFragment";
     private MapView mMapView;
@@ -56,6 +61,7 @@ public class MapViewActivity extends Fragment implements OnMapReadyCallback {
     private myClusterManagerRenderer clusterManagerRenderer;
     private ClusterManager<MyClusterItem> mClusterManager;
     private ArrayList<MyClusterItem> mClusterItems= new ArrayList<>();
+    List<Marker> mMarkers = new ArrayList<Marker>();
 
 
     public static MapViewActivity newInstance(){
@@ -72,6 +78,7 @@ public class MapViewActivity extends Fragment implements OnMapReadyCallback {
             mUserLocations = getArguments().getParcelableArrayList("UserLocations");
 
         }
+
 
 
     }
@@ -217,7 +224,6 @@ public class MapViewActivity extends Fragment implements OnMapReadyCallback {
 
     @Override
     public void onMapReady(GoogleMap map) {
-        map.addMarker(new MarkerOptions().position(new LatLng(0, 0)).title("Marker"));
 
         if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED
@@ -226,6 +232,25 @@ public class MapViewActivity extends Fragment implements OnMapReadyCallback {
             return;
         }
         mGoogleMap = map;
+        mGoogleMap.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
+            @Override
+            public void onMapLongClick(LatLng point) {
+                MarkerOptions markerOptions = new MarkerOptions()
+                        .position(point);
+                Marker marker = mGoogleMap.addMarker(markerOptions);
+                marker.setTitle("Point");
+                mMarkers.add(marker);
+            }
+        });
+
+        CustomInfoWindow customInfoWindow = new CustomInfoWindow(getContext());
+        map.setInfoWindowAdapter(customInfoWindow);
+
+        // now just use this to create the menu with options 1- choose image 2 - delete
+        map.setOnInfoWindowClickListener(this);
+
+        map.setOnMarkerClickListener(this);
+
         map.setOnMapLoadedCallback(new GoogleMap.OnMapLoadedCallback() {
             @Override
             public void onMapLoaded() {
@@ -268,6 +293,11 @@ public class MapViewActivity extends Fragment implements OnMapReadyCallback {
                 mHandler.postDelayed(mRunnable, LOCATION_UPDATE_INTERVAL);
             }
         }, LOCATION_UPDATE_INTERVAL);
+    }
+
+    @Override
+    public void onInfoWindowClick(Marker marker) {
+        Log.d(TAG, "onInfoWindowClick ");
     }
 
     private void stopLocationUpdates(){
@@ -318,6 +348,30 @@ public class MapViewActivity extends Fragment implements OnMapReadyCallback {
             Log.e(TAG, "retrieveUserLocations: Fragment was destroyed during Firestore query. Ending query." + e.getMessage() );
         }
 
+    }
+
+    private void removeMarkers() {
+        for (Marker marker: mMarkers) {
+            marker.remove();
+        }
+        mMarkers.clear();
+
+    }
+
+    @Override
+    public boolean onMarkerClick(Marker marker)
+
+    {
+
+        // mMapFragment.getView().setVisibility(View.VISIBLE);  // show again
+        mMapView.setVisibility(View.GONE); // hide map
+
+        FragmentManager fragmentManager = getFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        MarkerFragment fragment = new MarkerFragment();
+        fragmentTransaction.replace(R.id.map_container, fragment);
+        fragmentTransaction.commit();
+        return false;
     }
 
     /*
@@ -403,6 +457,8 @@ public class MapViewActivity extends Fragment implements OnMapReadyCallback {
         }
     }
     */
+
+
 
 
 

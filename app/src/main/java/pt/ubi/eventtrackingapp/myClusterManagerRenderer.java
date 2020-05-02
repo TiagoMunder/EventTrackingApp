@@ -47,8 +47,10 @@ public class myClusterManagerRenderer extends DefaultClusterRenderer<MyClusterIt
 
     @Override
     protected void onBeforeClusterItemRendered(MyClusterItem item, MarkerOptions markerOptions) {
-        if(item.getIconPicture()!= null)
+
+        if (item!= null && item.getIconPicture() != null && !item.getIconPicture().isEmpty())
             Picasso.get().load(item.getIconPicture()).fit().centerCrop().into(imageView);
+
 
         Bitmap icon = iconGenerator.makeIcon();
         markerOptions.icon(BitmapDescriptorFactory.fromBitmap(icon)).title(item.getTitle());

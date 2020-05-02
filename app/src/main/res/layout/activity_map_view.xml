@@ -24,7 +24,18 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:id="@+id/eventMap" />
+
+
     </RelativeLayout>
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="100"
+            android:id="@+id/markerFragment_container">
+
+
+        </RelativeLayout>
 
     </LinearLayout>
 

@@ -1,10 +1,12 @@
 package pt.ubi.eventtrackingapp;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -48,7 +50,8 @@ import java.util.concurrent.ExecutionException;
 
 import static pt.ubi.eventtrackingapp.Constants.MAPVIEW_BUNDLE_KEY;
 
-public class MapViewActivity extends Fragment implements OnMapReadyCallback, GoogleMap.OnInfoWindowClickListener, GoogleMap.OnMarkerClickListener {
+public class MapViewActivity extends Fragment implements OnMapReadyCallback, GoogleMap.OnInfoWindowClickListener, GoogleMap.OnMarkerClickListener,
+        MarkerFragment.OnFragmentInteractionListener{
 
     private static final String TAG = "MapViewFragment";
     private MapView mMapView;
@@ -62,6 +65,7 @@ public class MapViewActivity extends Fragment implements OnMapReadyCallback, Goo
     private ClusterManager<MyClusterItem> mClusterManager;
     private ArrayList<MyClusterItem> mClusterItems= new ArrayList<>();
     List<Marker> mMarkers = new ArrayList<Marker>();
+    private MarkerFragment.OnFragmentInteractionListener mListener;
 
 
     public static MapViewActivity newInstance(){
@@ -208,6 +212,7 @@ public class MapViewActivity extends Fragment implements OnMapReadyCallback, Goo
     public void onResume() {
         super.onResume();
         mMapView.onResume();
+        mMapView.setVisibility(View.VISIBLE);
     }
 
     @Override
@@ -363,15 +368,38 @@ public class MapViewActivity extends Fragment implements OnMapReadyCallback, Goo
 
     {
 
-        // mMapFragment.getView().setVisibility(View.VISIBLE);  // show again
+        // mMapView.setVisibility(View.VISIBLE);  // show again
         mMapView.setVisibility(View.GONE); // hide map
 
         FragmentManager fragmentManager = getFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         MarkerFragment fragment = new MarkerFragment();
-        fragmentTransaction.replace(R.id.map_container, fragment);
+        fragmentTransaction.replace(R.id.map_container, fragment,"markerFragment").addToBackStack("2");
         fragmentTransaction.commit();
         return false;
+    }
+
+    @Override
+    public void onFragmentInteraction(Uri uri) {
+        Log.e(TAG, "this was called" );
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        if (context instanceof MarkerFragment.OnFragmentInteractionListener) {
+            mListener = (MarkerFragment.OnFragmentInteractionListener) context;
+        } else {
+            throw new RuntimeException(context.toString()
+                    + " must implement OnFragmentInteractionListener");
+        }
+    }
+
+
+    public void onBackPressed() {
+
+        mMapView.setVisibility(View.VISIBLE);
+
     }
 
     /*

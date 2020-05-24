@@ -2,6 +2,7 @@ package pt.ubi.eventtrackingapp;
 import android.app.ActivityManager;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.TabLayout;
@@ -13,6 +14,8 @@ import android.support.v4.view.ViewPager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
+
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -39,6 +42,9 @@ public class EventMainActivity extends AppCompatActivity implements MarkerFragme
     private ArrayList<User> mUsersList = new ArrayList<>();
     private String  eventID;
     private Session session;
+
+    private ChatFragment myChatFragment;
+    private MapViewActivity myMapFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -107,6 +113,21 @@ public class EventMainActivity extends AppCompatActivity implements MarkerFragme
         }
 
         @Override
+        public Object instantiateItem(ViewGroup container, int position) {
+            Fragment createdFragment = (Fragment) super.instantiateItem(container, position);
+            // save the appropriate reference depending on position
+            switch (position) {
+                case 0:
+                    myChatFragment = (ChatFragment) createdFragment;
+                    break;
+                case 1:
+                    myMapFragment = (MapViewActivity) createdFragment;
+                    break;
+            }
+            return createdFragment;
+        }
+
+        @Override
         public int getCount() {
             // Show 2 total pages.
             return 2;
@@ -147,6 +168,13 @@ public class EventMainActivity extends AppCompatActivity implements MarkerFragme
         fragment.setArguments(mapBundle);
         return fragment;
     }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+    }
+
+
 
 
     private void getUsersOfTheEvent() {
@@ -259,4 +287,25 @@ public class EventMainActivity extends AppCompatActivity implements MarkerFragme
             mDb.collection("Events").document(eventID).collection("Users").add(session.getUser());
         }
     }
+
+    @Override
+    public void onBackPressed() {
+            super.onBackPressed();
+        if(myMapFragment != null && myMapFragment.isVisible() && myMapFragment.getUserVisibleHint() ) // maybe here check if the fragment is the one visible
+            myMapFragment.onBackPressed();
+
+
+
+    }
+
+    /*
+    this can be useful in the future
+    if (isAdded() && isVisible() && getUserVisibleHint()) {
+        // ... do your thing
+    }
+    */
+
+
+
+
 }

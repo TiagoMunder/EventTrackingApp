@@ -1,16 +1,22 @@
 package pt.ubi.eventtrackingapp;
 
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Parcelable;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.MimeTypeMap;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import java.util.ArrayList;
 
 
 /**
@@ -27,6 +33,7 @@ public class MarkerFragment extends Fragment {
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
     private Button mButtonChooseImage;
+    private Button mButtonBack;
     private ImageView mImageView;
 
 
@@ -35,6 +42,9 @@ public class MarkerFragment extends Fragment {
     private String mParam2;
     private static final int PICK_IMAGE_REQUEST = 1;
     private OnFragmentInteractionListener mListener;
+
+    private ArrayList<User> mImageCaptureUri = new ArrayList<>();
+    private Fragment MyFragment;
 
     public MarkerFragment() {
         // Required empty public constructor
@@ -62,25 +72,50 @@ public class MarkerFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-
+        MyFragment = (MarkerFragment) getActivity().getSupportFragmentManager().findFragmentByTag("markerFragment");
+        // MyFragment = getActivity().getSupportFragmentManager().getFragment(savedInstanceState, "markerFragment");
         if (getArguments() != null) {
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
-        mButtonChooseImage.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                openFileChooser();
-            }
-        });
+
+
     }
 
     public void openFileChooser() {
         Intent intent = new Intent();
         intent.setType("image/*");
         intent.setAction(Intent.ACTION_GET_CONTENT);
-        startActivityForResult(intent,PICK_IMAGE_REQUEST);
+        MyFragment.startActivityForResult(intent,PICK_IMAGE_REQUEST);
+    }
+
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == 122) {
+            // Do your job
+
+        }
+    }
+
+
+
+    private String getFileExtension(Uri uri) {
+        ContentResolver cR = getActivity().getContentResolver();
+        MimeTypeMap mime = MimeTypeMap.getSingleton();
+        return mime.getExtensionFromMimeType(cR.getType(uri));
+    }
+
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        if (savedInstanceState !=null && savedInstanceState.containsKey("cameraMediaOutputUri"))
+            mImageCaptureUri = savedInstanceState.getParcelableArrayList("cameraMediaOutputUri");
+    }
+
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        outState.putParcelableArrayList("cameraMediaOutputUri", mImageCaptureUri);
+        super.onSaveInstanceState(outState);
     }
 
     @Override
@@ -89,9 +124,31 @@ public class MarkerFragment extends Fragment {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_marker, container, false);
         mButtonChooseImage = view.findViewById(R.id.button_choose_image);
+        mButtonBack = view.findViewById(R.id.button_back);
         mImageView = view.findViewById(R.id.image_view);
 
+        mButtonChooseImage.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                openFileChooser();
+            }
+        });
+
+        mButtonBack.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+
+                goBack();
+            }
+        });
+
         return view;
+    }
+
+
+    public void goBack() {
+        getActivity().onBackPressed();
+
     }
 
     // TODO: Rename method, update argument and hook method into UI event
@@ -132,4 +189,6 @@ public class MarkerFragment extends Fragment {
         // TODO: Update argument type and name
         void onFragmentInteraction(Uri uri);
     }
+
+
 }

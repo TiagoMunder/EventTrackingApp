@@ -5,12 +5,15 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -22,6 +25,7 @@ import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -43,7 +47,8 @@ import java.util.concurrent.ExecutionException;
 
 import static pt.ubi.eventtrackingapp.Constants.MAPVIEW_BUNDLE_KEY;
 
-public class MapViewActivity extends Fragment implements OnMapReadyCallback {
+public class MapViewActivity extends Fragment implements OnMapReadyCallback, GoogleMap.OnInfoWindowClickListener, GoogleMap.OnMarkerClickListener,
+        MarkerFragment.OnFragmentInteractionListener {
 
     private static final String TAG = "MapViewFragment";
     private MapView mMapView;
@@ -235,6 +240,11 @@ public class MapViewActivity extends Fragment implements OnMapReadyCallback {
             }
         });
 
+        // now just use this to create the menu with options 1- choose image 2 - delete
+        map.setOnInfoWindowClickListener(this);
+
+        map.setOnMarkerClickListener(this);
+
     }
 
     @Override
@@ -317,6 +327,32 @@ public class MapViewActivity extends Fragment implements OnMapReadyCallback {
         }catch (IllegalStateException e){
             Log.e(TAG, "retrieveUserLocations: Fragment was destroyed during Firestore query. Ending query." + e.getMessage() );
         }
+
+    }
+
+    @Override
+    public void onInfoWindowClick(Marker marker) {
+
+    }
+
+    @Override
+    public boolean onMarkerClick(Marker marker)
+
+    {
+
+        // mMapView.setVisibility(View.VISIBLE);  // show again
+        mMapView.setVisibility(View.GONE); // hide map
+
+        FragmentManager fragmentManager = getFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        MarkerFragment fragment = new MarkerFragment();
+        fragmentTransaction.replace(R.id.map_container, fragment,"markerFragment").addToBackStack("2");
+        fragmentTransaction.commit();
+        return false;
+    }
+
+    @Override
+    public void onFragmentInteraction(Uri uri) {
 
     }
 

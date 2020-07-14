@@ -5,9 +5,7 @@ import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.TabLayout;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
-import android.support.v4.app.FragmentTransaction;
+
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 
@@ -59,6 +57,7 @@ public class EventMainActivity extends AppCompatActivity {
             startActivity(new Intent(EventMainActivity.this, DashboardActivity.class));
         }
         getUsersOfTheEvent();
+
     }
 
     protected void onStart(){
@@ -240,8 +239,6 @@ public class EventMainActivity extends AppCompatActivity {
                 }
             }
         });
-
-
     }
 
     private void addUserToEvent() {

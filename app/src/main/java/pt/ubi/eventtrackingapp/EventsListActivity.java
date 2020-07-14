@@ -50,7 +50,7 @@ public class EventsListActivity extends AppCompatActivity {
                                     // Get the selected item text from ListView
                                     Event selectedItem = (Event) parent.getItemAtPosition(position);
                                     if(selectedItem.getEventID() != null) {
-                                        Intent eventMain = new Intent(EventsListActivity.this, EventMainActivity.class);
+                                        Intent eventMain = new Intent(EventsListActivity.this, EventMainCopy.class);
                                         eventMain.putExtra("eventID", selectedItem.getEventID());
                                         startActivity(eventMain);
                                         Log.d(TAG,"EventID: " + selectedItem.getEventID());

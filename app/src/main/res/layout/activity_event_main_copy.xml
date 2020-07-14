@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation= "vertical"
+    android:paddingLeft="30dp"
+    android:paddingRight="30dp"
+    android:paddingTop="80dp">
+
+    <Button
+        android:id="@+id/btn_GoToChat"
+        android:layout_width="match_parent"
+        android:layout_height="55dp"
+        android:layout_marginTop="30dp"
+        android:backgroundTint="@color/colorPrimary2"
+        android:text="Chat"
+        android:textColor="@android:color/white" />
+    <Button
+        android:id ="@+id/btn_GoToMap"
+        android:layout_width="match_parent"
+        android:layout_height="55dp"
+        android:layout_marginTop="30dp"
+        android:text="Map"
+        android:textColor="@android:color/white"
+        android:backgroundTint="@color/colorPrimary2"/>
+
+    <Button
+        android:id ="@+id/btn_leaveEvent"
+        android:layout_width="match_parent"
+        android:layout_height="55dp"
+        android:layout_marginTop="30dp"
+        android:text="Leave Event"
+        android:textColor="@android:color/white"
+        android:backgroundTint="@color/colorPrimary2"/>
+    <Button
+        android:id ="@+id/btn_GoBack"
+        android:layout_width="match_parent"
+        android:layout_height="55dp"
+        android:layout_marginTop="30dp"
+        android:text="Go back"
+        android:textColor="@android:color/white"
+        android:backgroundTint="@color/colorPrimary2"/>
+
+
+</LinearLayout>

@@ -40,6 +40,7 @@ public class myClusterManagerRenderer extends DefaultClusterRenderer<MyClusterIt
         int padding = (int) context.getResources().getDimension(R.dimen.custom_marker_padding);
         imageView.setPadding(padding, padding, padding, padding);
         iconGenerator.setContentView(imageView);
+
     }
 
 

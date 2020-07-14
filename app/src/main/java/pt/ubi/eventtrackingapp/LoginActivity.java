@@ -84,6 +84,7 @@ public class LoginActivity extends AppCompatActivity {
         mDb.setFirestoreSettings(settings);
 
         if (user != null && createdEmail != null && createdUsername != null) {
+            saveUser(user.getEmail());
             startActivity(new Intent(LoginActivity.this, DashboardActivity.class));
         }
 
@@ -128,15 +129,16 @@ public class LoginActivity extends AppCompatActivity {
             public void onComplete(@NonNull Task<Location> task) {
                 if(task.isSuccessful()) {
                     Location location  = task.getResult();
-                    GeoPoint geoPoint = new GeoPoint(location.getLatitude(), location.getLongitude());
-                    Log.d(TAG, "onComplete:  Latitude: "  + geoPoint.getLatitude());
-                    Log.d(TAG, "onComplete: Longitude: " + geoPoint.getLongitude());
-                    mUserLocation.setGeoPoint(geoPoint);
-                    //  when passing null firebase already sets the correct timestamp
-                    mUserLocation.setTimestamp(null);
-                    saveUserLocation();
-                    startActivity(new Intent(LoginActivity.this, DashboardActivity.class));
-
+                    if(location != null) {
+                        CustomGeoPoint geoPoint = new CustomGeoPoint(location.getLatitude(), location.getLongitude());
+                        Log.d(TAG, "onComplete:  Latitude: " + geoPoint.getLatitude());
+                        Log.d(TAG, "onComplete: Longitude: " + geoPoint.getLongitude());
+                        mUserLocation.setGeoPoint(geoPoint);
+                        //  when passing null firebase already sets the correct timestamp
+                        mUserLocation.setTimestamp(null);
+                        saveUserLocation();
+                        startActivity(new Intent(LoginActivity.this, DashboardActivity.class));
+                    }
                 }
             }
         });
@@ -174,6 +176,7 @@ public class LoginActivity extends AppCompatActivity {
                     if(task.isSuccessful()) {
                         Log.d(TAG, "onComplete: sucessfully got the User Details.");
                         User user = task.getResult().toObject(User.class);
+                        saveUser(user.getEmail());
                         mUserLocation.setUser(user);
                         getLastKnownLocation();
                     }

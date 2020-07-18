@@ -21,10 +21,12 @@ public class EventsListActivity extends AppCompatActivity {
 
     private static final String TAG = "EventsListActivity";
     private FirebaseFirestore mDb;
+    private Session session;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        session = new Session(this);
         setContentView(R.layout.activity_events_list);
         mDb = FirebaseFirestore.getInstance();
         getEvents();
@@ -52,6 +54,7 @@ public class EventsListActivity extends AppCompatActivity {
                                     if(selectedItem.getEventID() != null) {
                                         Intent eventMain = new Intent(EventsListActivity.this, EventMainCopy.class);
                                         eventMain.putExtra("eventID", selectedItem.getEventID());
+                                        session.setEvent(selectedItem);
                                         startActivity(eventMain);
                                         Log.d(TAG,"EventID: " + selectedItem.getEventID());
                                     }

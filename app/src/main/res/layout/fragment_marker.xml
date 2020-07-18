@@ -45,9 +45,8 @@
         <EditText
             android:id="@+id/edit_text_description"
             android:layout_width="181dp"
-            android:layout_height="wrap_content"
+            android:layout_height="200dp"
             android:inputType= "text"
-            android:layout_marginLeft="120dp"
             android:autofillHints="Description"
             android:hint="Description"
             android:singleLine="false" />

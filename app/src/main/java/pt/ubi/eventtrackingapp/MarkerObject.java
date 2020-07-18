@@ -18,11 +18,15 @@ public class MarkerObject {
 
     public MarkerObject(CustomGeoPoint geoPoint, String user_id, String imageUrl, String eventId, String description, String imageName) {
         this.geoPoint = geoPoint;
-        User_id = user_id;
+        this.User_id = user_id;
         this.imageUrl = imageUrl;
         this.eventId = eventId;
         this.description = description;
         this.imageName = imageName;
+    }
+
+    public MarkerObject() {
+
     }
 
     public Date getTimestamp() {
@@ -53,7 +57,7 @@ public class MarkerObject {
         return geoPoint;
     }
 
-    public void setGeoPoint(CustomGeoPoint geoPoint) {
+    private void setGeoPoint(CustomGeoPoint geoPoint) {
         this.geoPoint = geoPoint;
     }
 
@@ -71,5 +75,13 @@ public class MarkerObject {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public String getImageName() {
+        return imageName;
+    }
+
+    public void setImageName(String imageName) {
+        this.imageName = imageName;
     }
 }

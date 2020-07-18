@@ -109,6 +109,7 @@ public class MarkerFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         MyFragment = (MarkerFragment) getActivity().getSupportFragmentManager().findFragmentByTag("markerFragment");
+        mDb = FirebaseFirestore.getInstance();
         // MyFragment = getActivity().getSupportFragmentManager().getFragment(savedInstanceState, "markerFragment");
         if (getArguments() != null) {
             geoPoint = getArguments().getParcelable(ARG_PARAM1);
@@ -118,8 +119,6 @@ public class MarkerFragment extends Fragment {
 
         mStorageRef = FirebaseStorage.getInstance().getReference("uploadsMap");
         session = new Session(getContext());
-
-
 
     }
 
@@ -216,7 +215,7 @@ public class MarkerFragment extends Fragment {
                                                                           fileReference.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
                                                                               @Override
                                                                               public void onSuccess(Uri uri) {
-                                                                              saveMarkerObject();
+                                                                              saveMarkerObject(uri);
                                                                               }
                                                                           });
 
@@ -231,8 +230,8 @@ public class MarkerFragment extends Fragment {
         }
     }
 
-   public void saveMarkerObject() {
-       MarkerObject markerObject = new MarkerObject(geoPoint,session.getUser().getUser_id(),getFileExtension(mImageUri),session.getEvent().getEventID(),
+   public void saveMarkerObject(Uri uri)  {
+       MarkerObject markerObject = new MarkerObject(geoPoint,session.getUser().getUser_id(),uri.toString(),session.getEvent().getEventID(),
                imageDescription.getText().toString(),imageName.getText().toString());
        FirebaseFirestoreSettings settings = new FirebaseFirestoreSettings.Builder()
                .setTimestampsInSnapshotsEnabled(true)
@@ -245,6 +244,7 @@ public class MarkerFragment extends Fragment {
                    public void onSuccess(DocumentReference documentReference) {
 
                        Log.d(TAG, "DocumentSnapshot written with ID: " + documentReference.getId());
+                       goBack();
                    }
                })
                .addOnFailureListener(new OnFailureListener() {

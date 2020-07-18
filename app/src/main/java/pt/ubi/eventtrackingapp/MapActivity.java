@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Handler;
+import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 
@@ -26,7 +27,12 @@ import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.GeoPoint;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 import com.google.maps.android.clustering.ClusterManager;
 
 import java.util.ArrayList;
@@ -36,11 +42,11 @@ import static pt.ubi.eventtrackingapp.Constants.MAPVIEW_BUNDLE_KEY;
 public class MapActivity extends FragmentActivity implements OnMapReadyCallback, GoogleMap.OnInfoWindowClickListener, GoogleMap.OnMarkerClickListener,
         MarkerFragment.OnFragmentInteractionListener, GoogleMap.OnMapLongClickListener {
 
-    private static final String TAG = "MapViewFragment";
+    private static final String TAG = "MapFragmentActivity";
     private MapView mMapView;
     private FirebaseFirestore mDb;
     private ArrayList<UserLocationParcelable> mUserLocations = new ArrayList<>();
-    private ArrayList<MarkerObject> mImageMarkers = new ArrayList<>();
+    private ArrayList<MarkerObject> mImageMarkersList = new ArrayList<>();
     private ArrayList<User> mUsersList = new ArrayList<>();
     private GoogleMap mGoogleMap;
     private LatLngBounds mMapBoundary;
@@ -48,10 +54,11 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
     private myClusterManagerRenderer clusterManagerRenderer;
     private ClusterManager<MyClusterItem> mClusterManager;
     private ArrayList<MyClusterItem> mClusterItems= new ArrayList<>();
+    private ImageMarkerClusterManagerRenderer imageClusterManagerRenderer;
+    private ClusterManager<ImageMarkerClusterItem> mImageMarkerClusterManager;
+    private ArrayList<ImageMarkerClusterItem> mImageMarkersClusterItems= new ArrayList<>();
+
     private SupportMapFragment mapFragment;
-    Handler locationHandler;
-    final static long REFRESH = 10 * 1000;
-    final static int SUBJECT = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,15 +70,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
          mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
-        locationHandler = new Handler() {
-            public void handleMessage(Message msg) {
-                if (msg.what == SUBJECT) {
-                    addMapMarkers();
-                    this.sendEmptyMessageDelayed(SUBJECT, REFRESH);
-                }
-            }
-        };
-
+        mDb = FirebaseFirestore.getInstance();
 
         /*
 
@@ -102,7 +101,9 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
             public void onMapLoaded() {
                 // for( User user: mUsersList)
                 //  getUserLocation(user);
-                 addMapMarkers();
+                getImageMarkers();
+                addImageMarkers();
+                addMapMarkers();
             }
         });
 
@@ -171,6 +172,55 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         }
     }
 
+    private void addImageMarkers() {
+        if(mGoogleMap != null){
+
+            if(mImageMarkerClusterManager == null){
+                mImageMarkerClusterManager = new ClusterManager<ImageMarkerClusterItem>(getApplicationContext(), mGoogleMap);
+            }
+            if(imageClusterManagerRenderer == null){
+                imageClusterManagerRenderer = new ImageMarkerClusterManagerRenderer(
+                        this,
+                        mGoogleMap,
+                        mImageMarkerClusterManager
+                );
+                mImageMarkerClusterManager.setRenderer(imageClusterManagerRenderer);
+            }
+
+            for(MarkerObject imageMarker: mImageMarkersList){
+
+                Log.d(TAG, "addMapMarkers: location: " + imageMarker.getGeoPoint().toString());
+                try{
+                    String snippet = "Not sure what to place here"; // TODO
+
+                    String avatar = null;
+
+                    String title = imageMarker.getImageName() != null ? imageMarker.getImageName() : "TODO";
+
+
+                    avatar = imageMarker.getImageUrl();
+                    ImageMarkerClusterItem newClusterMarker = new ImageMarkerClusterItem(
+                            new LatLng(imageMarker.getGeoPoint().getLatitude(), imageMarker.getGeoPoint().getLongitude()),
+                            title,
+                            snippet,
+                            avatar,
+                            imageMarker.getUser_id(),
+                            imageMarker.getEventId(),
+                            imageMarker.getDescription()
+                    );
+                    mImageMarkerClusterManager.addItem(newClusterMarker);
+                    mImageMarkersClusterItems.add(newClusterMarker);
+
+                }catch (NullPointerException e){
+                    Log.e(TAG, "addImageMapMarkers: NullPointerException: " + e.getMessage() );
+                }
+
+            }
+            mImageMarkerClusterManager.cluster();
+        }
+
+    }
+
     private void setUserPosition() {
         for(UserLocationParcelable userL: mUserLocations){
             if(userL.getUser().getUser_id().equals(FirebaseAuth.getInstance().getUid()));
@@ -197,6 +247,38 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
 
     @Override
     public void onInfoWindowClick(Marker marker) {
+
+    }
+
+    private void addingMarkerDynamically(MarkerObject imageMarker) {
+        Log.d(TAG, "addMapMarkers: location: " + imageMarker.getGeoPoint().toString());
+        try{
+            String snippet = "Not sure what to place here"; // TODO
+
+            String avatar = null;
+
+            String title = imageMarker.getImageName() != null ? imageMarker.getImageName() : "TODO";
+
+
+            avatar = imageMarker.getImageUrl();
+            LatLng lat =   new LatLng(imageMarker.getGeoPoint().getLatitude(), imageMarker.getGeoPoint().getLongitude());
+            ImageMarkerClusterItem newClusterMarker = new ImageMarkerClusterItem(
+                lat,
+                    title,
+                    snippet,
+                    avatar,
+                    imageMarker.getUser_id(),
+                    imageMarker.getEventId(),
+                    imageMarker.getDescription()
+            );
+            mImageMarkerClusterManager.addItem(newClusterMarker);
+            mImageMarkersClusterItems.add(newClusterMarker);
+            mImageMarkerClusterManager.cluster();
+
+        }catch (NullPointerException e){
+            Log.e(TAG, "addImageMapMarkers: NullPointerException: " + e.getMessage() );
+        }
+
 
     }
 
@@ -235,4 +317,40 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
     public void onMapLongClick(LatLng latLng) {
         mGoogleMap.addMarker(new MarkerOptions().position(latLng).title("Marker"));
     }
+
+    public String valueIntoString(Object value) {
+        if(value != null)
+            return value.toString();
+        return "";
+    }
+
+    public void getImageMarkers() {
+
+            mDb.collection("ImageMarkers").whereEqualTo("eventId","JoluaQw7PB8usY4KR0A6")
+                    .addSnapshotListener(new EventListener<QuerySnapshot>() {
+                        @Override
+                        public void onEvent(@Nullable QuerySnapshot value,
+                                            @Nullable FirebaseFirestoreException e) {
+                            if (e != null) {
+                                Log.w(TAG, "Listen failed.", e);
+                                return;
+                            }
+
+                            for (QueryDocumentSnapshot doc : value) {
+
+                                if (doc.get("imageUrl") != null && doc.get("user_id") != null && doc.get("geoPoint") != null) {
+                                    CustomGeoPoint geoPoint = new CustomGeoPoint(doc.getGeoPoint("geoPoint").getLatitude(),doc.getGeoPoint("geoPoint").getLongitude());
+                                    MarkerObject marker = new MarkerObject(geoPoint, valueIntoString(doc.get("user_id")), valueIntoString(doc.get("imageUrl")),
+                                            valueIntoString(doc.get("eventId")), valueIntoString(doc.get("description")),valueIntoString(doc.get("imageName")));
+                                    mImageMarkersList.add(marker);
+                                    addingMarkerDynamically(marker);
+                                    Log.d(TAG, marker.toString());
+                                }
+                            }
+
+                        }
+                    });
+
+        }
+
 }

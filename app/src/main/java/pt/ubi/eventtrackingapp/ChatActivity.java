@@ -35,6 +35,7 @@ public class ChatActivity extends AppCompatActivity {
     private String  eventID;
     private ArrayList<User> userList = new ArrayList<>();
     private ArrayList<UserLocation> mUserListLocation = new ArrayList<>();
+    private String currentUser;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,16 +45,16 @@ public class ChatActivity extends AppCompatActivity {
         btn_send = (ImageButton) findViewById(R.id.btn_send);
         mDb = FirebaseFirestore.getInstance();
         session = new Session(ChatActivity.this);
+        currentUser = this.session.getUsername();
         Intent intent = getIntent();
-
         eventID = intent.getStringExtra("eventID");
         if(eventID == null){
             Log.d(TAG, " Error getting Event");
             startActivity(new Intent(ChatActivity.this, DashboardActivity.class));
         }
-
+        userList = intent.getParcelableArrayListExtra("UsersList");
         getMessagesFromServer();
-        getUsersOfTheEvent();
+
 
         session = new Session(ChatActivity.this);
         btn_send.setOnClickListener( new View.OnClickListener() {
@@ -79,7 +80,7 @@ public class ChatActivity extends AppCompatActivity {
                 .build();
         mDb.setFirestoreSettings(settings);
         Long tsLong = System.currentTimeMillis()/1000;
-        MessageServer message = new MessageServer("Tiago", messageBody, eventID, tsLong.toString());
+        MessageServer message = new MessageServer(currentUser, messageBody, eventID, tsLong.toString());
         DocumentReference newMessageRef = mDb.collection("Chat").document();
 
         newMessageRef.set(message).addOnCompleteListener(new OnCompleteListener<Void>() {
@@ -110,7 +111,7 @@ public class ChatActivity extends AppCompatActivity {
                         for (QueryDocumentSnapshot doc : value) {
 
                             if (doc.get("messageBody") != null && doc.get("sender") != null  && doc.get("time") != null) {
-                                boolean sendByUs = doc.get("sender").equals(session.getUsername());
+                                boolean sendByUs = doc.get("sender").equals(currentUser);
                                 Message message = new Message(doc.get("sender").toString(), doc.get("messageBody").toString(),sendByUs, doc.get("eventId").toString(), doc.get("time").toString());
                                 messageList.add(message);
                             }
@@ -129,7 +130,6 @@ public class ChatActivity extends AppCompatActivity {
 
         }
         if(!userAlreadyIntheEvent) {
-            session.getUser();
             mDb.collection("Events").document(eventID).collection("Users").add(session.getUser());
         }
     }

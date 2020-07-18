@@ -17,7 +17,7 @@ import java.util.ArrayList;
 
 public class MessageAdapter extends ArrayAdapter<Message> {
     private Context mContext;
-    private static final String TAG = "EventListAdapter";
+    private static final String TAG = "MessageAdapter";
     private int lastPosition = -1;
 
 
@@ -45,52 +45,33 @@ public class MessageAdapter extends ArrayAdapter<Message> {
 
         final View result;
         ViewHolder holder;
-        if(convertView == null) {
-            LayoutInflater inflater = LayoutInflater.from(mContext);
 
-            holder= new ViewHolder();
-            if(sendByUs) {
-                convertView = inflater.inflate(R.layout.my_message,null);
-                holder.messageBody = (TextView) convertView.findViewById(R.id.message_body);
-                holder.messageBody.setText(messageBody);
+        LayoutInflater inflater = LayoutInflater.from(mContext);
 
-            } else {
-                convertView = inflater.inflate(R.layout.others_messages,null);
-                holder.messageBody = (TextView) convertView.findViewById(R.id.message_body);
-                holder.name = (TextView) convertView.findViewById(R.id.name);
-                holder.name.setText(owner);
-                holder.avatar = (View) convertView.findViewById(R.id.avatar);
-                holder.messageBody.setText(messageBody);
-                GradientDrawable drawable = (GradientDrawable) holder.avatar.getBackground();
-                drawable.setColor(Color.parseColor("#636161"));
+        holder= new ViewHolder();
+        if(sendByUs) {
+            convertView = inflater.inflate(R.layout.my_message,null);
+            holder.messageBody = (TextView) convertView.findViewById(R.id.message_body);
+            holder.messageBody.setText(messageBody);
 
-            }
-            result = convertView;
-            convertView.setTag(holder);
         } else {
-            holder = (ViewHolder) convertView.getTag();
+            convertView = inflater.inflate(R.layout.others_messages,null);
+            holder.messageBody = (TextView) convertView.findViewById(R.id.message_body);
+            holder.name = (TextView) convertView.findViewById(R.id.name);
+            holder.name.setText(owner);
+            holder.avatar = (View) convertView.findViewById(R.id.avatar);
+            holder.messageBody.setText(messageBody);
+            GradientDrawable drawable = (GradientDrawable) holder.avatar.getBackground();
+            drawable.setColor(Color.parseColor("#636161"));
 
-            result = convertView;
         }
-
+        result = convertView;
+        convertView.setTag(holder);
 
         Animation animation = AnimationUtils.loadAnimation(mContext,
                 (position> lastPosition) ? R.anim.loading_down_anim : R.anim.loading_up_anim);
         result.startAnimation(animation);
         lastPosition = position;
-        if(sendByUs) {
-            holder.messageBody = (TextView) convertView.findViewById(R.id.message_body);
-            holder.messageBody.setText(messageBody);
-        } else {
-            holder.messageBody = (TextView) convertView.findViewById(R.id.message_body);
-            holder.messageBody.setText(messageBody);
-            holder.avatar = (View) convertView.findViewById(R.id.avatar);
-            GradientDrawable drawable = (GradientDrawable) holder.avatar.getBackground();
-            drawable.setColor(Color.parseColor("#636161"));
-
-        }
-
-
 
         return convertView;
     }

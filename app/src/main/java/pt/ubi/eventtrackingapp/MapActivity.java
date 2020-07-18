@@ -158,13 +158,15 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                     mClusterManager.addItem(newClusterMarker);
                     mClusterItems.add(newClusterMarker);
 
+
                 }catch (NullPointerException e){
                     Log.e(TAG, "addMapMarkers: NullPointerException: " + e.getMessage() );
                 }
 
             }
-            mClusterManager.cluster();
+
             setUserPosition();
+            mClusterManager.cluster();
             if(mUserLocation!= null) {
                 setCameraView();
             }

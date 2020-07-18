@@ -8,6 +8,7 @@ import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
+import android.util.Log;
 import android.widget.ImageView;
 
 import com.google.android.gms.maps.GoogleMap;
@@ -17,7 +18,11 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.maps.android.clustering.ClusterManager;
 import com.google.maps.android.clustering.view.DefaultClusterRenderer;
 import com.google.maps.android.ui.IconGenerator;
+import com.squareup.picasso.Cache;
 import com.squareup.picasso.Callback;
+import com.squareup.picasso.Picasso;
+
+import java.util.concurrent.Executors;
 
 public class ImageMarkerClusterManagerRenderer extends DefaultClusterRenderer<ImageMarkerClusterItem> {
 
@@ -61,7 +66,9 @@ public class ImageMarkerClusterManagerRenderer extends DefaultClusterRenderer<Im
     @Override
     protected void onClusterItemRendered(ImageMarkerClusterItem item, final Marker marker) {
 
-        ImageHandler.getSharedInstance(context).load(item.getIconPicture()).resize(100, 100).centerCrop().into(imageView, new Callback() {
+        Picasso picasso = new Picasso.Builder(context).executor(Executors.newSingleThreadExecutor()).memoryCache(Cache.NONE).indicatorsEnabled(true).build();
+
+        picasso.load(item.getIconPicture()).resize(100, 100).centerCrop().into(imageView, new Callback() {
             @Override
             public void onSuccess() {
                 BitmapDrawable drawable = (BitmapDrawable) imageView.getDrawable();
@@ -72,8 +79,8 @@ public class ImageMarkerClusterManagerRenderer extends DefaultClusterRenderer<Im
 
             @Override
             public void onError(Exception e) {
+                Log.d("ImageMarkerCluster", e.getMessage());
 
-                marker.setVisible(true);
             }
 
         });

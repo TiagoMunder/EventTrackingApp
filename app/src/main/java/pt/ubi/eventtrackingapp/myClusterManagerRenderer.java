@@ -41,19 +41,16 @@ public class myClusterManagerRenderer extends DefaultClusterRenderer<MyClusterIt
     private final Context context;
     private final ImageView imageView;
     private final IconGenerator iconGenerator;
-    private final ArrayList<ImageHandler> imageHandlers;
-    private int counter;
+
+
 
 
 
     public myClusterManagerRenderer(Context context, GoogleMap map, ClusterManager<MyClusterItem> clusterManager) {
         super(context, map, clusterManager);
         this.context = context.getApplicationContext();
-        this.imageHandlers = new ArrayList<ImageHandler>();
-
         imageView = new ImageView(context.getApplicationContext());
         iconGenerator = new IconGenerator(context.getApplicationContext());
-        counter = 0;
 
 
         markerWidth = (int) context.getResources().getDimension(R.dimen.custom_marker_image);
@@ -88,7 +85,7 @@ public class myClusterManagerRenderer extends DefaultClusterRenderer<MyClusterIt
 
         Picasso picasso = new Picasso.Builder(context).executor(Executors.newSingleThreadExecutor()).memoryCache(Cache.NONE).indicatorsEnabled(true).build();
 
-        picasso.load(item.getIconPicture()).resize(100, 100).centerCrop().into(imageView, new Callback() {
+        picasso.load(item.getIconPicture()).resize(markerWidth, markerHeight).centerCrop().into(imageView, new Callback() {
             @Override
             public void onSuccess() {
                 BitmapDrawable drawable = (BitmapDrawable) imageView.getDrawable();

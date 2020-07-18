@@ -60,7 +60,10 @@ public class EventMainCopy extends AppCompatActivity {
         btn_GoToChat.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(EventMainCopy.this, ChatActivity.class));
+                Intent chatIntent = new Intent(EventMainCopy.this, ChatActivity.class);
+                chatIntent.putExtra("UsersList", mUsersList);
+                chatIntent.putExtra("eventID", eventID);
+                startActivity(chatIntent);
             }
         });
 
@@ -84,12 +87,19 @@ public class EventMainCopy extends AppCompatActivity {
         btn_GoBack.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // ainda não sei se vou fazer alguma coisa com isto
+                onBackPressed();
             }
         });
         getUsersOfTheEvent();
 
     }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+    }
+
+
 
     private void getUsersOfTheEvent() {
         mDb.collection("Events").document("JoluaQw7PB8usY4KR0A6").collection("Users")

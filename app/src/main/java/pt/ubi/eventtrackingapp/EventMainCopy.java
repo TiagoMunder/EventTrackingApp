@@ -88,24 +88,33 @@ public class EventMainCopy extends AppCompatActivity {
             }
         });
         getUsersOfTheEvent();
+
     }
 
     private void getUsersOfTheEvent() {
-        mDb.collection("Events").document("JoluaQw7PB8usY4KR0A6").collection("Users").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-            @Override
-            public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                if(task.isSuccessful()) {
-                    for (Object doc :task.getResult().getDocuments().toArray()){
+        mDb.collection("Events").document("JoluaQw7PB8usY4KR0A6").collection("Users")
+                .addSnapshotListener(new EventListener<QuerySnapshot>() {
+                    @Override
+                    public void onEvent(@Nullable QuerySnapshot value,
+                                        @Nullable FirebaseFirestoreException e) {
+                        if (e != null) {
+                            Log.w(TAG, "Listen failed.", e);
+                            return;
+                        }
 
-                        User user = new User(((QueryDocumentSnapshot)doc).get("email").toString(), ((QueryDocumentSnapshot)doc).get("username").toString(),((QueryDocumentSnapshot)doc).get("user_id").toString(),((QueryDocumentSnapshot)doc).get("mImageUrl")!=null ? ((QueryDocumentSnapshot)doc).get("mImageUrl").toString() : null);
-                        mUsersList.add(user);
-                        getUserLocation(user);
+                        for (QueryDocumentSnapshot doc : value) {
+
+                            if (doc.get("username") != null && doc.get("email") != null) {
+
+                                User user = new User(doc.get("email").toString(), doc.get("username").toString(),doc.get("user_id").toString(),doc.get("mImageUrl")!=null ? doc.get("mImageUrl").toString() : null);
+                                mUsersList.add(user);
+                                getUserLocation(user);
+
+                            }
+                        }
+
                     }
-                    addUserToEvent();
-                }
-
-            }
-        });
+                });
 
     }
 

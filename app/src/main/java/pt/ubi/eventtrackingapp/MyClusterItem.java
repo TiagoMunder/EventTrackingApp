@@ -25,6 +25,14 @@ public class MyClusterItem implements ClusterItem {
         this.mTag = MyClusterItem.class;
     }
 
+    public Object getTag() {
+        return mTag;
+    }
+
+    public void setTag(final Object tag) {
+        mTag = tag;
+    }
+
     public MyClusterItem() {
         this.mTag = MyClusterItem.class;
     }

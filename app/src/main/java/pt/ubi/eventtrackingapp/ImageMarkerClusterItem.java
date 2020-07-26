@@ -3,7 +3,7 @@ package pt.ubi.eventtrackingapp;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.maps.android.clustering.ClusterItem;
 
-public class ImageMarkerClusterItem implements ClusterItem {
+public class ImageMarkerClusterItem implements ClusterItem  {
     private LatLng position; // required field
     private String title; // required field (this will be image Name)
     private String snippet; // required field
@@ -11,6 +11,7 @@ public class ImageMarkerClusterItem implements ClusterItem {
     private String User_id;
     private String eventId;
     private String description;
+    private Object mTag;
 
     public ImageMarkerClusterItem(LatLng position, String title, String snippet, String iconPicture, String eventId, String User_id, String description) {
         this.position = position;
@@ -20,15 +21,25 @@ public class ImageMarkerClusterItem implements ClusterItem {
         this.User_id = User_id;
         this.eventId = eventId;
         this.description = description;
+        this.mTag = ImageMarkerClusterItem.class;
     }
 
     public ImageMarkerClusterItem() {
-
+        this.mTag = ImageMarkerClusterItem.class;
     }
+
+
 
     @Override
     public LatLng getPosition() {
         return position;
+    }
+
+    public void setTag(final Object tag) {
+        mTag = tag;
+    }
+    public Object getTag() {
+        return mTag;
     }
 
     @Override
@@ -80,4 +91,5 @@ public class ImageMarkerClusterItem implements ClusterItem {
     public void setTitle(String title) {
         this.title = title;
     }
+
 }

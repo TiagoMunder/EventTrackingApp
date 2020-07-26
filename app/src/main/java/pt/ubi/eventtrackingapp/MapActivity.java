@@ -1,6 +1,7 @@
 package pt.ubi.eventtrackingapp;
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -17,6 +18,9 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
 import android.os.Message;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
+
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
@@ -37,10 +41,9 @@ import com.google.maps.android.clustering.ClusterManager;
 
 import java.util.ArrayList;
 
-import static pt.ubi.eventtrackingapp.Constants.MAPVIEW_BUNDLE_KEY;
 
 public class MapActivity extends FragmentActivity implements OnMapReadyCallback, GoogleMap.OnInfoWindowClickListener, GoogleMap.OnMarkerClickListener,
-        MarkerFragment.OnFragmentInteractionListener, GoogleMap.OnMapLongClickListener {
+        MarkerFragment.OnFragmentInteractionListener, MapFooterFragment.OnFragmentInteractionListener,GoogleMap.OnMapLongClickListener {
 
     private static final String TAG = "MapFragmentActivity";
     private MapView mMapView;
@@ -59,11 +62,13 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
     private ArrayList<ImageMarkerClusterItem> mImageMarkersClusterItems= new ArrayList<>();
 
     private SupportMapFragment mapFragment;
+    private LinearLayout child1_Linear_layout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_map);
+        child1_Linear_layout =(LinearLayout)findViewById(R.id.map_container);
         Intent intent = getIntent();
         mUsersList = intent.getParcelableArrayListExtra("UsersList");
         mUserLocations = intent.getParcelableArrayListExtra("UserLocations");
@@ -81,6 +86,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         */
 
     }
+
 
 
 
@@ -106,6 +112,11 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                 addMapMarkers();
             }
         });
+
+        if(mImageMarkerClusterManager == null){
+            mImageMarkerClusterManager = new ClusterManager<ImageMarkerClusterItem>(getApplicationContext(), mGoogleMap);
+        }
+
 
         // now just use this to create the menu with options 1- choose image 2 - delete
         mGoogleMap.setOnInfoWindowClickListener(this);
@@ -177,9 +188,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
     private void addImageMarkers() {
         if(mGoogleMap != null){
 
-            if(mImageMarkerClusterManager == null){
-                mImageMarkerClusterManager = new ClusterManager<ImageMarkerClusterItem>(getApplicationContext(), mGoogleMap);
-            }
+
             if(imageClusterManagerRenderer == null){
                 imageClusterManagerRenderer = new ImageMarkerClusterManagerRenderer(
                         this,
@@ -288,6 +297,14 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
     public boolean onMarkerClick(Marker marker) {
         // mMapView.setVisibility(View.VISIBLE);  // show again
       //  mMapView.setVisibility(View.GONE); // hide map
+        if(marker != null && marker.getTag() != null  && marker.getTag().hashCode()== MyClusterItem.class.hashCode()){
+            Log.d(TAG, "The marker is an ImageMarkerClusterItem");
+
+        }
+        if(true) {
+            addMapFooter();
+            return false;
+        }
         mapFragment.getView().setVisibility(View.INVISIBLE);
         CustomGeoPoint geoPoint = new CustomGeoPoint(marker.getPosition().latitude,marker.getPosition().longitude);
         Bundle args = new Bundle();
@@ -308,11 +325,29 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
 
     }
 
+    public void addMapFooter() {
+        setLayoutWeight(child1_Linear_layout,80);
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction().addToBackStack("2");
+        MapFooterFragment fragment = new MapFooterFragment();
+
+        fragmentTransaction.add(R.id.fragmentFooter, fragment,"fragmentFooter");
+        fragmentTransaction.commit();
+    }
+
     @Override
     public void onBackPressed() {
         super.onBackPressed();
        if(mapFragment!= null &&  mapFragment.getView() != null &&  mapFragment.getView().getVisibility() == View.INVISIBLE)
             mapFragment.getView().setVisibility(View.VISIBLE);
+       if(mapFragment!= null &&  mapFragment.getView() != null)
+           setLayoutWeight(child1_Linear_layout, 100);
+    }
+
+    public void setLayoutWeight( LinearLayout linearLayout, int weight) {
+        LinearLayout.LayoutParams childParam = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,0);
+        childParam.weight = weight;
+        linearLayout.setLayoutParams(childParam);
     }
 
     @Override
@@ -344,6 +379,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                                     CustomGeoPoint geoPoint = new CustomGeoPoint(doc.getGeoPoint("geoPoint").getLatitude(),doc.getGeoPoint("geoPoint").getLongitude());
                                     MarkerObject marker = new MarkerObject(geoPoint, valueIntoString(doc.get("user_id")), valueIntoString(doc.get("imageUrl")),
                                             valueIntoString(doc.get("eventId")), valueIntoString(doc.get("description")),valueIntoString(doc.get("imageName")));
+
                                     mImageMarkersList.add(marker);
                                     addingMarkerDynamically(marker);
                                     Log.d(TAG, marker.toString());

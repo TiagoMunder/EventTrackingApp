@@ -16,6 +16,7 @@ public class MarkerObject {
     private String description;
     private String imageName;
 
+
     public MarkerObject(CustomGeoPoint geoPoint, String user_id, String imageUrl, String eventId, String description, String imageName) {
         this.geoPoint = geoPoint;
         this.User_id = user_id;
@@ -23,6 +24,7 @@ public class MarkerObject {
         this.eventId = eventId;
         this.description = description;
         this.imageName = imageName;
+
     }
 
     public MarkerObject() {

@@ -75,6 +75,9 @@ public class ImageMarkerClusterManagerRenderer extends DefaultClusterRenderer<Im
                 Bitmap bitmap = drawable.getBitmap();
                 marker.setIcon(BitmapDescriptorFactory.fromBitmap(bitmap));
                 marker.setVisible(true);
+                marker.setTag(ImageMarkerClusterItem.class);
+
+
             }
 
             @Override

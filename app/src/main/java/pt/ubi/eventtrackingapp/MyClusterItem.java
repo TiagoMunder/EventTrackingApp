@@ -14,6 +14,7 @@ public class MyClusterItem implements ClusterItem {
     private String snippet; // required field
     private String iconPicture;
     private User user;
+    private Object mTag;
 
     public MyClusterItem(LatLng position, String title, String snippet, String iconPicture, User user) {
         this.position = position;
@@ -21,10 +22,11 @@ public class MyClusterItem implements ClusterItem {
         this.snippet = snippet;
         this.iconPicture = iconPicture;
         this.user = user;
+        this.mTag = MyClusterItem.class;
     }
 
     public MyClusterItem() {
-
+        this.mTag = MyClusterItem.class;
     }
 
     public String getIconPicture() {

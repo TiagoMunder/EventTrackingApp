@@ -7,6 +7,9 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+
+import com.google.firebase.firestore.GeoPoint;
 
 
 /**
@@ -20,12 +23,14 @@ import android.view.ViewGroup;
 public class MapFooterFragment extends Fragment {
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
+    private static final String ARG_PARAM1 = "geoPoint";
     private static final String ARG_PARAM2 = "param2";
 
     // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
+    private CustomGeoPoint geoPoint;
+    private String eventId;
+
+    private Button addImage_btn;
 
     private OnFragmentInteractionListener mListener;
 
@@ -55,16 +60,26 @@ public class MapFooterFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
+                geoPoint = getArguments().getParcelable(ARG_PARAM1);
+                eventId = getArguments().getString(ARG_PARAM2);
+            }
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_map_footer, container, false);
+
+        View view = inflater.inflate(R.layout.fragment_map_footer, container, false);
+        addImage_btn = view.findViewById(R.id.addImage_btn);
+
+        addImage_btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ((ButtonCallback ) getActivity()).launchAction(1, geoPoint);
+            }
+        });
+        return view;
     }
 
     // TODO: Rename method, update argument and hook method into UI event
@@ -105,4 +120,12 @@ public class MapFooterFragment extends Fragment {
         // TODO: Update argument type and name
         void onFragmentInteraction(Uri uri);
     }
+
+    public interface ButtonCallback {
+
+        //You can add parameters if you need it
+        // 1 -- add image
+        void launchAction(int action, CustomGeoPoint geoPoint);
+    }
+
 }

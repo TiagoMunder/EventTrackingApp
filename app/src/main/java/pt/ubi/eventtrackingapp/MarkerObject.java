@@ -15,15 +15,17 @@ public class MarkerObject {
     private String eventId;
     private String description;
     private String imageName;
+    private String id;
 
 
-    public MarkerObject(CustomGeoPoint geoPoint, String user_id, String imageUrl, String eventId, String description, String imageName) {
+    public MarkerObject(CustomGeoPoint geoPoint, String user_id, String imageUrl, String eventId, String description, String imageName, String id) {
         this.geoPoint = geoPoint;
         this.User_id = user_id;
         this.imageUrl = imageUrl;
         this.eventId = eventId;
         this.description = description;
         this.imageName = imageName;
+        this.id = id;
 
     }
 
@@ -85,5 +87,13 @@ public class MarkerObject {
 
     public void setImageName(String imageName) {
         this.imageName = imageName;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 }

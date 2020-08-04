@@ -24,11 +24,11 @@ public class MapFooterFragment extends Fragment {
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "geoPoint";
-    private static final String ARG_PARAM2 = "param2";
+    private static final String ARG_PARAM2 = "imageMarker";
 
     // TODO: Rename and change types of parameters
     private CustomGeoPoint geoPoint;
-    private String eventId;
+    private ImageMarkerClusterItem imageMarker;
 
     private Button addImage_btn;
 
@@ -61,7 +61,7 @@ public class MapFooterFragment extends Fragment {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
                 geoPoint = getArguments().getParcelable(ARG_PARAM1);
-                eventId = getArguments().getString(ARG_PARAM2);
+                imageMarker = getArguments().getParcelable(ARG_PARAM2);
             }
     }
 
@@ -76,7 +76,7 @@ public class MapFooterFragment extends Fragment {
         addImage_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                ((ButtonCallback ) getActivity()).launchAction(1, geoPoint);
+                ((ButtonCallback ) getActivity()).launchAction(1, geoPoint, imageMarker);
             }
         });
         return view;
@@ -125,7 +125,7 @@ public class MapFooterFragment extends Fragment {
 
         //You can add parameters if you need it
         // 1 -- add image
-        void launchAction(int action, CustomGeoPoint geoPoint);
+        void launchAction(int action, CustomGeoPoint geoPoint, ImageMarkerClusterItem imageMarker);
     }
 
 }

@@ -9,6 +9,7 @@ import android.net.Uri;
 import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 
 import android.os.Bundle;
@@ -40,6 +41,7 @@ import com.google.firebase.firestore.QuerySnapshot;
 import com.google.maps.android.clustering.ClusterManager;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 
 public class MapActivity extends FragmentActivity implements OnMapReadyCallback, GoogleMap.OnInfoWindowClickListener, GoogleMap.OnMarkerClickListener,
@@ -60,7 +62,9 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
     private ImageMarkerClusterManagerRenderer imageClusterManagerRenderer;
     private ClusterManager<ImageMarkerClusterItem> mImageMarkerClusterManager;
     private ArrayList<ImageMarkerClusterItem> mImageMarkersClusterItems= new ArrayList<>();
+    private ArrayList<Marker> temporaryMarkers = new ArrayList<>();
 
+    private boolean isOnMarkerFragment = false;
     private SupportMapFragment mapFragment;
     private LinearLayout child1_Linear_layout;
 
@@ -108,7 +112,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                 // for( User user: mUsersList)
                 //  getUserLocation(user);
                 getImageMarkers();
-                addImageMarkers();
+
                 addMapMarkers();
             }
         });
@@ -196,6 +200,10 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                         mImageMarkerClusterManager
                 );
                 mImageMarkerClusterManager.setRenderer(imageClusterManagerRenderer);
+            } else {
+                mImageMarkerClusterManager.clearItems();
+                mImageMarkersClusterItems.clear();
+
             }
 
             for(MarkerObject imageMarker: mImageMarkersList){
@@ -217,10 +225,13 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                             avatar,
                             imageMarker.getUser_id(),
                             imageMarker.getEventId(),
-                            imageMarker.getDescription()
+                            imageMarker.getDescription(),
+                            imageMarker.getId()
                     );
                     mImageMarkerClusterManager.addItem(newClusterMarker);
                     mImageMarkersClusterItems.add(newClusterMarker);
+
+
 
                 }catch (NullPointerException e){
                     Log.e(TAG, "addImageMapMarkers: NullPointerException: " + e.getMessage() );
@@ -280,7 +291,8 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                     avatar,
                     imageMarker.getUser_id(),
                     imageMarker.getEventId(),
-                    imageMarker.getDescription()
+                    imageMarker.getDescription(),
+                    imageMarker.getId()
             );
             mImageMarkerClusterManager.addItem(newClusterMarker);
             mImageMarkersClusterItems.add(newClusterMarker);
@@ -301,18 +313,24 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
             Log.d(TAG, "The marker is an ImageMarkerClusterItem");
             return false;
         }
-        addMapFooter( marker);
+        MapFooterFragment footer = (MapFooterFragment) getSupportFragmentManager().findFragmentByTag("fragmentFooter");
+        if (footer != null && footer.isVisible()) {
+            super.onBackPressed();
+        }
+       ImageMarkerClusterItem imageMarker = imageClusterManagerRenderer.getExtraMarkerInfo().get(marker.getId());
+        addMapFooter( marker, imageMarker);
         return false;
     }
 
-    public void callMarkerFragment(CustomGeoPoint point) {
+    public void callMarkerFragment(CustomGeoPoint point, ImageMarkerClusterItem imageMarker) {
         onBackPressed();
+        isOnMarkerFragment = true;
         CustomGeoPoint geoPoint = new CustomGeoPoint(point.getLatitude(),point.getLongitude());
         Bundle args = new Bundle();
         args.putParcelable("geoPoint", geoPoint);
-
+        args.putParcelable("imageMarker", imageMarker);
         FragmentManager fragmentManager = getSupportFragmentManager();
-        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction().addToBackStack("2");
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction().addToBackStack("markerFrag");
         MarkerFragment fragment = new MarkerFragment();
         fragment.setArguments(args);
         fragmentTransaction.add(R.id.general_container, fragment,"markerFragment");
@@ -325,13 +343,15 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
 
     }
 
-    public void addMapFooter(Marker marker) {
+    public void addMapFooter(Marker marker, ImageMarkerClusterItem imageMarker) {
         setLayoutWeight(child1_Linear_layout,80);
         CustomGeoPoint geoPoint = new CustomGeoPoint(marker.getPosition().latitude,marker.getPosition().longitude);
         Bundle args = new Bundle();
         args.putParcelable("geoPoint", geoPoint);
+        args.putParcelable("imageMarker", imageMarker);
         FragmentManager fragmentManager = getSupportFragmentManager();
-        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction().addToBackStack("2");
+        Fragment frag = fragmentManager.findFragmentByTag("footerFrag");
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction().addToBackStack("footerFrag");
         MapFooterFragment fragment = new MapFooterFragment();
         fragment.setArguments(args);
         fragmentTransaction.add(R.id.fragmentFooter, fragment,"fragmentFooter");
@@ -342,7 +362,14 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
     public void onBackPressed() {
         super.onBackPressed();
        if(mapFragment!= null &&  mapFragment.getView() != null &&  mapFragment.getView().getVisibility() == View.INVISIBLE)
-            mapFragment.getView().setVisibility(View.VISIBLE);
+           mapFragment.getView().setVisibility(View.VISIBLE);
+
+        // cleaning all the markers after coming from MarkerFragment
+       if(isOnMarkerFragment) {
+           cleanTemporaryMarkers();
+           isOnMarkerFragment = false;
+       }
+
        if(mapFragment!= null &&  mapFragment.getView() != null)
            setLayoutWeight(child1_Linear_layout, 100);
     }
@@ -355,13 +382,23 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
 
     @Override
     public void onMapLongClick(LatLng latLng) {
-        mGoogleMap.addMarker(new MarkerOptions().position(latLng).title("Marker"));
+        Marker marker =  mGoogleMap.addMarker(new MarkerOptions().position(latLng));
+
+
+        temporaryMarkers.add(marker);
+
     }
 
     public String valueIntoString(Object value) {
         if(value != null)
             return value.toString();
         return "";
+    }
+
+    public void cleanTemporaryMarkers() {
+        for (Marker marker: temporaryMarkers ){
+            marker.remove();
+        }
     }
 
     public void getImageMarkers() {
@@ -375,19 +412,22 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                                 Log.w(TAG, "Listen failed.", e);
                                 return;
                             }
+                            mImageMarkersList.clear();
 
                             for (QueryDocumentSnapshot doc : value) {
 
                                 if (doc.get("imageUrl") != null && doc.get("user_id") != null && doc.get("geoPoint") != null) {
                                     CustomGeoPoint geoPoint = new CustomGeoPoint(doc.getGeoPoint("geoPoint").getLatitude(),doc.getGeoPoint("geoPoint").getLongitude());
                                     MarkerObject marker = new MarkerObject(geoPoint, valueIntoString(doc.get("user_id")), valueIntoString(doc.get("imageUrl")),
-                                            valueIntoString(doc.get("eventId")), valueIntoString(doc.get("description")),valueIntoString(doc.get("imageName")));
+                                            valueIntoString(doc.get("eventId")), valueIntoString(doc.get("description")),valueIntoString(doc.get("imageName")),valueIntoString(doc.getId()));
 
                                     mImageMarkersList.add(marker);
-                                    addingMarkerDynamically(marker);
+                                    // This is not making anything right now but i think i can use it to improve code
+                                    // addingMarkerDynamically(marker);
                                     Log.d(TAG, marker.toString());
                                 }
                             }
+                            addImageMarkers();
 
                         }
                     });
@@ -395,9 +435,9 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         }
 
     @Override
-    public void launchAction(int action, CustomGeoPoint geoPoint) {
+    public void launchAction(int action, CustomGeoPoint geoPoint, ImageMarkerClusterItem imageMarker) {
      if(action == 1)
-         callMarkerFragment(geoPoint);
+         callMarkerFragment(geoPoint,imageMarker);
     }
 
 }

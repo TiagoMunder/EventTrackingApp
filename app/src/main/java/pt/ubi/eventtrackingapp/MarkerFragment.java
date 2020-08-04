@@ -33,6 +33,7 @@ import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -53,7 +54,7 @@ public class MarkerFragment extends Fragment {
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "geoPoint";
-    private static final String ARG_PARAM2 = "param2";
+    private static final String ARG_PARAM2 = "imageMarker";
     private Button mButtonChooseImage;
     private Button mButtonBack;
     private Button mButtonSave;
@@ -63,7 +64,7 @@ public class MarkerFragment extends Fragment {
 
     // TODO: Rename and change types of parameters
     private CustomGeoPoint geoPoint;
-    private String eventId;
+    private ImageMarkerClusterItem imageMarker;
 
     private StorageReference fileReference;
     private Uri mImageUri;
@@ -81,6 +82,7 @@ public class MarkerFragment extends Fragment {
 
     private ArrayList<User> mImageCaptureUri = new ArrayList<>();
     private Fragment MyFragment;
+    private boolean imageHasChanged = false;
 
     public MarkerFragment() {
         // Required empty public constructor
@@ -91,16 +93,16 @@ public class MarkerFragment extends Fragment {
      * this fragment using the provided parameters.
      *
      * @param geoPoint Parameter 1.
-     * @param param2 Parameter 2.
+     * @param imageMarker Parameter 2.
      * @return A new instance of fragment MarkerFragment.
      */
     // TODO: Rename and change types and number of parameters
-    public static MarkerFragment newInstance(CustomGeoPoint geoPoint, String param2) {
+    public static MarkerFragment newInstance(CustomGeoPoint geoPoint, String imageMarker) {
 
         MarkerFragment fragment = new MarkerFragment();
         Bundle args = new Bundle();
         args.putParcelable(ARG_PARAM1, geoPoint);
-        args.putString(ARG_PARAM2, param2);
+        args.putString(ARG_PARAM2, imageMarker);
         fragment.setArguments(args);
         return fragment;
     }
@@ -110,21 +112,30 @@ public class MarkerFragment extends Fragment {
         super.onCreate(savedInstanceState);
         MyFragment = (MarkerFragment) getActivity().getSupportFragmentManager().findFragmentByTag("markerFragment");
         mDb = FirebaseFirestore.getInstance();
+        FirebaseFirestoreSettings settings = new FirebaseFirestoreSettings.Builder()
+                .setTimestampsInSnapshotsEnabled(true)
+                .build();
+        mDb.setFirestoreSettings(settings);
         // MyFragment = getActivity().getSupportFragmentManager().getFragment(savedInstanceState, "markerFragment");
         if (getArguments() != null) {
             geoPoint = getArguments().getParcelable(ARG_PARAM1);
-            eventId = getArguments().getString(ARG_PARAM2);
+            imageMarker = getArguments().getParcelable(ARG_PARAM2);
         }
         Log.d(TAG, "addMapMarkers: location: " + geoPoint.getLatitude() + ' ' + geoPoint.getLongitude());
 
         mStorageRef = FirebaseStorage.getInstance().getReference("uploadsMap");
         session = new Session(getContext());
 
+
+
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         mImageView = getView().findViewById(R.id.image_view);
+        if(imageMarker != null && imageMarker.getIconPicture() != null){
+            setPreviousInfo();
+        }
         super.onViewCreated(view, savedInstanceState);
     }
 
@@ -138,13 +149,20 @@ public class MarkerFragment extends Fragment {
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if(requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK
-                && data != null && data.getData() != null){
+                && data != null && data.getData() != null) {
+            imageHasChanged = true;
             mImageUri = data.getData();
             mImageView.setImageURI(mImageUri);
         }
     }
 
+    private void setPreviousInfo() {
 
+        Picasso.get().load(imageMarker.getIconPicture()).fit().centerCrop().into(mImageView);
+        imageDescription.setText(imageMarker.getDescription());
+        imageName.setText(imageMarker.getTitle());
+
+    }
 
     private String getFileExtension(Uri uri) {
         ContentResolver cR = getContext().getContentResolver();
@@ -205,54 +223,80 @@ public class MarkerFragment extends Fragment {
     }
 
     public void SaveImage() {
-        if(mImageUri!=null) {
-            fileReference = mStorageRef.child(System.currentTimeMillis()
-                    + "." + getFileExtension(mImageUri));
+            if(imageHasChanged) {
+                fileReference = mStorageRef.child(System.currentTimeMillis()
+                        + "." + getFileExtension(mImageUri));
 
-            fileReference.putFile(mImageUri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                                                                      @Override
-                                                                      public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                                                                          fileReference.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
-                                                                              @Override
-                                                                              public void onSuccess(Uri uri) {
-                                                                              saveMarkerObject(uri);
-                                                                              }
-                                                                          });
+                fileReference.putFile(mImageUri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                                                                          @Override
+                                                                          public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                                                                              fileReference.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                                                                                  @Override
+                                                                                  public void onSuccess(Uri uri) {
 
+                                                                                      saveEditMarkerObject(uri);
+                                                                                  }
+                                                                              });
+
+                                                                          }
                                                                       }
-                                                                  }
-            ).addOnFailureListener(new OnFailureListener() {
-                @Override
-                public void onFailure(@NonNull Exception e) {
-                    Toast.makeText(getContext(), "Failed to save image in Storage! ", Toast.LENGTH_SHORT);
-                }
-            });
-        }
+                ).addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Toast.makeText(getContext(), "Failed to save image in Storage! ", Toast.LENGTH_SHORT);
+                    }
+                });
+            } else  saveEditMarkerObject(null);
     }
 
-   public void saveMarkerObject(Uri uri)  {
-       MarkerObject markerObject = new MarkerObject(geoPoint,session.getUser().getUser_id(),uri.toString(),session.getEvent().getEventID(),
-               imageDescription.getText().toString(),imageName.getText().toString());
-       FirebaseFirestoreSettings settings = new FirebaseFirestoreSettings.Builder()
-               .setTimestampsInSnapshotsEnabled(true)
-               .build();
-       mDb.setFirestoreSettings(settings);
-       mDb.collection("ImageMarkers")
-               .add(markerObject)
-               .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
-                   @Override
-                   public void onSuccess(DocumentReference documentReference) {
+    @SuppressWarnings("unchecked")
+   public void saveEditMarkerObject(Uri uri)  {
+        if(imageMarker != null) {
 
-                       Log.d(TAG, "DocumentSnapshot written with ID: " + documentReference.getId());
-                       goBack();
-                   }
-               })
-               .addOnFailureListener(new OnFailureListener() {
-                   @Override
-                   public void onFailure(@NonNull Exception e) {
-                       Log.w(TAG, "Error adding document", e);
-                   }
-               });
+          HashMap<String,Object> markerHashMap = new HashMap();
+            markerHashMap.put("imageUrl", uri != null ? uri.toString() :  (imageMarker != null ? imageMarker.getIconPicture() : ' '));
+            markerHashMap.put("description", imageDescription.getText().toString());
+            markerHashMap.put("imageName", imageName.getText().toString());
+            if(imageMarker.getId() != null) {
+                mDb.collection("ImageMarkers").document(imageMarker.getId())
+                        .update(markerHashMap).addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        if (task.isSuccessful()) {
+                            Log.d(TAG, "Update Successful");
+                            goBack();
+                        } else {
+                            Log.w(TAG, "Error updating document", task.getException());
+                        }
+                    }
+                });
+
+            } else {
+                Toast.makeText(getContext(), "There was a problem getting the image Marker!", Toast.LENGTH_SHORT).show();
+            }
+        } else {
+
+            // Não sei se é muito correcto o objecto ter o id a null neste caso apesar de eu depois ir buscar o id ao document e não ao objecto
+            MarkerObject markerObject = new MarkerObject(geoPoint, session.getUser().getUser_id(), uri.toString(), session.getEvent().getEventID(),
+                    imageDescription.getText().toString(), imageName.getText().toString(), null);
+
+            mDb.collection("ImageMarkers")
+                    .add(markerObject)
+                    .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
+                        @Override
+                        public void onSuccess(DocumentReference documentReference) {
+
+                            Log.d(TAG, "DocumentSnapshot written with ID: " + documentReference.getId());
+                            goBack();
+                        }
+                    })
+                    .addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            Log.w(TAG, "Error adding document", e);
+                        }
+                    });
+        }
     }
 
 

@@ -36,6 +36,7 @@ public class LocationTrackingService extends Service {
     private final static long UPDATE_INTERVAL = 5 * 1000;  /* 5 secs */
     private final static long FASTEST_INTERVAL = 2000; /* 2 sec */
     private Session session;
+    private Location lastLocation;
 
     @Nullable
     @Override
@@ -53,7 +54,7 @@ public class LocationTrackingService extends Service {
         if (Build.VERSION.SDK_INT >= 26) {
             String CHANNEL_ID = "my_channel_01";
             NotificationChannel channel = new NotificationChannel(CHANNEL_ID,
-                    "My Channel",
+                    "Event Tracking!",
                     NotificationManager.IMPORTANCE_DEFAULT);
 
             ((NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE)).createNotificationChannel(channel);
@@ -99,7 +100,7 @@ public class LocationTrackingService extends Service {
 
                         Location location = locationResult.getLastLocation();
 
-                        if (location != null) {
+                        if (location != null && getLocationChangedState(location)) {
                             User user = session.getUser();
                             CustomGeoPoint geoPoint = new CustomGeoPoint(location.getLatitude(), location.getLongitude());
                             UserLocation userLocation = new UserLocation(geoPoint, null, user);
@@ -108,6 +109,15 @@ public class LocationTrackingService extends Service {
                     }
                 },
                 Looper.myLooper()); // Looper.myLooper tells this to repeat forever until thread is destroyed
+    }
+
+    private boolean getLocationChangedState(Location location) {
+        if(lastLocation !=null) {
+            if(lastLocation.getLatitude() == location.getLatitude() && lastLocation.getLongitude() == location.getLongitude())
+                return false;
+        }
+        lastLocation = location;
+        return true;
     }
 
     private void saveUserLocation(final UserLocation userLocation){

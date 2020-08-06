@@ -93,6 +93,7 @@ public class myClusterManagerRenderer extends DefaultClusterRenderer<MyClusterIt
                 bitmap = getCircledBitmap(bitmap);
                 marker.setIcon(BitmapDescriptorFactory.fromBitmap(bitmap));
                 marker.setVisible(true);
+                marker.setTag(MyClusterItem.class);
             }
 
 

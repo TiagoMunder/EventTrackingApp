@@ -2,11 +2,14 @@ package pt.ubi.eventtrackingapp;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.ActivityManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.location.Location;
 import android.net.Uri;
 import android.os.Handler;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
@@ -22,6 +25,8 @@ import android.os.Message;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
@@ -31,7 +36,12 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
@@ -64,9 +74,17 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
     private ArrayList<ImageMarkerClusterItem> mImageMarkersClusterItems= new ArrayList<>();
     private ArrayList<Marker> temporaryMarkers = new ArrayList<>();
 
+    private Handler mHandler = new Handler();
+    private Runnable mRunnable;
+    private static final int LOCATION_UPDATE_INTERVAL = 3000;
+
+
     private boolean isOnMarkerFragment = false;
     private SupportMapFragment mapFragment;
     private LinearLayout child1_Linear_layout;
+
+    private boolean isUserLocationRunning = false;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,6 +98,9 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
         mDb = FirebaseFirestore.getInstance();
+        startLocationService();
+
+
 
         /*
 
@@ -94,6 +115,23 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
 
 
 
+    protected void onStart() {
+        super.onStart();
+        if(!isUserLocationRunning)
+            startUserLocationsRunnable();
+    }
+
+    protected void onResume() {
+        super.onResume();
+        if(!isUserLocationRunning)
+            startUserLocationsRunnable();
+    }
+
+    protected void onPause() {
+        super.onPause();
+        stopLocationUpdates();
+
+    }
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
@@ -117,10 +155,11 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
             }
         });
 
+
+
         if(mImageMarkerClusterManager == null){
             mImageMarkerClusterManager = new ClusterManager<ImageMarkerClusterItem>(getApplicationContext(), mGoogleMap);
         }
-
 
         // now just use this to create the menu with options 1- choose image 2 - delete
         mGoogleMap.setOnInfoWindowClickListener(this);
@@ -131,6 +170,9 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
 
     }
 
+    private void updateSelfUserLocation(Location location) {
+
+    }
 
     private void addMapMarkers(){
 
@@ -309,15 +351,17 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
     public boolean onMarkerClick(Marker marker) {
         // mMapView.setVisibility(View.VISIBLE);  // show again
       //  mMapView.setVisibility(View.GONE); // hide map
-        if(marker != null && marker.getTag() != null  && marker.getTag().hashCode()== MyClusterItem.class.hashCode()){
-            Log.d(TAG, "The marker is an ImageMarkerClusterItem");
-            return false;
-        }
         MapFooterFragment footer = (MapFooterFragment) getSupportFragmentManager().findFragmentByTag("fragmentFooter");
         if (footer != null && footer.isVisible()) {
-            super.onBackPressed();
+            onBackPressed();
         }
-       ImageMarkerClusterItem imageMarker = imageClusterManagerRenderer.getExtraMarkerInfo().get(marker.getId());
+
+        if(marker != null && marker.getTag() != null  && marker.getTag().hashCode()== MyClusterItem.class.hashCode()){
+            Log.d(TAG, "This is an User!");
+            return false;
+        }
+
+        ImageMarkerClusterItem imageMarker = imageClusterManagerRenderer.getExtraMarkerInfo().get(marker.getId());
         addMapFooter( marker, imageMarker);
         return false;
     }
@@ -361,16 +405,16 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
     @Override
     public void onBackPressed() {
         super.onBackPressed();
-       if(mapFragment!= null &&  mapFragment.getView() != null &&  mapFragment.getView().getVisibility() == View.INVISIBLE)
+        if(mapFragment!= null &&  mapFragment.getView() != null &&  mapFragment.getView().getVisibility() == View.INVISIBLE)
            mapFragment.getView().setVisibility(View.VISIBLE);
 
         // cleaning all the markers after coming from MarkerFragment
-       if(isOnMarkerFragment) {
+        if(isOnMarkerFragment) {
            cleanTemporaryMarkers();
            isOnMarkerFragment = false;
-       }
+        }
 
-       if(mapFragment!= null &&  mapFragment.getView() != null)
+        if(mapFragment!= null &&  mapFragment.getView() != null)
            setLayoutWeight(child1_Linear_layout, 100);
     }
 
@@ -439,5 +483,96 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
      if(action == 1)
          callMarkerFragment(geoPoint,imageMarker);
     }
+
+    private void startUserLocationsRunnable(){
+        isUserLocationRunning = true;
+        Log.d(TAG, "startUserLocationsRunnable: starting runnable for retrieving updated locations.");
+        mHandler.postDelayed(mRunnable = new Runnable() {
+            @Override
+            public void run() {
+                retrieveUserLocations();
+                mHandler.postDelayed(mRunnable, LOCATION_UPDATE_INTERVAL);
+            }
+        }, LOCATION_UPDATE_INTERVAL);
+    }
+
+    private void stopLocationUpdates(){
+        mHandler.removeCallbacks(mRunnable);
+        isUserLocationRunning = false;
+    }
+
+    private void retrieveUserLocations(){
+        Log.d(TAG, "retrieveUserLocations: retrieving location of all users in the chatroom.");
+
+        try{
+            for(final MyClusterItem clusterItem: mClusterItems){
+
+                DocumentReference userLocationRef = FirebaseFirestore.getInstance()
+                        .collection("User Locations")
+                        .document(clusterItem.getUser().getUser_id());
+
+                userLocationRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if(task.isSuccessful()){
+
+                            final UserLocation updatedUserLocation = task.getResult().toObject(UserLocation.class);
+
+                            // update the location
+                            for (int i = 0; i < mClusterItems.size(); i++) {
+                                try {
+                                    if (mClusterItems.get(i).getUser().getUser_id().equals(updatedUserLocation.getUser().getUser_id())) {
+
+                                        LatLng updatedLatLng = new LatLng(
+                                                updatedUserLocation.getGeoPoint().getLatitude(),
+                                                updatedUserLocation.getGeoPoint().getLongitude()
+                                        );
+
+                                        mClusterItems.get(i).setPosition(updatedLatLng);
+                                        clusterManagerRenderer.setUpdateMarker(mClusterItems.get(i));
+                                    }
+
+
+                                } catch (NullPointerException e) {
+                                    Log.e(TAG, "retrieveUserLocations: NullPointerException: " + e.getMessage());
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        }catch (IllegalStateException e){
+            Log.e(TAG, "retrieveUserLocations: Fragment was destroyed during Firestore query. Ending query." + e.getMessage() );
+        }
+
+    }
+
+    private void startLocationService(){
+        if(!isLocationServiceRunning()){
+            Intent serviceIntent = new Intent(this, LocationTrackingService.class);
+
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O){
+
+                MapActivity.this.startForegroundService(serviceIntent);
+            }else{
+                startService(serviceIntent);
+            }
+        }
+    }
+
+    private boolean isLocationServiceRunning() {
+        ActivityManager manager = (ActivityManager) getSystemService(ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)){
+            Log.d(TAG, service.service.getClassName());
+            if("pt.ubi.eventtrackingapp.LocationTrackingService".equals(service.service.getClassName())) {
+                Log.d(TAG, "isLocationServiceRunning: location service is already running.");
+                return true;
+            }
+        }
+        Log.d(TAG, "isLocationServiceRunning: location service is not running.");
+        return false;
+    }
+
+
 
 }

@@ -31,6 +31,7 @@ import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Target;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.concurrent.Executors;
 
 public class myClusterManagerRenderer extends DefaultClusterRenderer<MyClusterItem> {
@@ -41,8 +42,7 @@ public class myClusterManagerRenderer extends DefaultClusterRenderer<MyClusterIt
     private final Context context;
     private final ImageView imageView;
     private final IconGenerator iconGenerator;
-
-
+    private HashMap<String, MyClusterItem> extraMarkerInfo = new HashMap<String, MyClusterItem>();
 
 
 
@@ -79,9 +79,14 @@ public class myClusterManagerRenderer extends DefaultClusterRenderer<MyClusterIt
         }
     }
 
+    public  HashMap<String, MyClusterItem> getExtraMarkerInfo() {
+        return extraMarkerInfo;
+    }
+
+
 
     @Override
-    protected void onClusterItemRendered(MyClusterItem item, final Marker marker) {
+    protected void onClusterItemRendered(final MyClusterItem item, final Marker marker) {
 
         Picasso picasso = new Picasso.Builder(context).executor(Executors.newSingleThreadExecutor()).memoryCache(Cache.NONE).indicatorsEnabled(true).build();
 
@@ -94,6 +99,7 @@ public class myClusterManagerRenderer extends DefaultClusterRenderer<MyClusterIt
                 marker.setIcon(BitmapDescriptorFactory.fromBitmap(bitmap));
                 marker.setVisible(true);
                 marker.setTag(MyClusterItem.class);
+                extraMarkerInfo.put(marker.getId(), item);
             }
 
 

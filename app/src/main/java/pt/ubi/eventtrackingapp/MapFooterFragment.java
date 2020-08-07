@@ -69,14 +69,17 @@ public class MapFooterFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-
         View view = inflater.inflate(R.layout.fragment_map_footer, container, false);
-        addImage_btn = view.findViewById(R.id.addImage_btn);
 
+        addImage_btn = view.findViewById(R.id.addImage_btn);
+        if(imageMarker == null) {
+            addImage_btn.setText("Calculate direction");
+        }
         addImage_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                ((ButtonCallback ) getActivity()).launchAction(1, geoPoint, imageMarker);
+                if( imageMarker != null) ((ButtonCallback ) getActivity()).launchAction(1, geoPoint, imageMarker);
+                else ((ButtonCallback ) getActivity()).launchAction(2, geoPoint, null);
             }
         });
         return view;

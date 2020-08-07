@@ -1,9 +1,9 @@
 package pt.ubi.eventtrackingapp;
 
 import android.Manifest;
-import android.app.Activity;
+
 import android.app.ActivityManager;
-import android.content.Context;
+
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
@@ -20,15 +20,11 @@ import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
-import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
-import android.os.Message;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
+import android.widget.Toast;
 
-import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
@@ -48,10 +44,11 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
-import com.google.firebase.firestore.GeoPoint;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.maps.android.clustering.ClusterManager;
+
+import static pt.ubi.eventtrackingapp.Constants.GOOGLE_MAP_API_KEY;
 
 import org.json.JSONObject;
 
@@ -183,10 +180,6 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         mGoogleMap.setOnMarkerClickListener(this);
         mGoogleMap.setOnMapLongClickListener(this);
 
-
-    }
-
-    private void updateSelfUserLocation(Location location) {
 
     }
 
@@ -377,20 +370,14 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
             marker.getPosition();
             MyClusterItem userMarker = clusterManagerRenderer.getExtraMarkerInfo().get(marker.getId());
             if(!userMarker.getUser().getUser_id().equals(session.getUser().getUser_id())) {
-                LatLng dist = new LatLng(userMarker.getPosition().latitude, userMarker.getPosition().longitude -1);
+                addMapFooter( marker, null, userMarker);
 
-                String url = getDirectionsUrl( userMarker.getPosition(),  dist);
-
-                DownloadTask calculatePathTask = new DownloadTask();
-
-                // Start downloading json data from Google Directions API
-                calculatePathTask.execute(url);
             }
             return false;
         }
 
         ImageMarkerClusterItem imageMarker = imageClusterManagerRenderer.getExtraMarkerInfo().get(marker.getId());
-        addMapFooter( marker, imageMarker);
+        addMapFooter( marker, imageMarker, null);
         return false;
     }
 
@@ -415,14 +402,17 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
 
     }
 
-    public void addMapFooter(Marker marker, ImageMarkerClusterItem imageMarker) {
+    public void addMapFooter(Marker marker, ImageMarkerClusterItem imageMarker, MyClusterItem userMarker) {
+        if( imageMarker == null && userMarker == null) {
+            Log.d(TAG, "Error missing imageMarker and userMarker");
+            return;
+        }
         setLayoutWeight(child1_Linear_layout,80);
         CustomGeoPoint geoPoint = new CustomGeoPoint(marker.getPosition().latitude,marker.getPosition().longitude);
         Bundle args = new Bundle();
         args.putParcelable("geoPoint", geoPoint);
         args.putParcelable("imageMarker", imageMarker);
         FragmentManager fragmentManager = getSupportFragmentManager();
-        Fragment frag = fragmentManager.findFragmentByTag("footerFrag");
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction().addToBackStack("footerFrag");
         MapFooterFragment fragment = new MapFooterFragment();
         fragment.setArguments(args);
@@ -506,11 +496,30 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
 
         }
 
+    private void calculatePathToUser(CustomGeoPoint dist) {
+        Location origin = session.getCurrentLocation();
+        LatLng originLatLng = new LatLng(origin.getLatitude(), origin.getLongitude());
+        LatLng distLatLng = new LatLng(dist.getLatitude(), dist.getLongitude());
+
+        String url = getDirectionsUrl( originLatLng,  distLatLng);
+
+        DownloadTask calculatePathTask = new DownloadTask();
+
+        // Start downloading json data from Google Directions API
+        calculatePathTask.execute(url);
+    }
+
     @Override
     public void launchAction(int action, CustomGeoPoint geoPoint, ImageMarkerClusterItem imageMarker) {
      if(action == 1)
          callMarkerFragment(geoPoint,imageMarker);
+     else if(action == 2){
+         calculatePathToUser(geoPoint);
+     }
+
     }
+
+
 
     private void startUserLocationsRunnable(){
         isUserLocationRunning = true;
@@ -721,11 +730,11 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         String str_dest = "destination=" + dest.latitude + "," + dest.longitude;
 
         // Sensor enabled
-        String sensor = "sensor=false";
-        String mode = "mode=driving";
+        String mode = "mode=walking";
+        String key = "key=" + GOOGLE_MAP_API_KEY;
 
         // Building the parameters to the web service
-        String parameters = str_origin + "&" + str_dest + "&" + sensor + "&" + mode;
+        String parameters = str_origin + "&" + str_dest + "&" + mode + "&" + key;
 
         // Output format
         String output = "json";
@@ -736,6 +745,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
 
         return url;
     }
+
 
 
 

@@ -102,6 +102,7 @@ public class LocationTrackingService extends Service {
 
                         if (location != null && getLocationChangedState(location)) {
                             User user = session.getUser();
+                            session.setCurrentLocation(location);
                             CustomGeoPoint geoPoint = new CustomGeoPoint(location.getLatitude(), location.getLongitude());
                             UserLocation userLocation = new UserLocation(geoPoint, null, user);
                             saveUserLocation(userLocation);

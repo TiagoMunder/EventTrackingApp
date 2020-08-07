@@ -2,9 +2,12 @@ package pt.ubi.eventtrackingapp;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.location.Location;
 import android.preference.PreferenceManager;
 
 import com.google.gson.Gson;
+
+import static pt.ubi.eventtrackingapp.Constants.CURRENTLOCATION;
 
 public class Session {
     private SharedPreferences prefs;
@@ -31,6 +34,19 @@ public class Session {
         Gson gson = new Gson();
         User obj = gson.fromJson(userInfo, User.class);
         return obj;
+    }
+
+    public Location getCurrentLocation() {
+        String currentlocation = prefs.getString(CURRENTLOCATION,"");
+        Gson gson = new Gson();
+        Location obj = gson.fromJson(currentlocation, Location.class);
+        return obj;
+    }
+
+    public void setCurrentLocation(Location currentLocation) {
+        Gson gson = new Gson();
+        String jsonCurrentLocation = gson.toJson(currentLocation);
+        prefs.edit().putString(CURRENTLOCATION, jsonCurrentLocation).apply();
     }
 
     public void setEvent(Event event) {

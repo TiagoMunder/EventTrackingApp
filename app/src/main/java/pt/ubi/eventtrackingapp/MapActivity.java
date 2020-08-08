@@ -77,7 +77,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
     private Handler mHandler = new Handler();
     private Runnable mRunnable;
     private static final int LOCATION_UPDATE_INTERVAL = 3000;
-
+    private String eventID;
 
     private boolean isOnMarkerFragment = false;
     private SupportMapFragment mapFragment;
@@ -94,6 +94,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         Intent intent = getIntent();
         mUsersList = intent.getParcelableArrayListExtra("UsersList");
         mUserLocations = intent.getParcelableArrayListExtra("UserLocations");
+        eventID = intent.getStringExtra("eventID");
          mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
@@ -447,7 +448,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
 
     public void getImageMarkers() {
 
-            mDb.collection("ImageMarkers").whereEqualTo("eventId","JoluaQw7PB8usY4KR0A6")
+            mDb.collection("ImageMarkers").whereEqualTo("eventId", eventID)
                     .addSnapshotListener(new EventListener<QuerySnapshot>() {
                         @Override
                         public void onEvent(@Nullable QuerySnapshot value,
@@ -484,7 +485,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
          callMarkerFragment(geoPoint,imageMarker);
     }
 
-    private void startUserLocationsRunnable(){
+    private void startUserLocationsRunnable() {
         isUserLocationRunning = true;
         Log.d(TAG, "startUserLocationsRunnable: starting runnable for retrieving updated locations.");
         mHandler.postDelayed(mRunnable = new Runnable() {

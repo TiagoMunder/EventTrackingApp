@@ -45,7 +45,7 @@
         <TextView
             android:id="@+id/eventDatePicker"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="50dp"
             android:inputType="datetime"
             android:layout_marginTop="10dp"
             android:hint="Event Date"

@@ -25,10 +25,14 @@ public class MapFooterFragment extends Fragment {
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "geoPoint";
     private static final String ARG_PARAM2 = "imageMarker";
+    private static final String ARG_PARAM3 = "isOwnerOfImage";
+    private static final String ARG_PARAM4 = "isAnUserClick";
 
     // TODO: Rename and change types of parameters
     private CustomGeoPoint geoPoint;
     private ImageMarkerClusterItem imageMarker;
+    private boolean isOwnerOfImage;
+    private boolean isAnUserClick;
 
     private Button addImage_btn, delete_image_btn;
 
@@ -47,11 +51,13 @@ public class MapFooterFragment extends Fragment {
      * @return A new instance of fragment MapFooterFragment.
      */
     // TODO: Rename and change types and number of parameters
-    public static MapFooterFragment newInstance(String param1, String param2) {
+    public static MapFooterFragment newInstance(String param1, String param2, boolean param3, boolean param4) {
         MapFooterFragment fragment = new MapFooterFragment();
         Bundle args = new Bundle();
         args.putString(ARG_PARAM1, param1);
         args.putString(ARG_PARAM2, param2);
+        args.putBoolean(ARG_PARAM3, param3);
+        args.putBoolean(ARG_PARAM4, param4);
         fragment.setArguments(args);
         return fragment;
     }
@@ -62,7 +68,13 @@ public class MapFooterFragment extends Fragment {
         if (getArguments() != null) {
                 geoPoint = getArguments().getParcelable(ARG_PARAM1);
                 imageMarker = getArguments().getParcelable(ARG_PARAM2);
+                isOwnerOfImage = getArguments().getBoolean(ARG_PARAM3);
+                isAnUserClick = getArguments().getBoolean(ARG_PARAM4);
             }
+    }
+
+   private void removeDelete() {
+        delete_image_btn.setVisibility(View.INVISIBLE);
     }
 
     @Override
@@ -73,21 +85,26 @@ public class MapFooterFragment extends Fragment {
 
         addImage_btn = view.findViewById(R.id.addImage_btn);
         delete_image_btn = view.findViewById(R.id.delete_image_btn);
-        if(imageMarker == null) {
+        // If it doesn't have an imageMarker means that it is a userMarker
+        if(isAnUserClick) {
             addImage_btn.setText("Calculate direction");
-            delete_image_btn.setVisibility(View.INVISIBLE);
+            removeDelete();
+        }
+         if(!isAnUserClick && !isOwnerOfImage){
+            addImage_btn.setText("View Image");
+            removeDelete();
         }
         addImage_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if( imageMarker != null) ((ButtonCallback ) getActivity()).launchAction(1, geoPoint, imageMarker);
-                else ((ButtonCallback ) getActivity()).launchAction(2, geoPoint, null);
+                if( imageMarker != null || isOwnerOfImage) ((ButtonCallback ) getActivity()).launchAction(1, geoPoint, imageMarker, isOwnerOfImage);
+                else ((ButtonCallback ) getActivity()).launchAction(2, geoPoint, null, isOwnerOfImage);
             }
         });
         delete_image_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                ((ButtonCallback ) getActivity()).launchAction(3, geoPoint, imageMarker);
+                ((ButtonCallback ) getActivity()).launchAction(3, geoPoint, imageMarker, isOwnerOfImage);
             }
         });
         return view;
@@ -138,7 +155,7 @@ public class MapFooterFragment extends Fragment {
         // 1 -- add image
         // 2 -- Calculate directions
         // 3 -- Delete imageMarker
-        void launchAction(int action, CustomGeoPoint geoPoint, ImageMarkerClusterItem imageMarker);
+        void launchAction(int action, CustomGeoPoint geoPoint, ImageMarkerClusterItem imageMarker, boolean isOwnerOfImage);
     }
 
 }

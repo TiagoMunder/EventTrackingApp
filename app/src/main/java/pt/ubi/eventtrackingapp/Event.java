@@ -1,7 +1,5 @@
 package pt.ubi.eventtrackingapp;
 
-import java.util.Date;
-
 public class Event {
     private String owner, eventID;
     private String name;

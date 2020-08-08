@@ -22,8 +22,8 @@ public class ImageMarkerClusterItem implements ClusterItem, Parcelable {
         this.title = title;
         this.snippet = snippet;
         this.iconPicture = iconPicture;
-        this.User_id = User_id;
         this.eventId = eventId;
+        this.User_id = User_id;
         this.description = description;
         this.mTag = ImageMarkerClusterItem.class;
         this.id = id;

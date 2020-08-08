@@ -276,8 +276,8 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                             title,
                             snippet,
                             avatar,
-                            imageMarker.getUser_id(),
                             imageMarker.getEventId(),
+                            imageMarker.getUser_id(),
                             imageMarker.getDescription(),
                             imageMarker.getId()
                     );
@@ -342,8 +342,8 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                     title,
                     snippet,
                     avatar,
-                    imageMarker.getUser_id(),
                     imageMarker.getEventId(),
+                    imageMarker.getUser_id(),
                     imageMarker.getDescription(),
                     imageMarker.getId()
             );
@@ -383,13 +383,14 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         return false;
     }
 
-    public void callMarkerFragment(CustomGeoPoint point, ImageMarkerClusterItem imageMarker) {
+    public void callMarkerFragment(CustomGeoPoint point, ImageMarkerClusterItem imageMarker, boolean isOwnerOfImage) {
         onBackPressed();
         isOnMarkerFragment = true;
         CustomGeoPoint geoPoint = new CustomGeoPoint(point.getLatitude(),point.getLongitude());
         Bundle args = new Bundle();
         args.putParcelable("geoPoint", geoPoint);
         args.putParcelable("imageMarker", imageMarker);
+        args.putBoolean("isOwnerOfImage", isOwnerOfImage);
         FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction().addToBackStack("markerFrag");
         MarkerFragment fragment = new MarkerFragment();
@@ -404,16 +405,24 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
 
     }
 
+    public boolean verifyOwnerOfImage(ImageMarkerClusterItem imageMarker) {
+        if(imageMarker == null)
+            return true;
+       return imageMarker.getUser_id().equals(session.getUser().getUser_id());
+    }
+
     public void addMapFooter(Marker marker, ImageMarkerClusterItem imageMarker, MyClusterItem userMarker) {
-        if( imageMarker == null && userMarker == null) {
-            Log.d(TAG, "Error missing imageMarker and userMarker");
-            return;
-        }
+        boolean isOwnerOfImage = false;
         setLayoutWeight(child1_Linear_layout,80);
         CustomGeoPoint geoPoint = new CustomGeoPoint(marker.getPosition().latitude,marker.getPosition().longitude);
+        boolean isAnUserClick = userMarker != null;
+        if( userMarker == null)
+            isOwnerOfImage = this.verifyOwnerOfImage(imageMarker);
         Bundle args = new Bundle();
         args.putParcelable("geoPoint", geoPoint);
         args.putParcelable("imageMarker", imageMarker);
+        args.putBoolean("isOwnerOfImage", isOwnerOfImage);
+        args.putBoolean("isAnUserClick", isAnUserClick);
         FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction().addToBackStack("footerFrag");
         MapFooterFragment fragment = new MapFooterFragment();
@@ -525,11 +534,11 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
     }
 
     @Override
-    public void launchAction(int action, CustomGeoPoint geoPoint, ImageMarkerClusterItem imageMarker) {
+    public void launchAction(int action, CustomGeoPoint geoPoint, ImageMarkerClusterItem imageMarker, boolean isOwnerOfImage) {
 
         switch(action) {
             case 1:
-                callMarkerFragment(geoPoint,imageMarker);
+                callMarkerFragment(geoPoint,imageMarker, isOwnerOfImage);
                 break;
             case 2:
                 calculatePathToUser(geoPoint);

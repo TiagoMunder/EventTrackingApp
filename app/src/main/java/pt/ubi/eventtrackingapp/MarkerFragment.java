@@ -9,6 +9,7 @@ import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.text.InputType;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -55,6 +56,7 @@ public class MarkerFragment extends Fragment {
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "geoPoint";
     private static final String ARG_PARAM2 = "imageMarker";
+    private static final String ARG_PARAM3 = "isOwnerOfImage";
     private Button mButtonChooseImage;
     private Button mButtonBack;
     private Button mButtonSave;
@@ -62,9 +64,10 @@ public class MarkerFragment extends Fragment {
     private EditText imageName;
     private EditText imageDescription;
 
-    // TODO: Rename and change types of parameters
+
     private CustomGeoPoint geoPoint;
     private ImageMarkerClusterItem imageMarker;
+    private boolean isOwnerOfImage;
 
     private StorageReference fileReference;
     private Uri mImageUri;
@@ -97,12 +100,13 @@ public class MarkerFragment extends Fragment {
      * @return A new instance of fragment MarkerFragment.
      */
     // TODO: Rename and change types and number of parameters
-    public static MarkerFragment newInstance(CustomGeoPoint geoPoint, String imageMarker) {
+    public static MarkerFragment newInstance(CustomGeoPoint geoPoint, String imageMarker, boolean isOwnerOfImage) {
 
         MarkerFragment fragment = new MarkerFragment();
         Bundle args = new Bundle();
         args.putParcelable(ARG_PARAM1, geoPoint);
         args.putString(ARG_PARAM2, imageMarker);
+        args.putBoolean(ARG_PARAM3, isOwnerOfImage);
         fragment.setArguments(args);
         return fragment;
     }
@@ -120,6 +124,7 @@ public class MarkerFragment extends Fragment {
         if (getArguments() != null) {
             geoPoint = getArguments().getParcelable(ARG_PARAM1);
             imageMarker = getArguments().getParcelable(ARG_PARAM2);
+            isOwnerOfImage = getArguments().getBoolean(ARG_PARAM3);
         }
         Log.d(TAG, "addMapMarkers: location: " + geoPoint.getLatitude() + ' ' + geoPoint.getLongitude());
 
@@ -185,6 +190,15 @@ public class MarkerFragment extends Fragment {
         super.onSaveInstanceState(outState);
     }
 
+    public void canOnlyViewImage() {
+        mButtonBack.setVisibility(View.INVISIBLE);
+        mButtonChooseImage.setVisibility(View.INVISIBLE);
+        mButtonSave.setVisibility(View.INVISIBLE);
+        imageDescription.setInputType(InputType.TYPE_NULL);
+        imageName.setInputType(InputType.TYPE_NULL);
+
+    }
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -196,6 +210,9 @@ public class MarkerFragment extends Fragment {
         mButtonSave = view.findViewById(R.id.button_save);
         imageName = view.findViewById(R.id.edit_text_file_name);
         imageDescription =  view.findViewById(R.id.edit_text_description);
+
+        if(!isOwnerOfImage)
+            this.canOnlyViewImage();
 
         mButtonChooseImage.setOnClickListener(new View.OnClickListener() {
             @Override

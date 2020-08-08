@@ -23,6 +23,7 @@ import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
 import android.view.View;
 import android.widget.LinearLayout;
+import android.widget.Switch;
 import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -510,14 +511,35 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         calculatePathTask.execute(url);
     }
 
+    private void deleteImageMarker(ImageMarkerClusterItem imageMarker) {
+       mDb.collection("ImageMarkers").document(imageMarker.getId()).delete().addOnCompleteListener(new OnCompleteListener<Void>() {
+          @Override
+          public void onComplete(@NonNull Task<Void> task) {
+              if(task.isSuccessful()) {
+                  Toast.makeText(MapActivity.this, "Image was deleted successfully!", Toast.LENGTH_SHORT);
+                  onBackPressed();
+              }
+          }
+      });
+
+    }
+
     @Override
     public void launchAction(int action, CustomGeoPoint geoPoint, ImageMarkerClusterItem imageMarker) {
-     if(action == 1)
-         callMarkerFragment(geoPoint,imageMarker);
-     else if(action == 2){
-         calculatePathToUser(geoPoint);
-     }
 
+        switch(action) {
+            case 1:
+                callMarkerFragment(geoPoint,imageMarker);
+                break;
+            case 2:
+                calculatePathToUser(geoPoint);
+                break;
+            case 3:
+                deleteImageMarker(imageMarker);
+                break;
+            default:
+                return;
+        }
     }
 
 

@@ -30,7 +30,7 @@ public class MapFooterFragment extends Fragment {
     private CustomGeoPoint geoPoint;
     private ImageMarkerClusterItem imageMarker;
 
-    private Button addImage_btn;
+    private Button addImage_btn, delete_image_btn;
 
     private OnFragmentInteractionListener mListener;
 
@@ -72,6 +72,7 @@ public class MapFooterFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_map_footer, container, false);
 
         addImage_btn = view.findViewById(R.id.addImage_btn);
+        delete_image_btn = view.findViewById(R.id.delete_image_btn);
         if(imageMarker == null) {
             addImage_btn.setText("Calculate direction");
         }
@@ -80,6 +81,12 @@ public class MapFooterFragment extends Fragment {
             public void onClick(View v) {
                 if( imageMarker != null) ((ButtonCallback ) getActivity()).launchAction(1, geoPoint, imageMarker);
                 else ((ButtonCallback ) getActivity()).launchAction(2, geoPoint, null);
+            }
+        });
+        delete_image_btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ((ButtonCallback ) getActivity()).launchAction(3, geoPoint, imageMarker);
             }
         });
         return view;
@@ -128,6 +135,8 @@ public class MapFooterFragment extends Fragment {
 
         //You can add parameters if you need it
         // 1 -- add image
+        // 2 -- Calculate directions
+        // 3 -- Delete imageMarker
         void launchAction(int action, CustomGeoPoint geoPoint, ImageMarkerClusterItem imageMarker);
     }
 

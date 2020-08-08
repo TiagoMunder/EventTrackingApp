@@ -75,6 +75,7 @@ public class MapFooterFragment extends Fragment {
         delete_image_btn = view.findViewById(R.id.delete_image_btn);
         if(imageMarker == null) {
             addImage_btn.setText("Calculate direction");
+            delete_image_btn.setVisibility(View.INVISIBLE);
         }
         addImage_btn.setOnClickListener(new View.OnClickListener() {
             @Override

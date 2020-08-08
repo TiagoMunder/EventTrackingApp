@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Toast;
 
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -73,6 +74,7 @@ public class EventMainCopy extends AppCompatActivity {
                 Intent mapIntent = new Intent(EventMainCopy.this, MapActivity.class);
                 mapIntent.putExtra("UserLocations", mUserLocations);
                 mapIntent.putExtra("UsersList", mUsersList);
+                mapIntent.putExtra("eventID", eventID);
                 startActivity(mapIntent);
             }
         });
@@ -80,7 +82,7 @@ public class EventMainCopy extends AppCompatActivity {
         btn_leaveEvent.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // ainda não sei se vou fazer alguma coisa com isto
+                leaveEvent();
             }
         });
 
@@ -94,6 +96,19 @@ public class EventMainCopy extends AppCompatActivity {
 
     }
 
+    private void leaveEvent() {
+        mDb.collection("Events").document(eventID).collection("Users").whereEqualTo("user_id",session.getUser().getUser_id()).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                for (DocumentSnapshot document : task.getResult()) {
+                    mDb.collection("Events").document(eventID).collection("Users").document(document.getId()).delete();
+                    Toast.makeText(EventMainCopy.this, "You are no longer in the Event!", Toast.LENGTH_SHORT);
+                    startActivity(new Intent(EventMainCopy.this, EventsListActivity.class));
+                }
+            }
+        });
+    }
+
     @Override
     public void onBackPressed() {
         super.onBackPressed();
@@ -102,7 +117,7 @@ public class EventMainCopy extends AppCompatActivity {
 
 
     private void getUsersOfTheEvent() {
-        mDb.collection("Events").document("JoluaQw7PB8usY4KR0A6").collection("Users")
+        mDb.collection("Events").document(eventID).collection("Users")
                 .addSnapshotListener(new EventListener<QuerySnapshot>() {
                     @Override
                     public void onEvent(@Nullable QuerySnapshot value,
@@ -122,7 +137,7 @@ public class EventMainCopy extends AppCompatActivity {
 
                             }
                         }
-
+                        addUserToEvent();
                     }
                 });
 

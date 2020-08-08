@@ -1,7 +1,7 @@
 package pt.ubi.eventtrackingapp;
 
 import android.Manifest;
-
+import android.app.Activity;
 import android.app.ActivityManager;
 
 import android.content.Intent;
@@ -86,7 +86,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
     private Handler mHandler = new Handler();
     private Runnable mRunnable;
     private static final int LOCATION_UPDATE_INTERVAL = 3000;
-
+    private String eventID;
 
     private boolean isOnMarkerFragment = false;
     private SupportMapFragment mapFragment;
@@ -105,6 +105,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         Intent intent = getIntent();
         mUsersList = intent.getParcelableArrayListExtra("UsersList");
         mUserLocations = intent.getParcelableArrayListExtra("UserLocations");
+        eventID = intent.getStringExtra("eventID");
          mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
@@ -465,7 +466,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
 
     public void getImageMarkers() {
 
-            mDb.collection("ImageMarkers").whereEqualTo("eventId","JoluaQw7PB8usY4KR0A6")
+            mDb.collection("ImageMarkers").whereEqualTo("eventId", eventID)
                     .addSnapshotListener(new EventListener<QuerySnapshot>() {
                         @Override
                         public void onEvent(@Nullable QuerySnapshot value,
@@ -680,7 +681,6 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
 
             }
 
-// Drawing polyline in the Google Map for the i-th route
             mGoogleMap.addPolyline(lineOptions);
         }
 

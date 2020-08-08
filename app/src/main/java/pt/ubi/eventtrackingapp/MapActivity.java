@@ -681,7 +681,6 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
 
             }
 
-// Drawing polyline in the Google Map for the i-th route
             mGoogleMap.addPolyline(lineOptions);
         }
 

@@ -40,7 +40,7 @@ public class CreateEvent extends AppCompatActivity {
     private FirebaseFirestore mDb;
     private static final String TAG = "CreateEvent";
     Calendar cal = Calendar.getInstance();
-    private final String defaultDate =  cal.get(Calendar.YEAR) + "/" + cal.get(Calendar.MONTH)+1 +"/"
+    private final String defaultDate =  cal.get(Calendar.YEAR) + "/" + (cal.get(Calendar.MONTH)+1) +"/"
           +  cal.get(Calendar.DAY_OF_MONTH);
 
     @Override

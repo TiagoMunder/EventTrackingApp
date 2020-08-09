@@ -19,7 +19,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:inputType="text"
-            android:hint="Event Name"
+            android:hint="@string/event_name"
             android:textColor="@color/colorText" />
 
     </android.support.design.widget.TextInputLayout>
@@ -33,7 +33,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:inputType="text"
-            android:hint="Description"
+            android:hint="@string/description"
             android:textColor="@color/colorText" />
     </android.support.design.widget.TextInputLayout>
 
@@ -47,9 +47,8 @@
             android:id="@+id/eventDatePicker"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:inputType="datetime"
             android:layout_marginTop="10dp"
-            android:hint="Event Date"
+            android:hint="@string/event_date"
             android:textColor="@color/colorText" />
     </android.support.design.widget.TextInputLayout>
 
@@ -62,7 +61,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:inputType="text"
-            android:hint="Country"
+            android:hint="@string/country"
             android:textColor="@color/colorText" />
     </android.support.design.widget.TextInputLayout>
 
@@ -75,7 +74,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:inputType="text"
-            android:hint="City"
+            android:hint="@string/city"
             android:textColor="@color/colorText" />
     </android.support.design.widget.TextInputLayout>
 
@@ -89,7 +88,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:inputType="text"
-            android:hint="street"
+            android:hint="@string/street"
             android:textColor="@color/colorText" />
     </android.support.design.widget.TextInputLayout>
 
@@ -98,7 +97,7 @@
         android:layout_width="match_parent"
         android:layout_height="55dp"
         android:layout_marginTop="30dp"
-        android:text="Create Event"
+        android:text="@string/create_event"
         android:textColor="@android:color/white"
         android:backgroundTint="@color/colorPrimary2"/>
 
@@ -107,7 +106,7 @@
         android:layout_width="match_parent"
         android:layout_height="55dp"
         android:layout_marginTop="30dp"
-        android:text="Cancel"
+        android:text="@string/cancel"
         android:textColor="@android:color/white"
         android:backgroundTint="@color/colorPrimary2"/>
 

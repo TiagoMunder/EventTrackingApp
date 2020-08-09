@@ -16,14 +16,14 @@
         android:layout_height="55dp"
         android:layout_marginTop="30dp"
         android:backgroundTint="@color/colorPrimary2"
-        android:text="Create Event"
+        android:text="@string/create_event"
         android:textColor="@android:color/white" />
     <Button
         android:id ="@+id/btn_listEvents"
         android:layout_width="match_parent"
         android:layout_height="55dp"
         android:layout_marginTop="30dp"
-        android:text="List Events"
+        android:text="@string/list_events"
         android:textColor="@android:color/white"
         android:backgroundTint="@color/colorPrimary2"/>
     <Button
@@ -31,7 +31,7 @@
         android:layout_width="match_parent"
         android:layout_height="55dp"
         android:layout_marginTop="30dp"
-        android:text="Participate"
+        android:text="@string/participate"
         android:textColor="@android:color/white"
         android:backgroundTint="@color/colorPrimary2"/>
 
@@ -41,7 +41,7 @@
         android:gravity="center"
         android:textColor="@color/colorPrimaryDark2"
         android:layout_alignParentBottom="true"
-        android:text="Logout"
+        android:text="@string/logout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 

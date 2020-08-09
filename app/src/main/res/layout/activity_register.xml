@@ -33,7 +33,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:inputType="text"
-            android:hint="Username"
+            android:hint="@string/username"
             android:textColor="@color/colorText" />
     </android.support.design.widget.TextInputLayout>
 
@@ -48,7 +48,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:inputType="textEmailAddress"
-            android:hint="Email"
+            android:hint="@string/email"
             android:textColor="@color/colorText" />
     </android.support.design.widget.TextInputLayout>
 
@@ -62,7 +62,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:inputType="textPassword"
-            android:hint="Password"
+            android:hint="@string/password"
             android:textColor="@color/colorText" />
     </android.support.design.widget.TextInputLayout>
 
@@ -76,7 +76,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:inputType="textPassword"
-            android:hint="Comfirm Password"
+            android:hint="@string/confirm_password"
             android:textColor="@color/colorText" />
     </android.support.design.widget.TextInputLayout>
     <Button
@@ -84,7 +84,7 @@
         android:layout_width="match_parent"
         android:layout_height="55dp"
         android:layout_marginTop="30dp"
-        android:text="Register"
+        android:text="@string/register"
         android:textColor="@android:color/white"
         android:backgroundTint="@color/colorPrimary2"/>
 

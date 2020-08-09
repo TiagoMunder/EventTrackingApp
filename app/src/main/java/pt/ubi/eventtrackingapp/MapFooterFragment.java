@@ -87,11 +87,11 @@ public class MapFooterFragment extends Fragment {
         delete_image_btn = view.findViewById(R.id.delete_image_btn);
         // If it doesn't have an imageMarker means that it is a userMarker
         if(isAnUserClick) {
-            addImage_btn.setText("Calculate direction");
+            addImage_btn.setText(R.string.calculate_direction);
             removeDelete();
         }
          if(!isAnUserClick && !isOwnerOfImage){
-            addImage_btn.setText("View Image");
+            addImage_btn.setText(R.string.view_image);
             removeDelete();
         }
         addImage_btn.setOnClickListener(new View.OnClickListener() {

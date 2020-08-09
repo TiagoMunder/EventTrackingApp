@@ -16,14 +16,14 @@
         android:layout_height="55dp"
         android:layout_marginTop="30dp"
         android:backgroundTint="@color/colorPrimary2"
-        android:text="Chat"
+        android:text="@string/chat"
         android:textColor="@android:color/white" />
     <Button
         android:id ="@+id/btn_GoToMap"
         android:layout_width="match_parent"
         android:layout_height="55dp"
         android:layout_marginTop="30dp"
-        android:text="Map"
+        android:text="@string/map"
         android:textColor="@android:color/white"
         android:backgroundTint="@color/colorPrimary2"/>
 
@@ -32,17 +32,10 @@
         android:layout_width="match_parent"
         android:layout_height="55dp"
         android:layout_marginTop="30dp"
-        android:text="Leave Event"
+        android:text="@string/leave_event"
         android:textColor="@android:color/white"
         android:backgroundTint="@color/colorPrimary2"/>
-    <Button
-        android:id ="@+id/btn_GoBack"
-        android:layout_width="match_parent"
-        android:layout_height="55dp"
-        android:layout_marginTop="30dp"
-        android:text="Go back"
-        android:textColor="@android:color/white"
-        android:backgroundTint="@color/colorPrimary2"/>
+
 
 
 </LinearLayout>

@@ -35,7 +35,7 @@ public class EventMainCopy extends AppCompatActivity {
     private ArrayList<User> mUsersList = new ArrayList<>();
     private String  eventID;
     private Session session;
-    private Button btn_GoToChat, btn_GoToMap, btn_leaveEvent,btn_GoBack;
+    private Button btn_GoToChat, btn_GoToMap, btn_leaveEvent;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,9 +47,9 @@ public class EventMainCopy extends AppCompatActivity {
         btn_GoToChat = findViewById(R.id.btn_GoToChat);
         btn_GoToMap = findViewById(R.id.btn_GoToMap);
         btn_leaveEvent = findViewById(R.id.btn_leaveEvent);
-        btn_GoBack = findViewById(R.id.btn_GoBack);
 
         mDb = FirebaseFirestore.getInstance();
+
         Intent intent = getIntent();
         session = new Session(EventMainCopy.this);
         eventID = intent.getStringExtra("eventID");
@@ -58,6 +58,8 @@ public class EventMainCopy extends AppCompatActivity {
             startActivity(new Intent(EventMainCopy.this, DashboardActivity.class));
         }
 
+
+        // setting up button clicks
         btn_GoToChat.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -86,12 +88,6 @@ public class EventMainCopy extends AppCompatActivity {
             }
         });
 
-        btn_GoBack.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                onBackPressed();
-            }
-        });
         getUsersOfTheEvent();
 
     }
@@ -108,13 +104,6 @@ public class EventMainCopy extends AppCompatActivity {
             }
         });
     }
-
-    @Override
-    public void onBackPressed() {
-        super.onBackPressed();
-    }
-
-
 
     private void getUsersOfTheEvent() {
         mDb.collection("Events").document(eventID).collection("Users")

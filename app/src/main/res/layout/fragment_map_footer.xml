@@ -14,12 +14,12 @@
      <Button
          android:layout_width="wrap_content"
          android:layout_height="wrap_content"
-         android:text="Add/Edit Image"
+         android:text="@string/add_edit_image"
          android:id="@+id/addImage_btn"/>
      <Button
          android:layout_width="wrap_content"
          android:layout_height="wrap_content"
-         android:text="Delete Image"
+         android:text="@string/delete_image"
          android:id="@+id/delete_image_btn"/>
      </LinearLayout>
  </RelativeLayout>

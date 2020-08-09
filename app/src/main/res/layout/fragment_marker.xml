@@ -21,9 +21,10 @@
             android:layout_width="181dp"
             android:layout_height="wrap_content"
             android:inputType= "text"
+            android:layout_marginStart="80dp"
             android:layout_marginLeft="80dp"
-            android:autofillHints="Choose file name"
-            android:hint="Choose file name"
+            android:autofillHints="@string/choose_file_name"
+            android:hint="@string/choose_file_name"
             android:textAlignment="center"
             android:singleLine="false" />
 
@@ -31,7 +32,7 @@
             android:id="@+id/button_choose_image"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Choose file" />
+            android:text="@string/choose_file" />
     </LinearLayout>
 
     <LinearLayout
@@ -56,8 +57,8 @@
             android:id="@+id/edit_text_description"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:autofillHints="Description"
-            android:hint="Description"
+            android:autofillHints="@string/description"
+            android:hint="@string/description"
             android:inputType="text"
             android:singleLine="false" />
 
@@ -77,7 +78,7 @@
                 android:layout_marginLeft="10dp"
                 android:layout_marginRight="15dp"
                 android:layout_gravity="end"
-                android:text="Cancel"
+                android:text="@string/cancel"
                 android:textAlignment="center" />
         <Button
             android:id="@+id/button_save"
@@ -88,7 +89,7 @@
             android:layout_marginLeft="10dp"
             android:layout_marginRight="15dp"
             android:layout_gravity="left"
-            android:text="Save"
+            android:text="@string/save"
             android:textAlignment="center" />
     </LinearLayout>
 </LinearLayout>

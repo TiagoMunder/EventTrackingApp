@@ -22,7 +22,7 @@
         android:layout_below="@id/logo">
         <EditText
             android:inputType="textEmailAddress"
-            android:hint="Email"
+            android:hint="@string/email"
             android:textColor="@color/colorPrimaryDark2"
             android:id ="@+id/email"
             android:layout_width="match_parent"
@@ -38,7 +38,7 @@
         app:passwordToggleEnabled="true">
         <EditText
             android:inputType="textPassword"
-            android:hint="Password"
+            android:hint="@string/password"
             android:textColor="@color/colorPrimaryDark2"
             android:id ="@+id/password"
             android:layout_width="match_parent"
@@ -50,7 +50,7 @@
         android:id="@+id/btn_login"
         android:layout_marginTop="50dp"
         android:textColor="@color/colorText"
-        android:text="Login"
+        android:text="@string/login"
         android:backgroundTint="@color/colorPrimary2"
         android:layout_below="@id/layoutpassword"
         android:layout_width="match_parent"
@@ -62,7 +62,7 @@
         android:gravity="center"
         android:textColor="@color/colorPrimaryDark2"
         android:layout_alignParentBottom="true"
-        android:text="Register"
+        android:text="@string/register"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 

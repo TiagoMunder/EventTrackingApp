@@ -34,9 +34,10 @@ public class LocationTrackingService extends Service {
     private final static String TAG = "LocationTrackingService";
     private FusedLocationProviderClient mFusedLocationClient;
     private final static long UPDATE_INTERVAL = 5 * 1000;  /* 5 secs */
-    private final static long FASTEST_INTERVAL = 2000; /* 2 sec */
+    private final static long FASTEST_INTERVAL = 2 * 1000; /* 2 sec */
     private Session session;
     private Location lastLocation;
+    private static  final String CHANNEL_ID = "channel_location_tracking_1";
 
     @Nullable
     @Override
@@ -52,19 +53,19 @@ public class LocationTrackingService extends Service {
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
         if (Build.VERSION.SDK_INT >= 26) {
-            String CHANNEL_ID = "my_channel_01";
+
             NotificationChannel channel = new NotificationChannel(CHANNEL_ID,
                     "Event Tracking!",
                     NotificationManager.IMPORTANCE_DEFAULT);
 
             ((NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE)).createNotificationChannel(channel);
+        }
 
             Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
-                    .setContentTitle("")
-                    .setContentText("").build();
+                    .setContentTitle("Event Tracking App")
+                    .setContentText("Location Tracking").build();
 
             startForeground(1, notification);
-        }
     }
 
     @Override
@@ -125,7 +126,7 @@ public class LocationTrackingService extends Service {
 
         try{
             DocumentReference locationRef = FirebaseFirestore.getInstance()
-                    .collection("User Locations")
+                    .collection(getString(R.string.fire_store_users_locations))
                     .document(FirebaseAuth.getInstance().getUid());
 
             locationRef.set(userLocation).addOnCompleteListener(new OnCompleteListener<Void>() {

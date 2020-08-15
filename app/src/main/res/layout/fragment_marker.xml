@@ -37,7 +37,7 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="300dp"
+        android:layout_height="260dp"
         android:orientation="horizontal">
 
         <ImageView
@@ -50,7 +50,7 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="200dp"
+        android:layout_height="180dp"
         android:orientation="horizontal">
 
         <EditText
@@ -60,13 +60,16 @@
             android:autofillHints="@string/description"
             android:hint="@string/description"
             android:inputType="text"
+            android:textAlignment="textStart"
+            android:layout_gravity="start"
             android:singleLine="false" />
 
     </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="200dp"
+        android:layout_height="180dp"
+        android:layout_marginBottom="10dp"
         android:orientation="horizontal">
 
             <Button
@@ -77,6 +80,7 @@
                 android:layout_marginEnd="15dp"
                 android:layout_marginLeft="10dp"
                 android:layout_marginRight="15dp"
+                android:layout_marginBottom="80dp"
                 android:layout_gravity="end"
                 android:text="@string/cancel"
                 android:textAlignment="center" />
@@ -88,6 +92,7 @@
             android:layout_marginEnd="15dp"
             android:layout_marginLeft="10dp"
             android:layout_marginRight="15dp"
+            android:layout_marginBottom="80dp"
             android:layout_gravity="left"
             android:text="@string/save"
             android:textAlignment="center" />

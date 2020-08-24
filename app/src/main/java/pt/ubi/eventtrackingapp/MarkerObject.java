@@ -1,11 +1,14 @@
 package pt.ubi.eventtrackingapp;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import com.google.firebase.firestore.GeoPoint;
 import com.google.firebase.firestore.ServerTimestamp;
 
 import java.util.Date;
 
-public class MarkerObject {
+public class MarkerObject  implements Parcelable {
 
     private CustomGeoPoint geoPoint;
     private @ServerTimestamp
@@ -32,6 +35,28 @@ public class MarkerObject {
     public MarkerObject() {
 
     }
+
+    protected MarkerObject(Parcel in) {
+        geoPoint = in.readParcelable(CustomGeoPoint.class.getClassLoader());
+        User_id = in.readString();
+        imageUrl = in.readString();
+        eventId = in.readString();
+        description = in.readString();
+        imageName = in.readString();
+        id = in.readString();
+    }
+
+    public static final Creator<MarkerObject> CREATOR = new Creator<MarkerObject>() {
+        @Override
+        public MarkerObject createFromParcel(Parcel in) {
+            return new MarkerObject(in);
+        }
+
+        @Override
+        public MarkerObject[] newArray(int size) {
+            return new MarkerObject[size];
+        }
+    };
 
     public Date getTimestamp() {
         return timestamp;
@@ -95,5 +120,21 @@ public class MarkerObject {
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeParcelable(geoPoint, flags);
+        dest.writeString(User_id);
+        dest.writeString(imageUrl);
+        dest.writeString(eventId);
+        dest.writeString(description);
+        dest.writeString(imageName);
+        dest.writeString(id);
     }
 }

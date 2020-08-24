@@ -15,4 +15,7 @@ public class Constants {
     public static final String USERPOSITIONSINEVENT = "UserPositionsInEvent";
     public static final String USERPOSITIONKEY = "userPositionKey";
     public static final String USERPOSITION = "UserPosition";
+    public static final String EVENTSCOLLECTION = "Events";
+    public static final String IMAGEMARKERSCOLLECTION = "ImageMarkers";
+
 }

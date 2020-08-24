@@ -46,11 +46,14 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.GeoPoint;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.maps.android.clustering.ClusterManager;
 
+import static pt.ubi.eventtrackingapp.Constants.EVENTSCOLLECTION;
 import static pt.ubi.eventtrackingapp.Constants.GOOGLE_MAP_API_KEY;
+import static pt.ubi.eventtrackingapp.Constants.IMAGEMARKERSCOLLECTION;
 import static pt.ubi.eventtrackingapp.Constants.USERPOSITION;
 import static pt.ubi.eventtrackingapp.Constants.USERPOSITIONKEY;
 import static pt.ubi.eventtrackingapp.Constants.USERPOSITIONSINEVENT;
@@ -87,6 +90,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
     private ArrayList<ImageMarkerClusterItem> mImageMarkersClusterItems= new ArrayList<>();
     private ArrayList<Marker> temporaryMarkers = new ArrayList<>();
     private ArrayList<UserPosition> myPositions = new ArrayList<>();
+    private ArrayList<MarkerObject> filteredImages = new ArrayList<>();
 
     private Handler mHandler = new Handler();
     private Runnable mRunnable;
@@ -151,7 +155,6 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
     @Override
     public void onMapReady(GoogleMap googleMap) {
 
-
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED
                 && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
@@ -165,7 +168,6 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                 // for( User user: mUsersList)
                 //  getUserLocation(user);
                 getImageMarkers();
-
                 addMapMarkers();
             }
         });
@@ -239,6 +241,14 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         }
     }
 
+    private void filterImagesByGeoPoint(GeoPoint geoPoint, Marker marker, ImageMarkerClusterItem imageMarker, MyClusterItem userMarker) {
+        for (MarkerObject image : mImageMarkersList) {
+            if(image.getGeoPoint().equals(geoPoint))
+                filteredImages.add(image);
+        }
+        addMapFooter( marker, imageMarker, null);
+    }
+
     private void addImageMarkers() {
         if(mGoogleMap != null){
 
@@ -264,7 +274,6 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                     String avatar = null;
 
                     String title = imageMarker.getImageName() != null ? imageMarker.getImageName() : "TODO";
-
 
                     avatar = imageMarker.getImageUrl();
                     ImageMarkerClusterItem newClusterMarker = new ImageMarkerClusterItem(
@@ -303,7 +312,6 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
 
 
     private void setCameraView() {
-
 
         CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(new LatLng(mUserLocation.getGeoPoint().getLatitude(), mUserLocation.getGeoPoint().getLongitude() ), 13);
         mGoogleMap.animateCamera(cameraUpdate);
@@ -345,8 +353,6 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         }catch (NullPointerException e){
             Log.e(TAG, "addImageMapMarkers: NullPointerException: " + e.getMessage() );
         }
-
-
     }
 
     @Override
@@ -364,13 +370,14 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
             MyClusterItem userMarker = clusterManagerRenderer.getExtraMarkerInfo().get(marker.getId());
             if(!userMarker.getUser().getUser_id().equals(session.getUser().getUser_id())) {
                 addMapFooter( marker, null, userMarker);
-
             }
             return false;
         }
 
         ImageMarkerClusterItem imageMarker = imageClusterManagerRenderer.getExtraMarkerInfo().get(marker.getId());
-        addMapFooter( marker, imageMarker, null);
+        GeoPoint geoPoint = new GeoPoint(marker.getPosition().latitude,marker.getPosition().longitude);
+        filterImagesByGeoPoint(geoPoint, marker, imageMarker, null);
+
         return false;
     }
 
@@ -382,6 +389,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         args.putParcelable("geoPoint", geoPoint);
         args.putParcelable("imageMarker", imageMarker);
         args.putBoolean("isOwnerOfImage", isOwnerOfImage);
+        args.putParcelableArrayList("filteredImages", filteredImages);
         FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction().addToBackStack("markerFrag");
         MarkerFragment fragment = new MarkerFragment();
@@ -467,7 +475,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
 
     public void getImageMarkers() {
 
-            mDb.collection("ImageMarkers").whereEqualTo("eventId", eventID)
+            mDb.collection(EVENTSCOLLECTION).document(eventID).collection(IMAGEMARKERSCOLLECTION)
                     .addSnapshotListener(new EventListener<QuerySnapshot>() {
                         @Override
                         public void onEvent(@Nullable QuerySnapshot value,
@@ -492,10 +500,8 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                                 }
                             }
                             addImageMarkers();
-
                         }
                     });
-
         }
 
     private void calculatePathToUser(CustomGeoPoint dist) {
@@ -512,7 +518,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
     }
 
     private void deleteImageMarker(ImageMarkerClusterItem imageMarker) {
-       mDb.collection("ImageMarkers").document(imageMarker.getId()).delete().addOnCompleteListener(new OnCompleteListener<Void>() {
+        mDb.collection(EVENTSCOLLECTION).document(eventID).collection(IMAGEMARKERSCOLLECTION).document(imageMarker.getId()).delete().addOnCompleteListener(new OnCompleteListener<Void>() {
           @Override
           public void onComplete(@NonNull Task<Void> task) {
               if(task.isSuccessful()) {

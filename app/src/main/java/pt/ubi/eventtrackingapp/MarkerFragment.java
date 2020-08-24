@@ -41,6 +41,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static android.app.Activity.RESULT_OK;
+import static pt.ubi.eventtrackingapp.Constants.EVENTSCOLLECTION;
+import static pt.ubi.eventtrackingapp.Constants.IMAGEMARKERSCOLLECTION;
 
 
 /**
@@ -57,6 +59,7 @@ public class MarkerFragment extends Fragment {
     private static final String ARG_PARAM1 = "geoPoint";
     private static final String ARG_PARAM2 = "imageMarker";
     private static final String ARG_PARAM3 = "isOwnerOfImage";
+    private static final String ARG_PARAM4 = "filteredImages";
     private Button mButtonChooseImage;
     private Button mButtonBack;
     private Button mButtonSave;
@@ -84,8 +87,11 @@ public class MarkerFragment extends Fragment {
     private OnFragmentInteractionListener mListener;
 
     private ArrayList<User> mImageCaptureUri = new ArrayList<>();
+    private ArrayList<MarkerObject> filteredImages = new ArrayList<>();
     private Fragment MyFragment;
     private boolean imageHasChanged = false;
+
+    private String eventID;
 
     public MarkerFragment() {
         // Required empty public constructor
@@ -100,13 +106,14 @@ public class MarkerFragment extends Fragment {
      * @return A new instance of fragment MarkerFragment.
      */
     // TODO: Rename and change types and number of parameters
-    public static MarkerFragment newInstance(CustomGeoPoint geoPoint, String imageMarker, boolean isOwnerOfImage) {
+    public static MarkerFragment newInstance(CustomGeoPoint geoPoint, String imageMarker, boolean isOwnerOfImage, ArrayList<MarkerObject> filteredImages) {
 
         MarkerFragment fragment = new MarkerFragment();
         Bundle args = new Bundle();
         args.putParcelable(ARG_PARAM1, geoPoint);
         args.putString(ARG_PARAM2, imageMarker);
         args.putBoolean(ARG_PARAM3, isOwnerOfImage);
+        args.putParcelableArrayList(ARG_PARAM3, filteredImages);
         fragment.setArguments(args);
         return fragment;
     }
@@ -125,11 +132,14 @@ public class MarkerFragment extends Fragment {
             geoPoint = getArguments().getParcelable(ARG_PARAM1);
             imageMarker = getArguments().getParcelable(ARG_PARAM2);
             isOwnerOfImage = getArguments().getBoolean(ARG_PARAM3);
+            filteredImages = getArguments().getParcelableArrayList(ARG_PARAM4);
+
         }
         Log.d(TAG, "addMapMarkers: location: " + geoPoint.getLatitude() + ' ' + geoPoint.getLongitude());
 
         mStorageRef = FirebaseStorage.getInstance().getReference("uploadsMap");
         session = new Session(getContext());
+        eventID = session.getEvent().getEventID();
 
 
 
@@ -275,7 +285,7 @@ public class MarkerFragment extends Fragment {
             markerHashMap.put("description", imageDescription.getText().toString());
             markerHashMap.put("imageName", imageName.getText().toString());
             if(imageMarker.getId() != null) {
-                mDb.collection("ImageMarkers").document(imageMarker.getId())
+                mDb.collection(EVENTSCOLLECTION).document(eventID).collection(IMAGEMARKERSCOLLECTION).document(imageMarker.getId())
                         .update(markerHashMap).addOnCompleteListener(new OnCompleteListener<Void>() {
                     @Override
                     public void onComplete(@NonNull Task<Void> task) {
@@ -297,7 +307,7 @@ public class MarkerFragment extends Fragment {
             MarkerObject markerObject = new MarkerObject(geoPoint, session.getUser().getUser_id(), uri.toString(), session.getEvent().getEventID(),
                     imageDescription.getText().toString(), imageName.getText().toString(), null);
 
-            mDb.collection("ImageMarkers")
+            mDb.collection(EVENTSCOLLECTION).document(eventID).collection(IMAGEMARKERSCOLLECTION)
                     .add(markerObject)
                     .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
                         @Override

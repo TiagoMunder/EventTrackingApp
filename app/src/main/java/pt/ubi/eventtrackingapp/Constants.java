@@ -9,6 +9,10 @@ public class Constants {
     public static final String CURRENTLOCATION = "currentLocation";
 
 
+
     // Firebase Collections
     // Will place here all FireBase collections
+    public static final String USERPOSITIONSINEVENT = "UserPositionsInEvent";
+    public static final String USERPOSITIONKEY = "userPositionKey";
+    public static final String USERPOSITION = "UserPosition";
 }

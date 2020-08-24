@@ -42,6 +42,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static pt.ubi.eventtrackingapp.Constants.USERPOSITION;
+import static pt.ubi.eventtrackingapp.Constants.USERPOSITIONKEY;
+import static pt.ubi.eventtrackingapp.Constants.USERPOSITIONSINEVENT;
+
 public class LocationTrackingService extends Service {
     private final static String TAG = "LocationTrackingService";
     private FusedLocationProviderClient mFusedLocationClient;
@@ -197,7 +201,7 @@ public class LocationTrackingService extends Service {
 
     public static float getDistanceTraveled(DocumentSnapshot document) {
         if(document.getData() != null){
-            return (float) document.getData().get("distanceTraveled");
+            return Float.parseFloat(document.getData().get("distanceTraveled").toString());
         }
         return 0;
 
@@ -214,7 +218,7 @@ public class LocationTrackingService extends Service {
 
     private void addUserPosition(final User user, final String EventID,final Location location, final CustomGeoPoint geoPoint) {
         final String key =  user.getUser_id() + '_' + EventID;
-         FirebaseFirestore.getInstance().collection("UserPositionsInEvent").whereEqualTo("userPositionKey", key).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+         FirebaseFirestore.getInstance().collection(USERPOSITIONSINEVENT).whereEqualTo(USERPOSITIONKEY, key).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                  @Override
                     public void onComplete(@NonNull Task<QuerySnapshot> task) {
                         if(task.getResult().getDocuments().size() != 0 ) {
@@ -223,18 +227,18 @@ public class LocationTrackingService extends Service {
                             if(checkUserMoved(document, location)) {
                                 Long tsLong = System.currentTimeMillis()/1000;
                                 UserPosition customGeoPoint  = new UserPosition(location.getLatitude(), location.getLongitude(), tsLong.toString());
-                                documentReference.collection("UserPosition").add(customGeoPoint);
+                                documentReference.collection(USERPOSITION).add(customGeoPoint);
                                 documentReference.update("lastPosition",convertLocationToCustomGeoPoint(location));
                                 updateDistanceTraveled(documentReference, document, location);
                             }
                         }else {
                             UserLocationPositionsInEvent docInfo = new UserLocationPositionsInEvent(key, 0, geoPoint);
-                            FirebaseFirestore.getInstance().collection("UserPositionsInEvent").add(docInfo).addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
+                            FirebaseFirestore.getInstance().collection(USERPOSITIONSINEVENT).add(docInfo).addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
                                @Override
                                public void onComplete(@NonNull Task<DocumentReference> task) {
                                    Long tsLong = System.currentTimeMillis()/1000;
                                    UserPosition customGeoPoint = new UserPosition(location.getLatitude(), location.getLongitude(), tsLong.toString());
-                                   task.getResult().collection("UserPosition").add(customGeoPoint);
+                                   task.getResult().collection(USERPOSITION).add(customGeoPoint);
                                }
                            });
                         }

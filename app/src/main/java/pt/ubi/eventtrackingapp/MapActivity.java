@@ -26,6 +26,7 @@ import android.widget.LinearLayout;
 import android.widget.Switch;
 import android.widget.Toast;
 
+import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
@@ -50,6 +51,9 @@ import com.google.firebase.firestore.QuerySnapshot;
 import com.google.maps.android.clustering.ClusterManager;
 
 import static pt.ubi.eventtrackingapp.Constants.GOOGLE_MAP_API_KEY;
+import static pt.ubi.eventtrackingapp.Constants.USERPOSITION;
+import static pt.ubi.eventtrackingapp.Constants.USERPOSITIONKEY;
+import static pt.ubi.eventtrackingapp.Constants.USERPOSITIONSINEVENT;
 
 import org.json.JSONObject;
 
@@ -72,7 +76,6 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
     private FirebaseFirestore mDb;
     private ArrayList<UserLocationParcelable> mUserLocations = new ArrayList<>();
     private ArrayList<MarkerObject> mImageMarkersList = new ArrayList<>();
-    private ArrayList<User> mUsersList = new ArrayList<>();
     private GoogleMap mGoogleMap;
     private LatLngBounds mMapBoundary;
     private UserLocationParcelable mUserLocation;
@@ -83,6 +86,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
     private ClusterManager<ImageMarkerClusterItem> mImageMarkerClusterManager;
     private ArrayList<ImageMarkerClusterItem> mImageMarkersClusterItems= new ArrayList<>();
     private ArrayList<Marker> temporaryMarkers = new ArrayList<>();
+    private ArrayList<UserPosition> myPositions = new ArrayList<>();
 
     private Handler mHandler = new Handler();
     private Runnable mRunnable;
@@ -104,7 +108,6 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         setContentView(R.layout.activity_map);
         child1_Linear_layout =(LinearLayout)findViewById(R.id.map_container);
         Intent intent = getIntent();
-        mUsersList = intent.getParcelableArrayListExtra("UsersList");
         mUserLocations = intent.getParcelableArrayListExtra("UserLocations");
         eventID = intent.getStringExtra("eventID");
          mapFragment = (SupportMapFragment) getSupportFragmentManager()
@@ -113,9 +116,6 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         mDb = FirebaseFirestore.getInstance();
         session = new Session(MapActivity.this);
         startLocationService();
-
-
-
 
         /*
 
@@ -181,7 +181,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
 
         mGoogleMap.setOnMarkerClickListener(this);
         mGoogleMap.setOnMapLongClickListener(this);
-
+        listenMyCurrentPositionChanged();
 
     }
 
@@ -235,16 +235,12 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
 
             setUserPosition();
             mClusterManager.cluster();
-            if(mUserLocation!= null) {
-                setCameraView();
-            }
 
         }
     }
 
     private void addImageMarkers() {
         if(mGoogleMap != null){
-
 
             if(imageClusterManagerRenderer == null){
                 imageClusterManagerRenderer = new ImageMarkerClusterManagerRenderer(
@@ -293,13 +289,14 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
             }
             mImageMarkerClusterManager.cluster();
         }
-
     }
 
     private void setUserPosition() {
         for(UserLocationParcelable userL: mUserLocations){
-            if(userL.getUser().getUser_id().equals(FirebaseAuth.getInstance().getUid()));
-            mUserLocation = userL;
+            if(userL.getUser().getUser_id().equals(session.getUser().getUser_id())) {
+                mUserLocation = userL;
+                setCameraView();
+            }
         }
     }
 
@@ -307,15 +304,9 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
 
     private void setCameraView() {
 
-        // Overall map view Window
 
-        double bottomBoundary = mUserLocation.getGeoPoint().getLatitude() - .1;
-        double leftBoundary = mUserLocation.getGeoPoint().getLongitude() - .1;
-        double rightBoundary = mUserLocation.getGeoPoint().getLongitude() + .1;
-        double topBoundary = mUserLocation.getGeoPoint().getLatitude() + .1;
-
-        mMapBoundary = new LatLngBounds(new LatLng(bottomBoundary, leftBoundary), new LatLng(topBoundary, rightBoundary));
-        mGoogleMap.moveCamera(CameraUpdateFactory.newLatLngBounds(mMapBoundary, 0));
+        CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(new LatLng(mUserLocation.getGeoPoint().getLatitude(), mUserLocation.getGeoPoint().getLongitude() ), 13);
+        mGoogleMap.animateCamera(cameraUpdate);
 
     }
 
@@ -568,6 +559,66 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
     private void stopLocationUpdates(){
         mHandler.removeCallbacks(mRunnable);
         isUserLocationRunning = false;
+    }
+
+
+    protected void addMyPositionsToMap() {
+        ArrayList points = null;
+        PolylineOptions lineOptions = null;
+        points = new ArrayList();
+        lineOptions = new PolylineOptions();
+        for (int i = 0; i < myPositions.size(); i++) {
+
+
+            LatLng position = new LatLng(myPositions.get(i).getGeoPoint().getLatitude(), myPositions.get(i).getGeoPoint().getLongitude());
+            points.add(position);
+        }
+
+        lineOptions.addAll(points);
+        lineOptions.width(12);
+        lineOptions.color(Color.RED);
+        lineOptions.geodesic(true);
+
+
+
+        mGoogleMap.addPolyline(lineOptions);
+    }
+
+    private void listenMyCurrentPositionChanged() {
+        final String key =  session.getUser().getUser_id() + '_' + eventID;
+        FirebaseFirestore.getInstance().collection(USERPOSITIONSINEVENT).whereEqualTo(USERPOSITIONKEY, key).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                if(task.getResult().getDocuments().size() != 0 ) {
+                    final DocumentReference documentReference = task.getResult().getDocuments().get(0).getReference();
+                    documentReference.addSnapshotListener(new EventListener<DocumentSnapshot>() {
+                        @Override
+                        public void onEvent(@javax.annotation.Nullable DocumentSnapshot documentSnapshot, @javax.annotation.Nullable FirebaseFirestoreException e) {
+                            retrieveCurrentUserPositions(documentSnapshot);
+                        }
+                    });
+
+                }else {
+                    Log.d(TAG, "Can't get any position");
+                }
+            }
+        });
+
+    }
+
+
+    private void retrieveCurrentUserPositions(DocumentSnapshot documentSnapshot) {
+
+        documentSnapshot.getReference().collection(USERPOSITION).orderBy("time").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                List<DocumentSnapshot>  documents = task.getResult().getDocuments();
+                myPositions.clear();
+                for (int i = 0; i <   documents.size(); i++) {
+                    myPositions.add(documents.get(i).toObject(UserPosition.class));
+                }
+                addMyPositionsToMap();
+        }});
     }
 
     private void retrieveUserLocations(){

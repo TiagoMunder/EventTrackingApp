@@ -14,13 +14,13 @@
      <Button
          android:layout_width="wrap_content"
          android:layout_height="wrap_content"
-         android:text="@string/add_edit_image"
-         android:id="@+id/addImage_btn"/>
+         android:text="@string/view_images"
+         android:id="@+id/viewImages_btn"/>
      <Button
          android:layout_width="wrap_content"
          android:layout_height="wrap_content"
-         android:text="@string/delete_image"
-         android:id="@+id/delete_image_btn"/>
+         android:text="@string/add_edit_image"
+         android:id="@+id/addImage_btn"/>
      </LinearLayout>
  </RelativeLayout>
 

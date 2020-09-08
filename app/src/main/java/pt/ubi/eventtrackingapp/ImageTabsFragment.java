@@ -1,60 +1,54 @@
 package pt.ubi.eventtrackingapp;
 
 import android.content.Context;
-import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.view.ViewPager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 
-import com.google.firebase.firestore.GeoPoint;
+import java.util.ArrayList;
 
 
 /**
  * A simple {@link Fragment} subclass.
  * Activities that contain this fragment must implement the
- * {@link MapFooterFragment.OnFragmentInteractionListener} interface
+ * {@link ImageTabsFragment.OnFragmentInteractionListener} interface
  * to handle interaction events.
- * Use the {@link MapFooterFragment#newInstance} factory method to
+ * Use the {@link ImageTabsFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class MapFooterFragment extends Fragment {
+public class ImageTabsFragment extends Fragment {
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "geoPoint";
-    private static final String ARG_PARAM2 = "isAnUserClick";
+    private static final String ARG_PARAM2 = "isOwnerOfImage";
+    private static final String ARG_PARAM3= "filteredImages";
 
-    // TODO: Rename and change types of parameters
+
     private CustomGeoPoint geoPoint;
-    private boolean isAnUserClick;
-
-    private Button addImage_btn,viewImages_btn;
+    private ImageMarkerClusterItem imageMarker;
+    private boolean isOwnerOfImage;
+    private ArrayList<MarkerObject> filteredImages = new ArrayList<>();
 
     private OnFragmentInteractionListener mListener;
 
-    private Session session;
-
-    public MapFooterFragment() {
+    public ImageTabsFragment() {
         // Required empty public constructor
     }
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment MapFooterFragment.
-     */
+
     // TODO: Rename and change types and number of parameters
-    public static MapFooterFragment newInstance(String param1, boolean param2) {
-        MapFooterFragment fragment = new MapFooterFragment();
+    public static ImageTabsFragment newInstance(CustomGeoPoint geoPoint, String imageMarker, boolean isOwnerOfImage, ArrayList<MarkerObject> filteredImages) {
+        ImageTabsFragment fragment = new ImageTabsFragment();
         Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putBoolean(ARG_PARAM2, param2);
+        args.putParcelable(ARG_PARAM1, geoPoint);
+        args.putBoolean(ARG_PARAM2, isOwnerOfImage);
+        args.putParcelableArrayList(ARG_PARAM3, filteredImages);
         fragment.setArguments(args);
         return fragment;
     }
@@ -63,48 +57,52 @@ public class MapFooterFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-                geoPoint = getArguments().getParcelable(ARG_PARAM1);
-                isAnUserClick = getArguments().getBoolean(ARG_PARAM2);
-            }
-        session = new Session(getActivity());
-    }
+            geoPoint = getArguments().getParcelable(ARG_PARAM1);
 
-    public boolean isOnThisPosition() {
-        Location currentPosition =session.getCurrentLocation();
-        return geoPoint.getLatitude() == currentPosition.getLatitude()  && geoPoint.getLongitude() == currentPosition.getLongitude();
+            isOwnerOfImage = getArguments().getBoolean(ARG_PARAM2);
+            filteredImages = getArguments().getParcelableArrayList(ARG_PARAM3);
+        }
     }
-
-   private void removeAddImageButton() {
-       addImage_btn.setVisibility(View.INVISIBLE);
-    }
-
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+
+        View rootView = inflater.inflate(R.layout.fragment_image_tabs, container, false);
+        ViewPager viewPager = (ViewPager)rootView.findViewById(R.id.viewPager);
+        TabLayout tabLayout = (TabLayout)rootView.findViewById(R.id.tabLayout);
+
+
+        viewPager.setAdapter(new FragmentPagerAdapter(getChildFragmentManager()) {
+            @Override
+            public Fragment getItem(int position) {
+                Bundle args = new Bundle();
+                args.putParcelable("geoPoint", geoPoint);
+                args.putBoolean("isNewImage", false);
+                args.putBoolean("isOwnerOfImage", isOwnerOfImage);
+                args.putParcelableArrayList("filteredImages", filteredImages);
+                args.putInt("currentPosition", position);
+                MarkerFragment fragment = new MarkerFragment();
+
+                fragment.setArguments(args);
+                return fragment;
+            }
+
+            @Override
+            public CharSequence getPageTitle(int position) {
+                return position+"";
+            }
+
+            @Override
+            public int getCount() {
+                return filteredImages.size();
+            }
+        });
+
+        tabLayout.setupWithViewPager(viewPager);
+        return rootView;
         // Inflate the layout for this fragment
-        View view = inflater.inflate(R.layout.fragment_map_footer, container, false);
 
-        addImage_btn = view.findViewById(R.id.addImage_btn);
-        viewImages_btn = view.findViewById(R.id.viewImages_btn);
-
-         if(!isAnUserClick && !isOnThisPosition()) {
-             removeAddImageButton();
-        }
-
-        viewImages_btn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                ((ButtonCallback ) getActivity()).launchAction(1, geoPoint);
-            }
-        });
-        addImage_btn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                ((ButtonCallback ) getActivity()).launchAction(2, geoPoint);
-            }
-        });
-        return view;
     }
 
     // TODO: Rename method, update argument and hook method into UI event
@@ -145,13 +143,4 @@ public class MapFooterFragment extends Fragment {
         // TODO: Update argument type and name
         void onFragmentInteraction(Uri uri);
     }
-
-    public interface ButtonCallback {
-
-        //You can add parameters if you need it
-        // 1 -- view Images
-        // 2 -- new Image
-        void launchAction(int action, CustomGeoPoint geoPoint);
-    }
-
 }

@@ -46,6 +46,7 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.FirebaseFirestoreSettings;
 import com.google.firebase.firestore.GeoPoint;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
@@ -72,7 +73,7 @@ import java.util.List;
 
 
 public class MapActivity extends FragmentActivity implements OnMapReadyCallback, GoogleMap.OnInfoWindowClickListener, GoogleMap.OnMarkerClickListener,
-        MarkerFragment.OnFragmentInteractionListener, MapFooterFragment.OnFragmentInteractionListener,GoogleMap.OnMapLongClickListener, MapFooterFragment.ButtonCallback {
+        MarkerFragment.OnFragmentInteractionListener, MapFooterFragment.OnFragmentInteractionListener,ImageTabsFragment.OnFragmentInteractionListener,GoogleMap.OnMapLongClickListener, MapFooterFragment.ButtonCallback {
 
     private static final String TAG = "MapFragmentActivity";
     private MapView mMapView;
@@ -120,6 +121,10 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         mDb = FirebaseFirestore.getInstance();
         session = new Session(MapActivity.this);
         startLocationService();
+        FirebaseFirestoreSettings settings = new FirebaseFirestoreSettings.Builder()
+                .setTimestampsInSnapshotsEnabled(true)
+                .build();
+        mDb.setFirestoreSettings(settings);
 
         /*
 
@@ -242,11 +247,12 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
     }
 
     private void filterImagesByGeoPoint(GeoPoint geoPoint, Marker marker, ImageMarkerClusterItem imageMarker, MyClusterItem userMarker) {
+        filteredImages.clear();
         for (MarkerObject image : mImageMarkersList) {
             if(image.getGeoPoint().equals(geoPoint))
                 filteredImages.add(image);
         }
-        addMapFooter( marker, imageMarker, null);
+        addMapFooter( marker, imageMarker, userMarker);
     }
 
     private void addImageMarkers() {
@@ -368,8 +374,10 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
             Log.d(TAG, "This is an User!");
             marker.getPosition();
             MyClusterItem userMarker = clusterManagerRenderer.getExtraMarkerInfo().get(marker.getId());
-            if(!userMarker.getUser().getUser_id().equals(session.getUser().getUser_id())) {
-                addMapFooter( marker, null, userMarker);
+            if(userMarker.getUser().getUser_id().equals(session.getUser().getUser_id())) {
+                Location currentLocation = session.getCurrentLocation();
+                GeoPoint geoPoint =  new GeoPoint(currentLocation.getLatitude(),currentLocation.getLongitude());;
+                filterImagesByGeoPoint(geoPoint, marker, null, userMarker);
             }
             return false;
         }
@@ -381,21 +389,33 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         return false;
     }
 
-    public void callMarkerFragment(CustomGeoPoint point, ImageMarkerClusterItem imageMarker, boolean isOwnerOfImage) {
+    public void callMarkerFragment(CustomGeoPoint point, boolean newImage) {
         onBackPressed();
         isOnMarkerFragment = true;
         CustomGeoPoint geoPoint = new CustomGeoPoint(point.getLatitude(),point.getLongitude());
         Bundle args = new Bundle();
         args.putParcelable("geoPoint", geoPoint);
-        args.putParcelable("imageMarker", imageMarker);
-        args.putBoolean("isOwnerOfImage", isOwnerOfImage);
         args.putParcelableArrayList("filteredImages", filteredImages);
+        args.putBoolean("isNewImage", newImage);
         FragmentManager fragmentManager = getSupportFragmentManager();
-        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction().addToBackStack("markerFrag");
-        MarkerFragment fragment = new MarkerFragment();
-        fragment.setArguments(args);
-        fragmentTransaction.add(R.id.general_container, fragment,"markerFragment");
-        fragmentTransaction.commit();
+
+
+        if(!newImage) {
+            ImageTabsFragment fragment = new ImageTabsFragment();
+            fragment.setArguments(args);
+            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction().addToBackStack("mapFragment");
+            fragmentTransaction.add(R.id.general_container, fragment,"imageTabsFragment");
+            fragmentTransaction.commit();
+
+        } else {
+            MarkerFragment fragment = new MarkerFragment();
+            fragment.setArguments(args);
+            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction().addToBackStack("mapFragment");
+            fragmentTransaction.add(R.id.general_container, fragment,"imageFragment");
+            fragmentTransaction.commit();
+        }
+
+
     }
 
 
@@ -436,7 +456,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         if(mapFragment!= null &&  mapFragment.getView() != null &&  mapFragment.getView().getVisibility() == View.INVISIBLE)
            mapFragment.getView().setVisibility(View.VISIBLE);
 
-        // cleaning all the markers after coming from MarkerFragment
+
         if(isOnMarkerFragment) {
            cleanTemporaryMarkers();
            isOnMarkerFragment = false;
@@ -531,17 +551,17 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
     }
 
     @Override
-    public void launchAction(int action, CustomGeoPoint geoPoint, ImageMarkerClusterItem imageMarker, boolean isOwnerOfImage) {
+    public void launchAction(int action, CustomGeoPoint geoPoint) {
 
         switch(action) {
             case 1:
-                callMarkerFragment(geoPoint,imageMarker, isOwnerOfImage);
+                callMarkerFragment(geoPoint, false);
                 break;
             case 2:
-                calculatePathToUser(geoPoint);
+                callMarkerFragment(geoPoint, true);
                 break;
             case 3:
-                deleteImageMarker(imageMarker);
+               // deleteImageMarker(imageMarker);
                 break;
             default:
                 return;

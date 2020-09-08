@@ -57,9 +57,9 @@ public class MarkerFragment extends Fragment {
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "geoPoint";
-    private static final String ARG_PARAM2 = "imageMarker";
-    private static final String ARG_PARAM3 = "isOwnerOfImage";
-    private static final String ARG_PARAM4 = "filteredImages";
+    private static final String ARG_PARAM2 = "isNewImage";
+    private static final String ARG_PARAM3 = "filteredImages";
+    private static final String ARG_PARAM4 = "currentPosition";
     private Button mButtonChooseImage;
     private Button mButtonBack;
     private Button mButtonSave;
@@ -69,7 +69,7 @@ public class MarkerFragment extends Fragment {
 
 
     private CustomGeoPoint geoPoint;
-    private ImageMarkerClusterItem imageMarker;
+    private boolean isNewImage;
     private boolean isOwnerOfImage;
 
     private StorageReference fileReference;
@@ -91,6 +91,9 @@ public class MarkerFragment extends Fragment {
     private Fragment MyFragment;
     private boolean imageHasChanged = false;
 
+    private int currentPosition;
+    private MarkerObject currentImage;
+
     private String eventID;
 
     public MarkerFragment() {
@@ -102,18 +105,18 @@ public class MarkerFragment extends Fragment {
      * this fragment using the provided parameters.
      *
      * @param geoPoint Parameter 1.
-     * @param imageMarker Parameter 2.
+     * @param isNewImage Parameter 2.
      * @return A new instance of fragment MarkerFragment.
      */
     // TODO: Rename and change types and number of parameters
-    public static MarkerFragment newInstance(CustomGeoPoint geoPoint, String imageMarker, boolean isOwnerOfImage, ArrayList<MarkerObject> filteredImages) {
+    public static MarkerFragment newInstance(CustomGeoPoint geoPoint, boolean isNewImage, ArrayList<MarkerObject> filteredImages, int currentPosition) {
 
         MarkerFragment fragment = new MarkerFragment();
         Bundle args = new Bundle();
         args.putParcelable(ARG_PARAM1, geoPoint);
-        args.putString(ARG_PARAM2, imageMarker);
-        args.putBoolean(ARG_PARAM3, isOwnerOfImage);
+        args.putBoolean(ARG_PARAM2, isNewImage);
         args.putParcelableArrayList(ARG_PARAM3, filteredImages);
+        args.putInt(ARG_PARAM4, currentPosition);
         fragment.setArguments(args);
         return fragment;
     }
@@ -121,22 +124,20 @@ public class MarkerFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        MyFragment = (MarkerFragment) getActivity().getSupportFragmentManager().findFragmentByTag("markerFragment");
         mDb = FirebaseFirestore.getInstance();
-        FirebaseFirestoreSettings settings = new FirebaseFirestoreSettings.Builder()
-                .setTimestampsInSnapshotsEnabled(true)
-                .build();
-        mDb.setFirestoreSettings(settings);
-        // MyFragment = getActivity().getSupportFragmentManager().getFragment(savedInstanceState, "markerFragment");
         if (getArguments() != null) {
             geoPoint = getArguments().getParcelable(ARG_PARAM1);
-            imageMarker = getArguments().getParcelable(ARG_PARAM2);
-            isOwnerOfImage = getArguments().getBoolean(ARG_PARAM3);
-            filteredImages = getArguments().getParcelableArrayList(ARG_PARAM4);
+            isNewImage = getArguments().getBoolean(ARG_PARAM2);
+            filteredImages = getArguments().getParcelableArrayList(ARG_PARAM3);
+            currentPosition = getArguments().getInt(ARG_PARAM4);
 
         }
-        Log.d(TAG, "addMapMarkers: location: " + geoPoint.getLatitude() + ' ' + geoPoint.getLongitude());
 
+        if(isNewImage) {
+            MyFragment = (MarkerFragment) getActivity().getSupportFragmentManager().findFragmentByTag("imageFragment");
+        } else MyFragment = (MarkerFragment)getActivity().getSupportFragmentManager().findFragmentByTag("android:switcher:viewPager:" + currentPosition);
+
+        currentImage =  isNewImage  ? null : filteredImages.get(currentPosition);
         mStorageRef = FirebaseStorage.getInstance().getReference("uploadsMap");
         session = new Session(getContext());
         eventID = session.getEvent().getEventID();
@@ -148,7 +149,7 @@ public class MarkerFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         mImageView = getView().findViewById(R.id.image_view);
-        if(imageMarker != null && imageMarker.getIconPicture() != null){
+        if(currentImage != null && currentImage.getImageUrl() != null){
             setPreviousInfo();
         }
         super.onViewCreated(view, savedInstanceState);
@@ -173,9 +174,9 @@ public class MarkerFragment extends Fragment {
 
     private void setPreviousInfo() {
 
-        Picasso.get().load(imageMarker.getIconPicture()).fit().centerCrop().into(mImageView);
-        imageDescription.setText(imageMarker.getDescription());
-        imageName.setText(imageMarker.getTitle());
+        Picasso.get().load(currentImage.getImageUrl()).fit().centerCrop().into(mImageView);
+        imageDescription.setText(currentImage.getDescription());
+        imageName.setText(currentImage.getImageName());
 
     }
 
@@ -221,7 +222,7 @@ public class MarkerFragment extends Fragment {
         imageName = view.findViewById(R.id.edit_text_file_name);
         imageDescription =  view.findViewById(R.id.edit_text_description);
 
-        if(!isOwnerOfImage)
+        if(!isNewImage)
             this.canOnlyViewImage();
 
         mButtonChooseImage.setOnClickListener(new View.OnClickListener() {
@@ -278,14 +279,14 @@ public class MarkerFragment extends Fragment {
 
     @SuppressWarnings("unchecked")
    public void saveEditMarkerObject(Uri uri)  {
-        if(imageMarker != null) {
+        if(currentImage != null) {
 
           HashMap<String,Object> markerHashMap = new HashMap();
-            markerHashMap.put("imageUrl", uri != null ? uri.toString() :  (imageMarker != null ? imageMarker.getIconPicture() : ' '));
+            markerHashMap.put("imageUrl", uri != null ? uri.toString() :  (currentImage.getImageUrl() != null ? currentImage.getImageUrl()  : ' '));
             markerHashMap.put("description", imageDescription.getText().toString());
             markerHashMap.put("imageName", imageName.getText().toString());
-            if(imageMarker.getId() != null) {
-                mDb.collection(EVENTSCOLLECTION).document(eventID).collection(IMAGEMARKERSCOLLECTION).document(imageMarker.getId())
+            if(currentImage != null) {
+                mDb.collection(EVENTSCOLLECTION).document(eventID).collection(IMAGEMARKERSCOLLECTION).document(currentImage.getId())
                         .update(markerHashMap).addOnCompleteListener(new OnCompleteListener<Void>() {
                     @Override
                     public void onComplete(@NonNull Task<Void> task) {
@@ -302,6 +303,7 @@ public class MarkerFragment extends Fragment {
                 Toast.makeText(getContext(), "There was a problem getting the image Marker!", Toast.LENGTH_SHORT).show();
             }
         } else {
+
 
             // Não sei se é muito correcto o objecto ter o id a null neste caso apesar de eu depois ir buscar o id ao document e não ao objecto
             MarkerObject markerObject = new MarkerObject(geoPoint, session.getUser().getUser_id(), uri.toString(), session.getEvent().getEventID(),

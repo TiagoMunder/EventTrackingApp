@@ -1,9 +1,9 @@
 <resources>
     <string name="app_name">EventTrackingApp</string>
     <string name="action_settings">Settings</string>
-    <string name="view_image">View Image</string>
+    <string name="view_images">View Images</string>
     <string name="calculate_direction">Calculate Direction</string>
-    <string name="add_edit_image">Add/Edit Image</string>
+    <string name="add_edit_image">Add Image</string>
     <string name="delete_image">Delete Image</string>
     <string name="message_write_hint">Write a message</string>
     <string name="event_name">Event Name</string>
@@ -36,5 +36,8 @@
 
     <string name="fire_store_users">Users</string>
     <string name="fire_store_users_locations">User Locations"</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 
 </resources>

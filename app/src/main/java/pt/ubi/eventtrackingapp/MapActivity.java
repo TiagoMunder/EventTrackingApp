@@ -256,6 +256,19 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         addMapFooter( marker, imageMarker, userMarker);
     }
 
+    private boolean checkIfAnotherMarkerInThisPosition(CustomGeoPoint newMarkerPosition) {
+        LatLng newMarkerLat = new LatLng(newMarkerPosition.getLatitude(), newMarkerPosition.getLongitude());
+        for(ImageMarkerClusterItem imageMarker: mImageMarkersClusterItems) {
+            if(imageMarker.getPosition().equals(newMarkerLat))
+                return true;
+        }
+        for(MyClusterItem userMarker: mClusterItems) {
+            if(userMarker.getPosition().equals(newMarkerLat))
+                return true;
+        }
+        return false;
+    }
+
     private void addImageMarkers() {
         if(mGoogleMap != null){
 
@@ -273,7 +286,8 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
             }
 
             for(MarkerObject imageMarker: mImageMarkersList){
-
+                if(checkIfAnotherMarkerInThisPosition(imageMarker.getGeoPoint()))
+                    continue;
                 Log.d(TAG, "addMapMarkers: location: " + imageMarker.getGeoPoint().toString());
                 try{
                     String snippet = "Not sure what to place here"; // TODO

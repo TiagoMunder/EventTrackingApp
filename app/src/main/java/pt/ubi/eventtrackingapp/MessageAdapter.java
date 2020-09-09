@@ -67,8 +67,6 @@ public class MessageAdapter extends ArrayAdapter<Message> {
             GradientDrawable drawable = (GradientDrawable) holder.avatar.getBackground();
             if(isAdmin) drawable.setColor(Color.parseColor("#eaed2d"));
             else drawable.setColor(Color.parseColor("#7d7d6f"));
-
-
         }
         result = convertView;
         convertView.setTag(holder);

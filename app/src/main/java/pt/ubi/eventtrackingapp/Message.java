@@ -7,8 +7,18 @@ public class Message {
     private Boolean sendByUs;
     private String eventId;
     private String date;
+    private Boolean isAdmin;
 
     public Message() {}
+
+    public Message(String messageOwner, String messageBody, Boolean sendByUs, String eventId, String date, Boolean isAdmin) {
+        this.messageOwner = messageOwner;
+        this.messageBody = messageBody;
+        this.sendByUs = sendByUs;
+        this.eventId = eventId;
+        this.date =  date;
+        this.isAdmin = isAdmin;
+    }
 
     public Message(String messageOwner, String messageBody, Boolean sendByUs, String eventId, String date) {
         this.messageOwner = messageOwner;
@@ -16,6 +26,7 @@ public class Message {
         this.sendByUs = sendByUs;
         this.eventId = eventId;
         this.date =  date;
+        this.isAdmin = false;
     }
 
 
@@ -58,5 +69,13 @@ public class Message {
 
     public void setDate(String date) {
         this.date = date;
+    }
+
+    public Boolean getIsAdmin() {
+        return isAdmin;
+    }
+
+    public void setIsAdmin(Boolean isAdmin) {
+        this.isAdmin = isAdmin;
     }
 }

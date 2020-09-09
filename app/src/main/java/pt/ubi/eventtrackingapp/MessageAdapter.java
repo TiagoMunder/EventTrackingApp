@@ -3,6 +3,7 @@ package pt.ubi.eventtrackingapp;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
+import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
@@ -40,8 +41,10 @@ public class MessageAdapter extends ArrayAdapter<Message> {
         Boolean sendByUs = getItem(position).getSendByUs();
         String date = getItem(position).getDate();
         String eventId = getItem(position).getEventId();
+        Boolean isAdmin = getItem(position).getIsAdmin();
 
-        Message message = new Message(messageBody, owner, sendByUs,eventId,date);
+
+        Message message = new Message(messageBody, owner, sendByUs,eventId,date, isAdmin);
 
         final View result;
         ViewHolder holder;
@@ -62,7 +65,9 @@ public class MessageAdapter extends ArrayAdapter<Message> {
             holder.avatar = (View) convertView.findViewById(R.id.avatar);
             holder.messageBody.setText(messageBody);
             GradientDrawable drawable = (GradientDrawable) holder.avatar.getBackground();
-            drawable.setColor(Color.parseColor("#636161"));
+            if(isAdmin) drawable.setColor(Color.parseColor("#eaed2d"));
+            else drawable.setColor(Color.parseColor("#7d7d6f"));
+
 
         }
         result = convertView;

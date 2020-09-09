@@ -112,7 +112,8 @@ public class ChatActivity extends AppCompatActivity {
 
                             if (doc.get("messageBody") != null && doc.get("sender") != null  && doc.get("time") != null) {
                                 boolean sendByUs = doc.get("sender").equals(currentUser);
-                                Message message = new Message(doc.get("sender").toString(), doc.get("messageBody").toString(),sendByUs, doc.get("eventId").toString(), doc.get("time").toString());
+                                boolean isAdmin = doc.get("sender").equals(session.getEvent().getOwner());
+                                Message message = new Message(doc.get("sender").toString(), doc.get("messageBody").toString(),sendByUs, doc.get("eventId").toString(), doc.get("time").toString(), isAdmin);
                                 messageList.add(message);
                             }
                         }

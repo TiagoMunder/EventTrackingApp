@@ -79,6 +79,13 @@ public class myClusterManagerRenderer extends DefaultClusterRenderer<MyClusterIt
         }
     }
 
+    public void setUpdateMarkerSnippet(MyClusterItem clusterMarker, String snippet) {
+        Marker marker = getMarker(clusterMarker);
+        if (marker != null) {
+            marker.setSnippet(snippet);
+        }
+    }
+
     public  HashMap<String, MyClusterItem> getExtraMarkerInfo() {
         return extraMarkerInfo;
     }

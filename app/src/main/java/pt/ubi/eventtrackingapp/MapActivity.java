@@ -72,7 +72,7 @@ import java.util.HashMap;
 import java.util.List;
 
 
-public class MapActivity extends FragmentActivity implements OnMapReadyCallback, GoogleMap.OnInfoWindowClickListener, GoogleMap.OnMarkerClickListener,
+public class MapActivity extends FragmentActivity implements OnMapReadyCallback, GoogleMap.OnMarkerClickListener,
         MarkerFragment.OnFragmentInteractionListener, MapFooterFragment.OnFragmentInteractionListener,ImageTabsFragment.OnFragmentInteractionListener,GoogleMap.OnMapLongClickListener, MapFooterFragment.ButtonCallback {
 
     private static final String TAG = "MapFragmentActivity";
@@ -104,6 +104,9 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
 
     private boolean isUserLocationRunning = false;
 
+    private MyClusterItem currentClusterItem;
+    private String distanceTraveled = "0";
+
     private Session session;
 
 
@@ -125,6 +128,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                 .setTimestampsInSnapshotsEnabled(true)
                 .build();
         mDb.setFirestoreSettings(settings);
+        updateDistanceTraveled();
 
         /*
 
@@ -183,13 +187,14 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
             mImageMarkerClusterManager = new ClusterManager<ImageMarkerClusterItem>(getApplicationContext(), mGoogleMap);
         }
 
-        // now just use this to create the menu with options 1- choose image 2 - delete
-        mGoogleMap.setOnInfoWindowClickListener(this);
-
         mGoogleMap.setOnMarkerClickListener(this);
         mGoogleMap.setOnMapLongClickListener(this);
         listenMyCurrentPositionChanged();
 
+    }
+
+    private boolean checkUserIsCurrentUser(String userId) {
+        return userId.equals(FirebaseAuth.getInstance().getUid());
     }
 
     private void addMapMarkers(){
@@ -212,16 +217,12 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
 
                 Log.d(TAG, "addMapMarkers: location: " + userLocationParcelable.getGeoPoint().toString());
                 try{
-                    String snippet = "";
-                    if(userLocationParcelable.getUser().getUser_id().equals(FirebaseAuth.getInstance().getUid())){
-                        snippet = "This is you";
+                    String snippet = userLocationParcelable.getUser().getUsername();
+                    if(checkUserIsCurrentUser(userLocationParcelable.getUser().getUser_id())){
+                        snippet = "Distance traveled: " + distanceTraveled;
                     }
-                    else{
-                        snippet = "Determine route to " + userLocationParcelable.getUser().getUsername() + "?";
-                    }
+
                     String avatar = null;
-
-
                     avatar = userLocationParcelable.getUser().getmImageUrl();
                     MyClusterItem newClusterMarker = new MyClusterItem(
                             new LatLng(userLocationParcelable.getGeoPoint().getLatitude(), userLocationParcelable.getGeoPoint().getLongitude()),
@@ -232,8 +233,8 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                     );
                     mClusterManager.addItem(newClusterMarker);
                     mClusterItems.add(newClusterMarker);
-
-
+                    if(checkUserIsCurrentUser(userLocationParcelable.getUser().getUser_id()))
+                        currentClusterItem = newClusterMarker;
                 }catch (NullPointerException e){
                     Log.e(TAG, "addMapMarkers: NullPointerException: " + e.getMessage() );
                 }
@@ -324,11 +325,32 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
 
     }
 
+    private void updateDistanceTraveled() {
+        final String key =  session.getUser().getUser_id() + '_' + this.eventID;
+        FirebaseFirestore.getInstance().collection(USERPOSITIONSINEVENT).whereEqualTo(USERPOSITIONKEY, key).addSnapshotListener(new EventListener<QuerySnapshot>() {
+            @Override
+            public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
+                if (e != null) {
+                    Log.w(TAG, "Listen failed.", e);
+                    return;
+                }
 
-    @Override
-    public void onInfoWindowClick(Marker marker) {
+                for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
 
+                if(doc.get("distanceTraveled") != null) {
+                    Log.d(TAG, doc.get("distanceTraveled").toString());
+                    if(currentClusterItem != null) {
+                        String newDistance = "Distance traveled: " + doc.get("distanceTraveled").toString() + "m";
+                        distanceTraveled = newDistance;
+                        clusterManagerRenderer.setUpdateMarkerSnippet(currentClusterItem, newDistance);
+                    }
+                }
+
+                }
+            }
+        });
     }
+
 
     private void addingMarkerDynamically(MarkerObject imageMarker) {
         Log.d(TAG, "addMapMarkers: location: " + imageMarker.getGeoPoint().toString());

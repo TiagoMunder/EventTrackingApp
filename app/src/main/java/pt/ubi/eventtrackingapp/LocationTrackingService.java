@@ -122,6 +122,7 @@ public class LocationTrackingService extends Service {
                         if (location != null ) {
                             User user = session.getUser();
                             session.setCurrentLocation(location);
+
                             CustomGeoPoint geoPoint = new CustomGeoPoint(location.getLatitude(), location.getLongitude());
                             UserLocation userLocation = new UserLocation(geoPoint, null, user);
                             saveUserLocation(userLocation);
@@ -212,6 +213,7 @@ public class LocationTrackingService extends Service {
         float distanceAlreadyTraveled = getDistanceTraveled(document);
         float newDistanceTraveled = getmetersToLocation(dist, origen.getLatitude(), origen.getLongitude());
         documentReference.update("distanceTraveled", (distanceAlreadyTraveled + newDistanceTraveled));
+        session.setCurrentDistanceTraveled(String.valueOf(newDistanceTraveled));
 
     }
 

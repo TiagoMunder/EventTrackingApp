@@ -7,6 +7,7 @@ import android.preference.PreferenceManager;
 
 import com.google.gson.Gson;
 
+import static pt.ubi.eventtrackingapp.Constants.CURRENTDISTANCETRAVELED;
 import static pt.ubi.eventtrackingapp.Constants.CURRENTLOCATION;
 
 public class Session {
@@ -47,6 +48,19 @@ public class Session {
         Gson gson = new Gson();
         String jsonCurrentLocation = gson.toJson(currentLocation);
         prefs.edit().putString(CURRENTLOCATION, jsonCurrentLocation).apply();
+    }
+
+    public String getCurrentDistanceTraveled() {
+        String currentDistanceTraveled = prefs.getString(CURRENTDISTANCETRAVELED,"0");
+        Gson gson = new Gson();
+        String obj = gson.fromJson(currentDistanceTraveled, String.class);
+        return obj;
+    }
+
+    public void setCurrentDistanceTraveled(String currentDistanceTraveled) {
+        Gson gson = new Gson();
+        String jsonCurrentDistanceTraveled = gson.toJson(currentDistanceTraveled);
+        prefs.edit().putString(CURRENTDISTANCETRAVELED, jsonCurrentDistanceTraveled).apply();
     }
 
     public void setEvent(Event event) {

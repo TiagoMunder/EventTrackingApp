@@ -7,6 +7,7 @@ public class Constants {
     public static final String MAPVIEW_BUNDLE_KEY = "MapViewBundleKey";
     public static final String GOOGLE_MAP_API_KEY = "AIzaSyBJnHM25HxsjRR0HlGp29C6SoCBLkbJKN8";
     public static final String CURRENTLOCATION = "currentLocation";
+    public static final String CURRENTDISTANCETRAVELED = "currentDistanceTraveled";
 
 
 

@@ -3,6 +3,7 @@ package pt.ubi.eventtrackingapp;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
@@ -128,6 +129,9 @@ public class myClusterManagerRenderer extends DefaultClusterRenderer<MyClusterIt
         canvas.drawARGB(0, 0, 0, 0);
         canvas.drawCircle(bitmap.getWidth() / 2, bitmap.getHeight() / 2, bitmap.getWidth() / 2, paint);
         paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_IN));
+        paint.setColor(Color.GREEN);
+        paint.setStrokeWidth(10);
+        paint.setStyle(Paint.Style.STROKE);
         canvas.drawBitmap(bitmap, rect, rect, paint);
 
         return output;

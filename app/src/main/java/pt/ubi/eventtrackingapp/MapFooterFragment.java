@@ -26,10 +26,12 @@ public class MapFooterFragment extends Fragment {
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "geoPoint";
     private static final String ARG_PARAM2 = "isAnUserClick";
+    private static final String ARG_PARAM3 = "hasImages";
 
     // TODO: Rename and change types of parameters
     private CustomGeoPoint geoPoint;
     private boolean isAnUserClick;
+    private boolean hasImages;
 
     private Button addImage_btn,viewImages_btn;
 
@@ -50,11 +52,12 @@ public class MapFooterFragment extends Fragment {
      * @return A new instance of fragment MapFooterFragment.
      */
     // TODO: Rename and change types and number of parameters
-    public static MapFooterFragment newInstance(String param1, boolean param2) {
+    public static MapFooterFragment newInstance(String param1, boolean param2, boolean param3) {
         MapFooterFragment fragment = new MapFooterFragment();
         Bundle args = new Bundle();
         args.putString(ARG_PARAM1, param1);
         args.putBoolean(ARG_PARAM2, param2);
+        args.putBoolean(ARG_PARAM3, param3);
         fragment.setArguments(args);
         return fragment;
     }
@@ -65,6 +68,7 @@ public class MapFooterFragment extends Fragment {
         if (getArguments() != null) {
                 geoPoint = getArguments().getParcelable(ARG_PARAM1);
                 isAnUserClick = getArguments().getBoolean(ARG_PARAM2);
+                hasImages = getArguments().getBoolean(ARG_PARAM3);
             }
         session = new Session(getActivity());
     }
@@ -88,9 +92,12 @@ public class MapFooterFragment extends Fragment {
         addImage_btn = view.findViewById(R.id.addImage_btn);
         viewImages_btn = view.findViewById(R.id.viewImages_btn);
 
-         if(!isAnUserClick && !isOnThisPosition()) {
+         if(!isAnUserClick || !isOnThisPosition()) {
              removeAddImageButton();
         }
+
+        if(!hasImages)
+            viewImages_btn.setEnabled(false);
 
         viewImages_btn.setOnClickListener(new View.OnClickListener() {
             @Override

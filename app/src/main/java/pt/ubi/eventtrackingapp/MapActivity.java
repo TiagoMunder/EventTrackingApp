@@ -128,7 +128,6 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                 .setTimestampsInSnapshotsEnabled(true)
                 .build();
         mDb.setFirestoreSettings(settings);
-        updateDistanceTraveled();
 
         /*
 
@@ -197,7 +196,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         return userId.equals(FirebaseAuth.getInstance().getUid());
     }
 
-    private void addMapMarkers(){
+    private void addMapMarkers() {
 
         if(mGoogleMap != null){
 
@@ -217,9 +216,9 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
 
                 Log.d(TAG, "addMapMarkers: location: " + userLocationParcelable.getGeoPoint().toString());
                 try{
-                    String snippet = userLocationParcelable.getUser().getUsername();
+                    String snippet = "";
                     if(checkUserIsCurrentUser(userLocationParcelable.getUser().getUser_id())){
-                        snippet = "Distance traveled: " + distanceTraveled;
+                        snippet = "Distance traveled: " + session.getCurrentDistanceTraveled();
                     }
 
                     String avatar = null;
@@ -243,6 +242,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
 
             setUserPosition();
             mClusterManager.cluster();
+            updateDistanceTraveled();
 
         }
     }
@@ -281,8 +281,8 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                 mImageMarkerClusterManager.setRenderer(imageClusterManagerRenderer);
             } else {
                 mImageMarkerClusterManager.clearItems();
+                imageClusterManagerRenderer.clearExtraMarkerInfo();
                 mImageMarkersClusterItems.clear();
-
             }
 
             for(MarkerObject imageMarker: mImageMarkersList){
@@ -357,6 +357,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                         String newDistance = "Distance traveled: " + doc.get("distanceTraveled").toString() + "m";
                         distanceTraveled = newDistance;
                         clusterManagerRenderer.setUpdateMarkerSnippet(currentClusterItem, newDistance);
+                        session.setCurrentDistanceTraveled(doc.get("distanceTraveled").toString());
                     }
                 }
 
@@ -405,21 +406,16 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         if (footer != null && footer.isVisible()) {
             onBackPressed();
         }
-
+        GeoPoint geoPoint = new GeoPoint(marker.getPosition().latitude,marker.getPosition().longitude);
         if(marker != null && marker.getTag() != null  && marker.getTag().hashCode()== MyClusterItem.class.hashCode()){
             Log.d(TAG, "This is an User!");
-            marker.getPosition();
             MyClusterItem userMarker = clusterManagerRenderer.getExtraMarkerInfo().get(marker.getId());
-            if(userMarker.getUser().getUser_id().equals(session.getUser().getUser_id())) {
-                Location currentLocation = session.getCurrentLocation();
-                GeoPoint geoPoint =  new GeoPoint(currentLocation.getLatitude(),currentLocation.getLongitude());;
-                filterImagesByGeoPoint(geoPoint, marker, null, userMarker);
-            }
+            filterImagesByGeoPoint(geoPoint, marker, null, userMarker);
             return false;
         }
 
         ImageMarkerClusterItem imageMarker = imageClusterManagerRenderer.getExtraMarkerInfo().get(marker.getId());
-        GeoPoint geoPoint = new GeoPoint(marker.getPosition().latitude,marker.getPosition().longitude);
+
         filterImagesByGeoPoint(geoPoint, marker, imageMarker, null);
 
         return false;
@@ -467,17 +463,15 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
     }
 
     public void addMapFooter(Marker marker, ImageMarkerClusterItem imageMarker, MyClusterItem userMarker) {
-        boolean isOwnerOfImage = false;
+
         setLayoutWeight(child1_Linear_layout,80);
         CustomGeoPoint geoPoint = new CustomGeoPoint(marker.getPosition().latitude,marker.getPosition().longitude);
         boolean isAnUserClick = userMarker != null;
-        if( userMarker == null)
-            isOwnerOfImage = this.verifyOwnerOfImage(imageMarker);
         Bundle args = new Bundle();
         args.putParcelable("geoPoint", geoPoint);
-        args.putParcelable("imageMarker", imageMarker);
-        args.putBoolean("isOwnerOfImage", isOwnerOfImage);
         args.putBoolean("isAnUserClick", isAnUserClick);
+        args.putBoolean("hasImages", filteredImages.size() > 0);
+
         FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction().addToBackStack("footerFrag");
         MapFooterFragment fragment = new MapFooterFragment();

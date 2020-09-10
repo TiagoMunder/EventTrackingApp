@@ -68,6 +68,10 @@ public class ImageMarkerClusterManagerRenderer extends DefaultClusterRenderer<Im
         return extraMarkerInfo;
     }
 
+    public void clearExtraMarkerInfo() {
+        extraMarkerInfo.clear();
+    }
+
     @Override
     protected void onClusterItemRendered(final ImageMarkerClusterItem item, final Marker marker) {
 
@@ -82,8 +86,6 @@ public class ImageMarkerClusterManagerRenderer extends DefaultClusterRenderer<Im
                 marker.setVisible(true);
                 marker.setTag(ImageMarkerClusterItem.class);
                 extraMarkerInfo.put(marker.getId(), item);
-
-
 
             }
 

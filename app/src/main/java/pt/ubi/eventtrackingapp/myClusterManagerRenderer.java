@@ -44,7 +44,6 @@ public class myClusterManagerRenderer extends DefaultClusterRenderer<MyClusterIt
     private final ImageView imageView;
     private final IconGenerator iconGenerator;
     private HashMap<String, MyClusterItem> extraMarkerInfo = new HashMap<String, MyClusterItem>();
-    private Session session;
 
 
 

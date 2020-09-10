@@ -44,6 +44,7 @@ public class myClusterManagerRenderer extends DefaultClusterRenderer<MyClusterIt
     private final ImageView imageView;
     private final IconGenerator iconGenerator;
     private HashMap<String, MyClusterItem> extraMarkerInfo = new HashMap<String, MyClusterItem>();
+    private Session session;
 
 
 
@@ -56,7 +57,6 @@ public class myClusterManagerRenderer extends DefaultClusterRenderer<MyClusterIt
 
         markerWidth = (int) context.getResources().getDimension(R.dimen.custom_marker_image);
         markerHeight = (int) context.getResources().getDimension(R.dimen.custom_marker_image);
-        int padding = (int) context.getResources().getDimension(R.dimen.custom_marker_padding);
 
 
     }
@@ -103,7 +103,7 @@ public class myClusterManagerRenderer extends DefaultClusterRenderer<MyClusterIt
             public void onSuccess() {
                 BitmapDrawable drawable = (BitmapDrawable) imageView.getDrawable();
                 Bitmap bitmap = drawable.getBitmap();
-                bitmap = getCircledBitmap(bitmap);
+                bitmap = getCircledBitmap(bitmap, item, context);
                 marker.setIcon(BitmapDescriptorFactory.fromBitmap(bitmap));
                 marker.setVisible(true);
                 marker.setTag(MyClusterItem.class);
@@ -119,7 +119,8 @@ public class myClusterManagerRenderer extends DefaultClusterRenderer<MyClusterIt
 
         });
     }
-    public static Bitmap getCircledBitmap(Bitmap bitmap) {
+    public static Bitmap getCircledBitmap(Bitmap bitmap, MyClusterItem item, Context context) {
+        Session session = new Session(context);
         Bitmap output = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(), Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(output);
         final Paint paint = new Paint();
@@ -132,7 +133,8 @@ public class myClusterManagerRenderer extends DefaultClusterRenderer<MyClusterIt
         canvas.drawBitmap(bitmap, rect, rect, paint);
 
         Paint borderPaint = new Paint();
-        borderPaint.setColor(Color.RED);
+        int borderColor = item.getUser().getUsername().equals(session.getEvent().getOwner()) ? Color.YELLOW : Color.RED;
+        borderPaint.setColor(borderColor);
         borderPaint.setStyle(Paint.Style.STROKE);
         borderPaint.setAntiAlias(true);
         borderPaint.setStrokeWidth(2);

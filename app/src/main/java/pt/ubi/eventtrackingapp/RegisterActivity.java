@@ -26,6 +26,8 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
+import java.net.URI;
+
 
 public class RegisterActivity extends AppCompatActivity {
     private TextInputEditText name, email, password, c_password, age, phoneNumber, username, nationality;
@@ -46,6 +48,7 @@ public class RegisterActivity extends AppCompatActivity {
 
     private static final String TAG = "RegisterActivity";
     private static final int PICK_IMAGE_REQUEST = 1;
+    private static final String default_user_image = "https://firebasestorage.googleapis.com/v0/b/eventtacking.appspot.com/o/uploads%2F1600170472363.jpg?alt=media&token=737e774c-8d36-4cd9-b084-67737ce8c6a7";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -115,12 +118,12 @@ public class RegisterActivity extends AppCompatActivity {
         final String c_password = this.c_password.getText().toString().trim();
         if(password.length() < 6) {
             Log.d(TAG, "The password needs at least 6 characters!");
-            Toast.makeText(RegisterActivity.this, "The password needs at least 6 characters!" , Toast.LENGTH_SHORT);
+            Toast.makeText(RegisterActivity.this, "The password needs at least 6 characters!" , Toast.LENGTH_SHORT).show();
             return false;
         }
         if(!password.equals(c_password)) {
             Log.d(TAG, "The passwords do not match!");
-            Toast.makeText(RegisterActivity.this, "The passwords do not match! " , Toast.LENGTH_SHORT);
+            Toast.makeText(RegisterActivity.this, "The passwords do not match! " , Toast.LENGTH_SHORT).show();
             return false;
         }
 
@@ -135,7 +138,7 @@ public class RegisterActivity extends AppCompatActivity {
 
 
 
-    public void registerNewEmail(){
+    public void registerNewEmail() {
         // i will change this because i need to send default image if the user doesn't upload any image
         // what i will probably do is have a default image in Storage and just send the imageUrl of that image in that case
         if(mImageUri!=null) {
@@ -156,10 +159,12 @@ public class RegisterActivity extends AppCompatActivity {
             ).addOnFailureListener(new OnFailureListener() {
                 @Override
                 public void onFailure(@NonNull Exception e) {
-                    Toast.makeText(RegisterActivity.this, "Failed to save image in Storage! ", Toast.LENGTH_SHORT);
+                    Toast.makeText(RegisterActivity.this, "Failed to save image in Storage! ", Toast.LENGTH_SHORT).show();
                 }
             });
 
+        } else {
+            createUserWithFirebase(Uri.parse(default_user_image));
         }
 
     }

@@ -33,8 +33,6 @@ public class ChatActivity extends AppCompatActivity {
     private ImageButton btn_send;
     private Session session;
     private String  eventID;
-    private ArrayList<User> userList = new ArrayList<>();
-    private ArrayList<UserLocation> mUserListLocation = new ArrayList<>();
     private String currentUser;
 
     @Override
@@ -52,7 +50,6 @@ public class ChatActivity extends AppCompatActivity {
             Log.d(TAG, " Error getting Event");
             startActivity(new Intent(ChatActivity.this, DashboardActivity.class));
         }
-        userList = intent.getParcelableArrayListExtra("UsersList");
         getMessagesFromServer();
 
 
@@ -75,10 +72,6 @@ public class ChatActivity extends AppCompatActivity {
     }
 
     private void addMessage(String messageBody) {
-        FirebaseFirestoreSettings settings = new FirebaseFirestoreSettings.Builder()
-                .setTimestampsInSnapshotsEnabled(true)
-                .build();
-        mDb.setFirestoreSettings(settings);
         Long tsLong = System.currentTimeMillis()/1000;
         MessageServer message = new MessageServer(currentUser, messageBody, eventID, tsLong.toString());
         DocumentReference newMessageRef = mDb.collection("Chat").document();
@@ -98,7 +91,7 @@ public class ChatActivity extends AppCompatActivity {
     protected void getMessagesFromServer() {
         mDb.collection("Chat")
                 .whereEqualTo("eventId", eventID).orderBy("time")
-                .addSnapshotListener(new EventListener<QuerySnapshot>() {
+                .addSnapshotListener(ChatActivity.this, new EventListener<QuerySnapshot>() {
                     @Override
                     public void onEvent(@Nullable QuerySnapshot value,
                                         @Nullable FirebaseFirestoreException e) {
@@ -123,41 +116,5 @@ public class ChatActivity extends AppCompatActivity {
                 });
     }
 
-    private void addUserToEvent() {
-        boolean userAlreadyIntheEvent =false;
-        for (int i=0 ; i<userList.size(); i++){
-            if(userList.get(i).getUsername().equals(session.getUsername()))
-                userAlreadyIntheEvent =  true;
 
-        }
-        if(!userAlreadyIntheEvent) {
-            mDb.collection("Events").document(eventID).collection("Users").add(session.getUser());
-        }
-    }
-
-    private void   getUsersOfTheEvent() {
-        mDb.collection("Events").document(eventID).collection("Users")
-                .addSnapshotListener(new EventListener<QuerySnapshot>() {
-                    @Override
-                    public void onEvent(@Nullable QuerySnapshot value,
-                                        @Nullable FirebaseFirestoreException e) {
-                        if (e != null) {
-                            Log.w(TAG, "Listen failed.", e);
-                            return;
-                        }
-
-                        for (QueryDocumentSnapshot doc : value) {
-
-                            if (doc.get("username") != null && doc.get("email") != null) {
-
-                                User user = new User(doc.get("email").toString(), doc.get("username").toString());
-                                userList.add(user);
-                            }
-                        }
-                        addUserToEvent();
-
-                    }
-                });
-
-    }
 }

@@ -107,7 +107,7 @@ public class EventMainCopy extends AppCompatActivity {
 
     private void getUsersOfTheEvent() {
         mDb.collection("Events").document(eventID).collection("Users")
-                .addSnapshotListener(new EventListener<QuerySnapshot>() {
+                .addSnapshotListener(EventMainCopy.this,new EventListener<QuerySnapshot>() {
                     @Override
                     public void onEvent(@Nullable QuerySnapshot value,
                                         @Nullable FirebaseFirestoreException e) {

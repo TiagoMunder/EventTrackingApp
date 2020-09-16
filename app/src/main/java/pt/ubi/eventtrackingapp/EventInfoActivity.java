@@ -44,10 +44,6 @@ public class EventInfoActivity extends AppCompatActivity {
     }
 
     private void getEventInfo() {
-        FirebaseFirestoreSettings settings = new FirebaseFirestoreSettings.Builder()
-                .setTimestampsInSnapshotsEnabled(true)
-                .build();
-        mDb.setFirestoreSettings(settings);
         DocumentReference docRef = mDb.collection("Events").document(eventID);
         docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @Override

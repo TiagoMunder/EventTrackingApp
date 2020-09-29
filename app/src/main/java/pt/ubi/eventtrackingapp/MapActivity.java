@@ -48,6 +48,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.FirebaseFirestoreSettings;
 import com.google.firebase.firestore.GeoPoint;
+import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.maps.android.clustering.ClusterManager;
@@ -92,6 +93,8 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
     private ArrayList<Marker> temporaryMarkers = new ArrayList<>();
     private ArrayList<UserPosition> myPositions = new ArrayList<>();
     private ArrayList<MarkerObject> filteredImages = new ArrayList<>();
+
+    private ListenerRegistration listenUsers, listenUserPositions, listenerImages;
 
     private Handler mHandler = new Handler();
     private Runnable mRunnable;
@@ -158,6 +161,14 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
 
     }
 
+    protected void onDestroy() {
+        super.onDestroy();
+        listenerImages.remove();
+        listenUserPositions.remove();
+        listenUsers.remove();
+
+    }
+
     @Override
     public void onMapReady(GoogleMap googleMap) {
 
@@ -220,8 +231,8 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
     }
 
     private void getUsersOfTheEvent() {
-        mDb.collection("Events").document(eventID).collection("Users")
-                .addSnapshotListener(MapActivity.this, new EventListener<QuerySnapshot>() {
+        listenUsers = mDb.collection("Events").document(eventID).collection("Users")
+                .addSnapshotListener(new EventListener<QuerySnapshot>() {
                     @Override
                     public void onEvent(@Nullable QuerySnapshot value,
                                         @Nullable FirebaseFirestoreException e) {
@@ -443,7 +454,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
 
     private void updateDistanceTraveled() {
         final String key =  session.getUser().getUser_id() + '_' + this.eventID;
-        FirebaseFirestore.getInstance().collection(USERPOSITIONSINEVENT).whereEqualTo(USERPOSITIONKEY, key).addSnapshotListener(MapActivity.this, new EventListener<QuerySnapshot>() {
+        listenUserPositions = FirebaseFirestore.getInstance().collection(USERPOSITIONSINEVENT).whereEqualTo(USERPOSITIONKEY, key).addSnapshotListener( new EventListener<QuerySnapshot>() {
             @Override
             public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
                 if (e != null) {
@@ -597,8 +608,8 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
 
     public void getImageMarkers() {
 
-            mDb.collection(EVENTSCOLLECTION).document(eventID).collection(IMAGEMARKERSCOLLECTION)
-                    .addSnapshotListener(MapActivity.this,new EventListener<QuerySnapshot>() {
+        listenerImages = mDb.collection(EVENTSCOLLECTION).document(eventID).collection(IMAGEMARKERSCOLLECTION)
+                    .addSnapshotListener(new EventListener<QuerySnapshot>() {
                         @Override
                         public void onEvent(@Nullable QuerySnapshot value,
                                             @Nullable FirebaseFirestoreException e) {
@@ -640,7 +651,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
     }
 
     private void deleteImageMarker(ImageMarkerClusterItem imageMarker) {
-        mDb.collection(EVENTSCOLLECTION).document(eventID).collection(IMAGEMARKERSCOLLECTION).document(imageMarker.getId()).delete().addOnCompleteListener(new OnCompleteListener<Void>() {
+         mDb.collection(EVENTSCOLLECTION).document(eventID).collection(IMAGEMARKERSCOLLECTION).document(imageMarker.getId()).delete().addOnCompleteListener(new OnCompleteListener<Void>() {
           @Override
           public void onComplete(@NonNull Task<Void> task) {
               if(task.isSuccessful()) {
@@ -719,7 +730,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
             public void onComplete(@NonNull Task<QuerySnapshot> task) {
                 if(task.getResult().getDocuments().size() != 0 ) {
                     final DocumentReference documentReference = task.getResult().getDocuments().get(0).getReference();
-                    documentReference.addSnapshotListener(MapActivity.this, new EventListener<DocumentSnapshot>() {
+                    documentReference.addSnapshotListener( new EventListener<DocumentSnapshot>() {
                         @Override
                         public void onEvent(@javax.annotation.Nullable DocumentSnapshot documentSnapshot, @javax.annotation.Nullable FirebaseFirestoreException e) {
                             retrieveCurrentUserPositions(documentSnapshot);

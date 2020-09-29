@@ -151,6 +151,8 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
 
     protected void onResume() {
         super.onResume();
+        if(mClusterManager != null) mClusterManager.clearItems();
+        if(mImageMarkerClusterManager != null) mImageMarkerClusterManager.clearItems();
         if(!isUserLocationRunning)
             startUserLocationsRunnable();
     }
@@ -307,6 +309,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
             }
 
             setUserPosition();
+
             mClusterManager.cluster();
             updateDistanceTraveled();
 

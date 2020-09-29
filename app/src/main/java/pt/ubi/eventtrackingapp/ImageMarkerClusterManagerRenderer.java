@@ -74,7 +74,8 @@ public class ImageMarkerClusterManagerRenderer extends DefaultClusterRenderer<Im
 
     @Override
     protected void onClusterItemRendered(final ImageMarkerClusterItem item, final Marker marker) {
-
+        if(marker.getTag() == null)
+            marker.setTag(ImageMarkerClusterItem.class);
         Picasso picasso = new Picasso.Builder(context).executor(Executors.newSingleThreadExecutor()).memoryCache(Cache.NONE).indicatorsEnabled(true).build();
 
         picasso.load(item.getIconPicture()).resize(100, 100).centerCrop().into(imageView, new Callback() {
@@ -82,10 +83,11 @@ public class ImageMarkerClusterManagerRenderer extends DefaultClusterRenderer<Im
             public void onSuccess() {
                 BitmapDrawable drawable = (BitmapDrawable) imageView.getDrawable();
                 Bitmap bitmap = drawable.getBitmap();
-                marker.setIcon(BitmapDescriptorFactory.fromBitmap(bitmap));
-                marker.setVisible(true);
-                marker.setTag(ImageMarkerClusterItem.class);
-                extraMarkerInfo.put(marker.getId(), item);
+                if(marker != null && marker.getTag() != null) {
+                    marker.setIcon(BitmapDescriptorFactory.fromBitmap(bitmap));
+                    marker.setVisible(true);
+                    extraMarkerInfo.put(marker.getId(), item);
+                }
 
             }
 

@@ -19,9 +19,10 @@ public class MarkerObject  implements Parcelable {
     private String description;
     private String imageName;
     private String id;
+    private String imageId;
 
 
-    public MarkerObject(CustomGeoPoint geoPoint, String user_id, String imageUrl, String eventId, String description, String imageName, String id) {
+    public MarkerObject(CustomGeoPoint geoPoint, String user_id, String imageUrl, String eventId, String description, String imageName, String id, String imageId) {
         this.geoPoint = geoPoint;
         this.User_id = user_id;
         this.imageUrl = imageUrl;
@@ -29,6 +30,7 @@ public class MarkerObject  implements Parcelable {
         this.description = description;
         this.imageName = imageName;
         this.id = id;
+        this.imageId = imageId;
 
     }
 
@@ -44,6 +46,7 @@ public class MarkerObject  implements Parcelable {
         description = in.readString();
         imageName = in.readString();
         id = in.readString();
+        imageId = in.readString();
     }
 
     public static final Creator<MarkerObject> CREATOR = new Creator<MarkerObject>() {
@@ -136,5 +139,10 @@ public class MarkerObject  implements Parcelable {
         dest.writeString(description);
         dest.writeString(imageName);
         dest.writeString(id);
+        dest.writeString(imageId);
+    }
+
+    public String getImageId() {
+        return this.imageId;
     }
 }

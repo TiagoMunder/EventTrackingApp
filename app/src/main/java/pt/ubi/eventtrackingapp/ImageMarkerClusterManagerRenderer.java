@@ -88,7 +88,6 @@ public class ImageMarkerClusterManagerRenderer extends DefaultClusterRenderer<Im
                     marker.setVisible(true);
                     extraMarkerInfo.put(marker.getId(), item);
                 }
-
             }
 
             @Override

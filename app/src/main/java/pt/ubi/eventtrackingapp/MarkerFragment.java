@@ -70,7 +70,6 @@ public class MarkerFragment extends Fragment {
 
     private CustomGeoPoint geoPoint;
     private boolean isNewImage;
-    private boolean isOwnerOfImage;
 
     private StorageReference fileReference;
     private Uri mImageUri;
@@ -142,8 +141,6 @@ public class MarkerFragment extends Fragment {
         session = new Session(getContext());
         eventID = session.getEvent().getEventID();
 
-
-
     }
 
     @Override
@@ -210,6 +207,11 @@ public class MarkerFragment extends Fragment {
 
     }
 
+    public void canDeleteImage() {
+        mButtonSave.setText(R.string.delete_image);
+        mButtonSave.setVisibility(View.VISIBLE);
+    }
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -225,6 +227,10 @@ public class MarkerFragment extends Fragment {
         if(!isNewImage)
             this.canOnlyViewImage();
 
+        boolean isOwner = session.getUser().getUser_id().equals(currentImage.getUser_id());
+        if(isOwner && !this.isNewImage)
+            canDeleteImage();
+
         mButtonChooseImage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -235,7 +241,9 @@ public class MarkerFragment extends Fragment {
         mButtonSave.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                SaveImage();
+                if(isNewImage)
+                    SaveImage();
+                else deleteImage();
             }
         });
 
@@ -248,6 +256,11 @@ public class MarkerFragment extends Fragment {
         });
 
         return view;
+    }
+
+    public void deleteImage() {
+        mDb.collection(EVENTSCOLLECTION).document(eventID).collection(IMAGEMARKERSCOLLECTION).document(currentImage.getImageId()).delete();
+        this.goBack();
     }
 
     public void SaveImage() {
@@ -307,7 +320,7 @@ public class MarkerFragment extends Fragment {
 
             // Não sei se é muito correcto o objecto ter o id a null neste caso apesar de eu depois ir buscar o id ao document e não ao objecto
             MarkerObject markerObject = new MarkerObject(geoPoint, session.getUser().getUser_id(), uri.toString(), session.getEvent().getEventID(),
-                    imageDescription.getText().toString(), imageName.getText().toString(), null);
+                    imageDescription.getText().toString(), imageName.getText().toString(), null, null);
 
             mDb.collection(EVENTSCOLLECTION).document(eventID).collection(IMAGEMARKERSCOLLECTION)
                     .add(markerObject)

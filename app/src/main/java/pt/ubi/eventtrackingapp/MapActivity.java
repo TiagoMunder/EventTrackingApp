@@ -653,18 +653,6 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         calculatePathTask.execute(url);
     }
 
-    private void deleteImageMarker(ImageMarkerClusterItem imageMarker) {
-         mDb.collection(EVENTSCOLLECTION).document(eventID).collection(IMAGEMARKERSCOLLECTION).document(imageMarker.getId()).delete().addOnCompleteListener(new OnCompleteListener<Void>() {
-          @Override
-          public void onComplete(@NonNull Task<Void> task) {
-              if(task.isSuccessful()) {
-                  Toast.makeText(MapActivity.this, "Image was deleted successfully!", Toast.LENGTH_SHORT);
-                  onBackPressed();
-              }
-          }
-      });
-
-    }
 
     @Override
     public void launchAction(int action, CustomGeoPoint geoPoint) {

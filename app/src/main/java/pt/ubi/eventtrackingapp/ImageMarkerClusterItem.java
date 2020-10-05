@@ -15,7 +15,6 @@ public class ImageMarkerClusterItem implements ClusterItem, Parcelable {
     private String eventId;
     private String description;
     private Object mTag;
-    private String id;
 
     public ImageMarkerClusterItem(LatLng position, String title, String snippet, String iconPicture, String eventId, String User_id, String description, String id) {
         this.position = position;
@@ -26,7 +25,6 @@ public class ImageMarkerClusterItem implements ClusterItem, Parcelable {
         this.User_id = User_id;
         this.description = description;
         this.mTag = ImageMarkerClusterItem.class;
-        this.id = id;
     }
 
     public ImageMarkerClusterItem() {
@@ -43,7 +41,6 @@ public class ImageMarkerClusterItem implements ClusterItem, Parcelable {
         eventId = in.readString();
         description = in.readString();
         mTag = ImageMarkerClusterItem.class;
-        id = in.readString();
     }
 
     public static final Creator<ImageMarkerClusterItem> CREATOR = new Creator<ImageMarkerClusterItem>() {
@@ -136,13 +133,5 @@ public class ImageMarkerClusterItem implements ClusterItem, Parcelable {
         dest.writeValue(eventId);
         dest.writeValue(description);
         dest.writeValue(mTag);
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
     }
 }

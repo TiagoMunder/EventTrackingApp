@@ -259,8 +259,17 @@ public class MarkerFragment extends Fragment {
     }
 
     public void deleteImage() {
-        mDb.collection(EVENTSCOLLECTION).document(eventID).collection(IMAGEMARKERSCOLLECTION).document(currentImage.getImageId()).delete();
-        this.goBack();
+
+            mDb.collection(EVENTSCOLLECTION).document(eventID).collection(IMAGEMARKERSCOLLECTION).document(currentImage.getImageId()).delete().addOnCompleteListener(new OnCompleteListener<Void>() {
+                @Override
+                public void onComplete(@NonNull Task<Void> task) {
+                    if(task.isSuccessful()) {
+                        Toast.makeText(getContext(), "Image was deleted successfully!", Toast.LENGTH_SHORT);
+                        goBack();
+                    }
+                }
+            });
+
     }
 
     public void SaveImage() {

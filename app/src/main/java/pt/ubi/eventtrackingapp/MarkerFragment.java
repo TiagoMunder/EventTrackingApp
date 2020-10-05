@@ -264,7 +264,7 @@ public class MarkerFragment extends Fragment {
                 @Override
                 public void onComplete(@NonNull Task<Void> task) {
                     if(task.isSuccessful()) {
-                        Toast.makeText(getContext(), "Image was deleted successfully!", Toast.LENGTH_SHORT);
+                        Toast.makeText(getContext(), "Image was deleted successfully!", Toast.LENGTH_SHORT).show();
                         goBack();
                     }
                 }

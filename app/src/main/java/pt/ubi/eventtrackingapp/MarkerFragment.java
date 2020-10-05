@@ -224,12 +224,13 @@ public class MarkerFragment extends Fragment {
         imageName = view.findViewById(R.id.edit_text_file_name);
         imageDescription =  view.findViewById(R.id.edit_text_description);
 
-        if(!isNewImage)
+        if(!isNewImage) {
             this.canOnlyViewImage();
+            if (currentImage != null && session.getUser().getUser_id().equals(currentImage.getUser_id()))
+                canDeleteImage();
+        }
 
-        boolean isOwner = session.getUser().getUser_id().equals(currentImage.getUser_id());
-        if(isOwner && !this.isNewImage)
-            canDeleteImage();
+
 
         mButtonChooseImage.setOnClickListener(new View.OnClickListener() {
             @Override

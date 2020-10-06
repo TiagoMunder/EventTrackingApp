@@ -13,6 +13,21 @@
             android:layout_width="match_parent"
             android:layout_height="30dp"
             android:gravity="center"
+            android:textColor="@color/maroon"
+            android:textStyle="bold"
+            android:textSize="25sp"
+            android:layout_weight="50"
+            android:id="@+id/event_name"/>
+
+    </LinearLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="20dp">
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="30dp"
+            android:gravity="center"
             android:layout_weight="50"
             android:id="@+id/street"/>
 
@@ -32,13 +47,41 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:orientation="horizontal"
         android:padding="20dp">
         <TextView
             android:layout_width="match_parent"
             android:layout_height="30dp"
             android:layout_weight="50"
+            android:text="@string/event_date"
             android:gravity="center"
-            android:id="@+id/description"/>
+            android:textColor="@color/maroon" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="30dp"
+            android:layout_weight="50"
+            android:gravity="center"
+            android:id="@+id/date"/>
+    </LinearLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="20dp">
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="30dp"
+            android:layout_weight="50"
+            android:textColor="@color/maroon"
+            android:text="@string/owner"
+            android:gravity="center" />
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="30dp"
+            android:layout_weight="50"
+            android:gravity="center"
+            android:id="@+id/owner"/>
     </LinearLayout>
     <LinearLayout
         android:layout_width="match_parent"
@@ -48,16 +91,15 @@
             android:layout_width="match_parent"
             android:layout_height="30dp"
             android:layout_weight="50"
-            android:gravity="center"
-
-            android:id="@+id/date"/>
+            android:text="@string/description"
+            android:textColor="@color/maroon"
+            android:gravity="center" />
         <TextView
             android:layout_width="match_parent"
             android:layout_height="30dp"
             android:layout_weight="50"
             android:gravity="center"
-
-            android:id="@+id/owner"/>
+            android:id="@+id/description"/>
     </LinearLayout>
 
 </LinearLayout>

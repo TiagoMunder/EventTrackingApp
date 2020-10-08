@@ -58,6 +58,7 @@ public class CreateEvent extends AppCompatActivity {
         mDb = FirebaseFirestore.getInstance();
         mChooseDate = (TextView) findViewById(R.id.eventDatePicker);
         mChooseDate.setText(defaultDate);
+        eventChoosenDate = defaultDate;
         mChooseDate.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

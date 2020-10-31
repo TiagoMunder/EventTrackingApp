@@ -151,7 +151,6 @@ public class CreateEvent extends AppCompatActivity {
     public boolean checkRequired() {
         HashMap<String, EditText> mandatoryFields = new HashMap<>();
         mandatoryFields.put("eventName", eventName);
-        mandatoryFields.put("street", street);
         mandatoryFields.put("description",description);
         mandatoryFields.put("country", country);
         for ( String key : mandatoryFields.keySet() ) {

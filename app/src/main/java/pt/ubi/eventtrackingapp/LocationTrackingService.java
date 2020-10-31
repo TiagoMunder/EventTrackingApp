@@ -227,7 +227,7 @@ public class LocationTrackingService extends Service {
                             DocumentReference documentReference = task.getResult().getDocuments().get(0).getReference();
                             DocumentSnapshot document = task.getResult().getDocuments().get(0);
                             if(checkUserMoved(document, location)) {
-                                Long tsLong = System.currentTimeMillis()/1000;
+                                Long tsLong = System.currentTimeMillis();
                                 UserPosition customGeoPoint  = new UserPosition(location.getLatitude(), location.getLongitude(), tsLong.toString());
                                 documentReference.collection(USERPOSITION).add(customGeoPoint);
                                 documentReference.update("lastPosition",convertLocationToCustomGeoPoint(location));
@@ -238,7 +238,7 @@ public class LocationTrackingService extends Service {
                             FirebaseFirestore.getInstance().collection(USERPOSITIONSINEVENT).add(docInfo).addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
                                @Override
                                public void onComplete(@NonNull Task<DocumentReference> task) {
-                                   Long tsLong = System.currentTimeMillis()/1000;
+                                   Long tsLong = System.currentTimeMillis();
                                    UserPosition customGeoPoint = new UserPosition(location.getLatitude(), location.getLongitude(), tsLong.toString());
                                    task.getResult().collection(USERPOSITION).add(customGeoPoint);
                                }

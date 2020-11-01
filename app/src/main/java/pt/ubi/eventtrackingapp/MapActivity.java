@@ -653,6 +653,27 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         calculatePathTask.execute(url);
     }
 
+    public void deleteOwnTrack() {
+        final String key =  session.getUser().getUser_id() + '_' + eventID;
+        FirebaseFirestore.getInstance().collection(USERPOSITIONSINEVENT).whereEqualTo(USERPOSITIONKEY, key).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                if(task.getResult().getDocuments().size() != 0 ) {
+                    DocumentReference userPositionDocumentReference =  task.getResult().getDocuments().get(0).getReference();
+                    userPositionDocumentReference.update("distanceTraveled", 0);
+                    userPositionDocumentReference.collection(USERPOSITION).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                        @Override
+                        public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                            for(int i = 0; task.getResult().getDocuments().size() > i ; i++){
+                                task.getResult().getDocuments().get(i).getReference().delete();
+                            }
+                        }
+                    });
+                }
+            }
+        });
+    }
+
 
     @Override
     public void launchAction(int action, CustomGeoPoint geoPoint) {
@@ -665,7 +686,10 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                 callMarkerFragment(geoPoint, true);
                 break;
             case 3:
-               // deleteImageMarker(imageMarker);
+                deleteOwnTrack();
+                break;
+            case 4:
+                // deleteImageMarker(imageMarker);
                 break;
             default:
                 return;

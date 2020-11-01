@@ -33,7 +33,7 @@ public class MapFooterFragment extends Fragment {
     private boolean isAnUserClick;
     private boolean hasImages;
 
-    private Button addImage_btn,viewImages_btn;
+    private Button addImage_btn,viewImages_btn, deleteTrack_btn;
 
     private OnFragmentInteractionListener mListener;
 
@@ -78,8 +78,12 @@ public class MapFooterFragment extends Fragment {
         return geoPoint.getLatitude() == currentPosition.getLatitude()  && geoPoint.getLongitude() == currentPosition.getLongitude();
     }
 
-   private void removeAddImageButton() {
+   private void hideAddImageButton() {
        addImage_btn.setVisibility(View.INVISIBLE);
+    }
+
+    private void hideResetTrack() {
+        deleteTrack_btn.setVisibility(View.INVISIBLE);
     }
 
 
@@ -91,9 +95,10 @@ public class MapFooterFragment extends Fragment {
 
         addImage_btn = view.findViewById(R.id.addImage_btn);
         viewImages_btn = view.findViewById(R.id.viewImages_btn);
-
-         if(!isAnUserClick || !isOnThisPosition()) {
-             removeAddImageButton();
+        deleteTrack_btn = view.findViewById(R.id.deleteTrack_btn);
+        if(!isAnUserClick || !isOnThisPosition()) {
+            hideAddImageButton();
+            hideResetTrack();
         }
 
         if(!hasImages)
@@ -109,6 +114,12 @@ public class MapFooterFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 ((ButtonCallback ) getActivity()).launchAction(2, geoPoint);
+            }
+        });
+        deleteTrack_btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ((ButtonCallback ) getActivity()).launchAction(3, null);
             }
         });
         return view;
@@ -158,6 +169,7 @@ public class MapFooterFragment extends Fragment {
         //You can add parameters if you need it
         // 1 -- view Images
         // 2 -- new Image
+        // 3 -- deleteTrack
         void launchAction(int action, CustomGeoPoint geoPoint);
     }
 

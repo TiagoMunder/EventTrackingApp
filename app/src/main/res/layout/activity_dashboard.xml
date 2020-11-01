@@ -11,6 +11,15 @@
     android:paddingTop="80dp">
 
     <Button
+        android:id="@+id/btn_showUserInfo"
+        android:layout_width="match_parent"
+        android:layout_height="55dp"
+        android:layout_marginTop="30dp"
+        android:backgroundTint="@color/colorPrimary2"
+        android:text="@string/my_info"
+        android:textColor="@android:color/white" />
+
+    <Button
         android:id="@+id/btn_createEvent"
         android:layout_width="match_parent"
         android:layout_height="55dp"

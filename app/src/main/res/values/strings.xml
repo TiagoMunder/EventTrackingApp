@@ -4,7 +4,7 @@
     <string name="view_images">View Images</string>
     <string name="calculate_direction">Calculate Direction</string>
     <string name="add_edit_image">Add Image</string>
-    <string name="delete_own_track">Delete your Track</string>
+    <string name="delete_own_track">Reset Track</string>
     <string name="delete_image">Delete Image</string>
     <string name="message_write_hint">Write a message</string>
     <string name="event_name">Event Name</string>

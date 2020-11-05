@@ -32,10 +32,14 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.Dot;
+import com.google.android.gms.maps.model.Gap;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.PatternItem;
+import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -69,6 +73,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
@@ -113,6 +118,13 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
     private boolean isFirstTime = true;
 
     private Session session;
+
+    private static final int PATTERN_GAP_LENGTH_PX = 20;
+    private Polyline polyline;
+    private static final PatternItem DOT = new Dot();
+    private static final PatternItem GAP = new Gap(PATTERN_GAP_LENGTH_PX);
+    // Create a stroke pattern of a gap followed by a dot.
+    private static final List<PatternItem> PATTERN_POLYLINE_DOTTED = Arrays.asList(GAP, DOT);
 
 
     @Override
@@ -667,6 +679,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                             for(int i = 0; task.getResult().getDocuments().size() > i ; i++){
                                 task.getResult().getDocuments().get(i).getReference().delete();
                             }
+                            polyline.remove();
                         }
                     });
                 }
@@ -717,6 +730,9 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
 
 
     protected void addMyPositionsToMap() {
+        Log.d(TAG, "Adding my positions to Map");
+        if(polyline != null)
+         polyline.remove();
         ArrayList points = null;
         PolylineOptions lineOptions = null;
         points = new ArrayList();
@@ -729,13 +745,14 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         }
 
         lineOptions.addAll(points);
-        lineOptions.width(12);
+        lineOptions.width(10);
         lineOptions.color(Color.RED);
         lineOptions.geodesic(true);
 
 
 
-        mGoogleMap.addPolyline(lineOptions);
+        polyline = mGoogleMap.addPolyline(lineOptions);
+        polyline.setPattern(PATTERN_POLYLINE_DOTTED);
     }
 
     private void listenMyCurrentPositionChanged() {
@@ -763,6 +780,8 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
 
     private void retrieveCurrentUserPositions(DocumentSnapshot documentSnapshot) {
 
+
+
         documentSnapshot.getReference().collection(USERPOSITION).orderBy("time").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
             public void onComplete(@NonNull Task<QuerySnapshot> task) {
@@ -771,12 +790,18 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                 for (int i = 0; i <   documents.size(); i++) {
                     myPositions.add(documents.get(i).toObject(UserPosition.class));
                 }
-                addMyPositionsToMap();
+                new android.os.Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        addMyPositionsToMap();
+                    }
+                },1000);
+
         }});
     }
 
     private void retrieveUserLocations(){
-        Log.d(TAG, "retrieveUserLocations: retrieving location of all users in the chatroom.");
+        Log.d(TAG, "retrieveUserLocations: retrieving location of all users in the Event.");
 
         try{
             for(final MyClusterItem clusterItem: mClusterItems){

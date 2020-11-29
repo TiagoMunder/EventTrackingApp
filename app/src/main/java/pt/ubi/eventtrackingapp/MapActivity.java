@@ -116,6 +116,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
     private String distanceTraveled = "0";
 
     private boolean isFirstTime = true;
+    private boolean drawFirstTime = true;
 
     private Session session;
 
@@ -199,7 +200,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                 // for( User user: mUsersList)
                 //  getUserLocation(user);
                 getUsersOfTheEvent();
-                addMapMarkers();
+                // addMapMarkers();
                 getImageMarkers();
 
             }
@@ -214,7 +215,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         mGoogleMap.setOnMarkerClickListener(this);
         mGoogleMap.setOnMapLongClickListener(this);
 
-        listenMyCurrentPositionChanged();
+       // listenMyCurrentPositionChanged();
 
 
     }
@@ -238,6 +239,8 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                         mUserLocations.add(newUserLocation);
                         addMapMarkersDynamically(newUserLocation);
 
+
+
                     }
                 }
             }
@@ -254,10 +257,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                             Log.w(TAG, "Listen failed.", e);
                             return;
                         }
-                        if(isFirstTime){
-                            isFirstTime = false;
-                            return;
-                        }
+
                         mUserLocations.clear();
 
                         for (QueryDocumentSnapshot doc : value) {
@@ -755,6 +755,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         polyline.setPattern(PATTERN_POLYLINE_DOTTED);
     }
 
+    /*
     private void listenMyCurrentPositionChanged() {
         final String key =  session.getUser().getUser_id() + '_' + eventID;
         FirebaseFirestore.getInstance().collection(USERPOSITIONSINEVENT).whereEqualTo(USERPOSITIONKEY, key).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
@@ -768,6 +769,34 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                             retrieveCurrentUserPositions(documentSnapshot);
                         }
                     });
+
+                }else {
+                    Log.d(TAG, "Can't get any position");
+                }
+            }
+        });
+
+    }
+    */
+
+    private void updateMyCurrentPosition() {
+        final String key =  session.getUser().getUser_id() + '_' + eventID;
+        FirebaseFirestore.getInstance().collection(USERPOSITIONSINEVENT).whereEqualTo(USERPOSITIONKEY, key).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                if(task.getResult().getDocuments().size() != 0 ) {
+                    final DocumentReference documentReference = task.getResult().getDocuments().get(0).getReference();
+
+                  documentReference.get().addOnCompleteListener(
+                          new OnCompleteListener<DocumentSnapshot>() {
+
+                              @Override
+                              public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                  retrieveCurrentUserPositions(task.getResult());
+                              }
+                          }
+                  );
+
 
                 }else {
                     Log.d(TAG, "Can't get any position");
@@ -790,13 +819,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                 for (int i = 0; i <   documents.size(); i++) {
                     myPositions.add(documents.get(i).toObject(UserPosition.class));
                 }
-                new android.os.Handler().postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        addMyPositionsToMap();
-                    }
-                },1000);
-
+                addMyPositionsToMap();
         }});
     }
 
@@ -826,9 +849,15 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                                                 updatedUserLocation.getGeoPoint().getLatitude(),
                                                 updatedUserLocation.getGeoPoint().getLongitude()
                                         );
-
+                                        boolean hasChanges = !mClusterItems.get(i).getPosition().equals(updatedLatLng);
+                                        if((drawFirstTime || hasChanges) && mClusterItems.get(i).getUser().getUser_id().equals(session.getUser().getUser_id())) {
+                                            updateMyCurrentPosition();
+                                            drawFirstTime = false;
+                                        }
+                                        if(!hasChanges) continue;
                                         mClusterItems.get(i).setPosition(updatedLatLng);
                                         clusterManagerRenderer.setUpdateMarker(mClusterItems.get(i));
+
                                     }
 
 

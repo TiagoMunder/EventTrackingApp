@@ -34,6 +34,7 @@
     <string name="choose_file_name">Choose file name</string>
     <string name="choose_file">Choose File</string>
     <string name="default_text_msg">How are you doing? This is a long message that should probably wrap.</string>
+    <string name="btn_DeleteEvent">Delete Event</string>
 
 
     <string name="fire_store_users">Users</string>

@@ -13,6 +13,7 @@ import android.widget.Toast;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentChange;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -35,7 +36,7 @@ public class EventMainCopy extends AppCompatActivity {
     private ArrayList<User> mUsersList = new ArrayList<>();
     private String  eventID;
     private Session session;
-    private Button btn_GoToChat, btn_GoToMap, btn_leaveEvent;
+    private Button btn_GoToChat, btn_GoToMap, btn_leaveEvent, btn_DeleteEvent;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,6 +48,7 @@ public class EventMainCopy extends AppCompatActivity {
         btn_GoToChat = findViewById(R.id.btn_GoToChat);
         btn_GoToMap = findViewById(R.id.btn_GoToMap);
         btn_leaveEvent = findViewById(R.id.btn_leaveEvent);
+        btn_DeleteEvent = findViewById(R.id.btn_DeleteEvent);
 
         mDb = FirebaseFirestore.getInstance();
 
@@ -69,6 +71,13 @@ public class EventMainCopy extends AppCompatActivity {
                 startActivity(chatIntent);
             }
         });
+
+        btn_DeleteEvent.setOnClickListener(new View.OnClickListener() {
+                                               @Override
+                                               public void onClick(View v) {
+                                                   deleteEvent();
+                                               }
+                                           });
 
         btn_GoToMap.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -130,6 +139,74 @@ public class EventMainCopy extends AppCompatActivity {
                     }
                 });
 
+    }
+
+   public void deleteEventMainCollection() {
+      DocumentReference eventDocument = mDb.collection("Events").document(eventID);
+       eventDocument.collection("Users").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+           @Override
+           public void onComplete(@NonNull Task<QuerySnapshot> task) {
+               if(task.isSuccessful()) {
+                   for(int i= 0; task.getResult().getDocuments().size() > i; i++)
+                       task.getResult().getDocuments().get(i).getReference().delete();
+               } else {
+               Log.d(TAG, "Error deleting Users of event");
+                }
+           }
+       });
+
+       eventDocument.collection("ImageMarkers").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+           @Override
+           public void onComplete(@NonNull Task<QuerySnapshot> task) {
+               if(task.isSuccessful()) {
+                   for(int i= 0; task.getResult().getDocuments().size() > i; i++)
+                       task.getResult().getDocuments().get(i).getReference().delete();
+               } else {
+                   Log.d(TAG, "Error deleting Images of event");
+               }
+
+           }
+       });
+       eventDocument.delete();
+
+    }
+
+    public void deleteAllUsersPositionOfEvent() {
+        mDb.collection("UserPositionsInEvent").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                if(task.isSuccessful()) {
+                    for(int i= 0; task.getResult().getDocuments().size() >i ;i++) {
+                        DocumentSnapshot document =  task.getResult().getDocuments().get(i);
+                        Object userPositionKey = document.get("userPositionKey");
+                        if(userPositionKey!= null && userPositionKey.toString().contains(eventID)) {
+                            document.getReference().delete();
+                            document.getReference().collection("UserPosition").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                                    if(task.isSuccessful()) {
+                                        for(int j= 0; task.getResult().getDocuments().size() >j ;j++) {
+                                            task.getResult().getDocuments().get(j).getReference().delete();
+                                        }
+                                    } else {
+                                        Log.d(TAG, "Error deleting document!");
+                                }
+                                }
+                            });
+                        }
+                    }
+                }else {
+                    Log.d(TAG, "Error sending Message!");
+                }
+            }
+        });
+    }
+
+   public void deleteEvent() {
+       deleteAllUsersPositionOfEvent();
+       deleteEventMainCollection();
+       Intent eventList = new Intent(EventMainCopy.this, EventsListActivity.class);
+       startActivity(eventList);
     }
 
     private void addUserToEvent() {

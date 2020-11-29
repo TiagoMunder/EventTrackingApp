@@ -53,6 +53,8 @@ public class EventsListActivity extends AppCompatActivity {
                                     Event selectedItem = (Event) parent.getItemAtPosition(position);
                                     if(selectedItem.getEventID() != null) {
                                         Intent eventMain = new Intent(EventsListActivity.this, EventMainCopy.class);
+                                        boolean isOwnerOfEvent = selectedItem.getOwner().equals(session.getUser().getUsername());
+                                        eventMain.putExtra("isOwnerOfEvent", isOwnerOfEvent);
                                         eventMain.putExtra("eventID", selectedItem.getEventID());
                                         session.setEvent(selectedItem);
                                         startActivity(eventMain);

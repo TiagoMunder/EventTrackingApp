@@ -37,6 +37,7 @@ public class EventMainCopy extends AppCompatActivity {
     private String  eventID;
     private Session session;
     private Button btn_GoToChat, btn_GoToMap, btn_leaveEvent, btn_DeleteEvent;
+    private boolean isOwnerOfEvent;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,6 +56,8 @@ public class EventMainCopy extends AppCompatActivity {
         Intent intent = getIntent();
         session = new Session(EventMainCopy.this);
         eventID = intent.getStringExtra("eventID");
+        isOwnerOfEvent = intent.getBooleanExtra("isOwnerOfEvent", false);
+        if(!isOwnerOfEvent)  btn_DeleteEvent.setVisibility(View.INVISIBLE);
         if(eventID == null){
             Log.d(TAG, " Error getting Event");
             startActivity(new Intent(EventMainCopy.this, DashboardActivity.class));
@@ -196,7 +199,7 @@ public class EventMainCopy extends AppCompatActivity {
                         }
                     }
                 }else {
-                    Log.d(TAG, "Error sending Message!");
+                    Log.d(TAG, "Error getting UserPositions!");
                 }
             }
         });

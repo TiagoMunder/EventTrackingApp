@@ -128,6 +128,8 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
     // Create a stroke pattern of a gap followed by a dot.
     private static final List<PatternItem> PATTERN_POLYLINE_DOTTED = Arrays.asList(GAP, DOT);
 
+    DecimalFormat df = new DecimalFormat("###.###");
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -299,7 +301,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                 try{
                     String snippet = "";
                     if(checkUserIsCurrentUser(userLocationParcelable.getUser().getUser_id())){
-                        snippet = "Distance traveled: " + session.getCurrentDistanceTraveled();
+                        snippet = "Distance traveled: " + df.format((session.getCurrentDistanceTraveled()));
                     }
 
                     String avatar = null;
@@ -486,8 +488,6 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                     Log.d(TAG, doc.get("distanceTraveled").toString());
                     if(currentClusterItem != null) {
                         float trimDistance = Float.parseFloat(doc.get("distanceTraveled").toString());
-                        DecimalFormat df = new DecimalFormat("###.###");
-
                         String newDistance = "Distance traveled: " + df.format(trimDistance) + "m";
                         distanceTraveled = newDistance;
                         clusterManagerRenderer.setUpdateMarkerSnippet(currentClusterItem, newDistance);

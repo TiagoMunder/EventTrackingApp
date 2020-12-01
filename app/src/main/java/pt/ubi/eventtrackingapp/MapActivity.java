@@ -72,6 +72,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -348,7 +349,9 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                 try{
                     String snippet = "";
                     if(checkUserIsCurrentUser(userLocationParcelable.getUser().getUser_id())){
-                        snippet = "Distance traveled: " + session.getCurrentDistanceTraveled();
+                        float trimDistance = Float.parseFloat(session.getCurrentDistanceTraveled());
+                        DecimalFormat df = new DecimalFormat("###.###");
+                        snippet = "Distance traveled: " + df.format(trimDistance) + 'm';
                     }
 
                     String avatar = null;
@@ -482,7 +485,10 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                 if(doc.get("distanceTraveled") != null) {
                     Log.d(TAG, doc.get("distanceTraveled").toString());
                     if(currentClusterItem != null) {
-                        String newDistance = "Distance traveled: " + doc.get("distanceTraveled").toString() + "m";
+                        float trimDistance = Float.parseFloat(doc.get("distanceTraveled").toString());
+                        DecimalFormat df = new DecimalFormat("###.###");
+
+                        String newDistance = "Distance traveled: " + df.format(trimDistance) + "m";
                         distanceTraveled = newDistance;
                         clusterManagerRenderer.setUpdateMarkerSnippet(currentClusterItem, newDistance);
                         session.setCurrentDistanceTraveled(doc.get("distanceTraveled").toString());

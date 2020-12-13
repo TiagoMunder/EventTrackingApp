@@ -44,6 +44,7 @@ import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -75,6 +76,8 @@ import java.net.URL;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
@@ -122,7 +125,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
     private Session session;
 
     private static final int PATTERN_GAP_LENGTH_PX = 20;
-    private Polyline polyline;
+    private ArrayList<Polyline>  polyLines = new ArrayList<Polyline>();
     private static final PatternItem DOT = new Dot();
     private static final PatternItem GAP = new Gap(PATTERN_GAP_LENGTH_PX);
     // Create a stroke pattern of a gap followed by a dot.
@@ -685,7 +688,10 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                             for(int i = 0; task.getResult().getDocuments().size() > i ; i++){
                                 task.getResult().getDocuments().get(i).getReference().delete();
                             }
-                            polyline.remove();
+                            if(polyLines != null && polyLines.size() > 0){
+                                for(int k=0; k< polyLines.size(); k++)
+                                    polyLines.get(k).remove();
+                            }
                         }
                     });
                 }
@@ -734,31 +740,94 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         isUserLocationRunning = false;
     }
 
+    private int calculateMinutesDiffBetweenPoints(String time1, String time2) {
+
+        long secondsOfFirstPoint = 0;
+
+        if(time2 != null) {
+            secondsOfFirstPoint =  Long.parseLong(time2);
+        }
+        return time2 != null ? (int)(((  Long.parseLong(time1) - secondsOfFirstPoint)/ 1000)/60) : 0;
+
+    }
 
     protected void addMyPositionsToMap() {
+        boolean changingState = true;
+        boolean isSlow = false;
+        int color = Color.GREEN;
         Log.d(TAG, "Adding my positions to Map");
-        if(polyline != null)
-         polyline.remove();
-        ArrayList points = null;
-        PolylineOptions lineOptions = null;
-        points = new ArrayList();
-        lineOptions = new PolylineOptions();
-        for (int i = 0; i < myPositions.size(); i++) {
-
-
-            LatLng position = new LatLng(myPositions.get(i).getGeoPoint().getLatitude(), myPositions.get(i).getGeoPoint().getLongitude());
-            points.add(position);
+        String oldTime = null;
+        if(polyLines != null && polyLines.size() > 0){
+            for(int k=0; k< polyLines.size(); k++)
+                polyLines.get(k).remove();
+        polyLines.clear();
         }
 
-        lineOptions.addAll(points);
-        lineOptions.width(10);
-        lineOptions.color(Color.RED);
-        lineOptions.geodesic(true);
+        ArrayList points = null;
+        ArrayList<PolylineOptions> polyLineArray = new ArrayList<PolylineOptions>();
+        points = new ArrayList();
+        LatLng oldPoint = null;
+        PolylineOptions lineOptions = null;
+        for (int i = 0; i < myPositions.size(); i++) {
+            if(changingState) {
+                lineOptions = new PolylineOptions();
+                changingState = false;
+                if(oldPoint != null)
+                    points.add(oldPoint);
+            }
+            LatLng position = new LatLng(myPositions.get(i).getGeoPoint().getLatitude(), myPositions.get(i).getGeoPoint().getLongitude());
+            points.add(position);
+           int timeMax = calculateMinutesDiffBetweenPoints(myPositions.get(i).getTime(), oldTime);
 
+            if(timeMax >= 20 && !isSlow) {
+                points.remove(points.size()-1);
+                lineOptions.addAll(points);
+                lineOptions.width(10);
+                lineOptions.color(color);
+                color = Color.RED;
+                lineOptions.geodesic(true);
+                polyLineArray.add(lineOptions);
+                changingState = true;
+                isSlow = true;
+                points.clear();
+                if(oldPoint != null)
+                    points.add( oldPoint);
+            }
+            if(timeMax < 20 && isSlow) {
+                points.remove(points.size()-1);
+                lineOptions.addAll(points);
+                lineOptions.width(10);
+                lineOptions.color(color);
+                color = Color.GREEN;
+                lineOptions.geodesic(true);
+                polyLineArray.add(lineOptions);
+                changingState = true;
+                isSlow = false;
+                points.clear();
+                if(oldPoint != null)
+                    points.add( oldPoint);
+            }
+            oldPoint = position;
+            oldTime = myPositions.get(i).getTime();
 
+        }
+        if(points.size()> 0) {
+            if(changingState) {
+                lineOptions = new PolylineOptions();
+                if (oldPoint != null)
+                    points.add(oldPoint);
+            }
+                lineOptions.addAll(points);
+                lineOptions.width(10);
+                lineOptions.color(color);
+                lineOptions.geodesic(true);
+                polyLineArray.add(lineOptions);
+        }
 
-        polyline = mGoogleMap.addPolyline(lineOptions);
-        polyline.setPattern(PATTERN_POLYLINE_DOTTED);
+        for(int j= 0; j < polyLineArray.size(); j++) {
+            polyLines.add(mGoogleMap.addPolyline(polyLineArray.get(j)));
+            polyLines.get(j).setPattern(PATTERN_POLYLINE_DOTTED);
+        }
     }
 
     /*

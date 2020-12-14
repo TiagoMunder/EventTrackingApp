@@ -19,6 +19,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -60,7 +61,8 @@ public class LoginActivity extends AppCompatActivity {
     private boolean isEverythingOK = false;
     private FusedLocationProviderClient mFusedLocationClient;
     private UserLocation mUserLocation;
-
+    private ProgressBar spinner;
+    private boolean loading = false;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -83,10 +85,32 @@ public class LoginActivity extends AppCompatActivity {
                 .build();
         mDb.setFirestoreSettings(settings);
 
+        spinner = (ProgressBar)findViewById(R.id.progressBar1);
+        spinner.setVisibility(View.GONE);
+        email.setEnabled(true);
+        password.setEnabled(true);
+        btn_login.setEnabled(true);
+        password.setVisibility(View.VISIBLE);
+        email.setVisibility(View.VISIBLE);
+        btn_login.setVisibility(View.VISIBLE);
+
         if (user != null && createdEmail != null && createdUsername != null) {
+            loading = true;
             saveUser(user.getEmail());
             startActivity(new Intent(LoginActivity.this, DashboardActivity.class));
         }
+
+        /* No Need to use this
+        if(loading) {
+            spinner.setVisibility(View.VISIBLE);
+            email.setEnabled(false);
+            email.setVisibility(View.GONE);
+            password.setEnabled(false);
+            password.setVisibility(View.GONE);
+            btn_login.setVisibility(View.GONE);
+            btn_login.setEnabled(false);
+        }
+        */
 
         btn_login.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -114,6 +138,7 @@ public class LoginActivity extends AppCompatActivity {
 
 
     }
+    
 
     private void getLastKnownLocation() {
 
@@ -243,6 +268,7 @@ public class LoginActivity extends AppCompatActivity {
                                 }
                             } else {
                                 Log.d(TAG, "Error getting documents: ", task.getException());
+                                loading = false;
                             }
                         }
                     });

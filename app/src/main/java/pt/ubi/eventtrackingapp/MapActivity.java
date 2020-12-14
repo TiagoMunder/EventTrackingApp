@@ -817,11 +817,11 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                 if (oldPoint != null)
                     points.add(oldPoint);
             }
-                lineOptions.addAll(points);
-                lineOptions.width(10);
-                lineOptions.color(color);
-                lineOptions.geodesic(true);
-                polyLineArray.add(lineOptions);
+            lineOptions.addAll(points);
+            lineOptions.width(10);
+            lineOptions.color(color);
+            lineOptions.geodesic(true);
+            polyLineArray.add(lineOptions);
         }
 
         for(int j= 0; j < polyLineArray.size(); j++) {

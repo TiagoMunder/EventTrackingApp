@@ -25,6 +25,7 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class EventMainCopy extends AppCompatActivity {
@@ -36,7 +37,7 @@ public class EventMainCopy extends AppCompatActivity {
     private ArrayList<User> mUsersList = new ArrayList<>();
     private String  eventID;
     private Session session;
-    private Button btn_GoToChat, btn_GoToMap, btn_leaveEvent, btn_DeleteEvent;
+    private Button btn_GoToChat, btn_GoToMap, btn_leaveEvent, btn_DeleteEvent, btn_closeEvent;
     private boolean isOwnerOfEvent;
 
     @Override
@@ -50,14 +51,16 @@ public class EventMainCopy extends AppCompatActivity {
         btn_GoToMap = findViewById(R.id.btn_GoToMap);
         btn_leaveEvent = findViewById(R.id.btn_leaveEvent);
         btn_DeleteEvent = findViewById(R.id.btn_DeleteEvent);
-
+        btn_closeEvent = findViewById(R.id.btn_closeEvent);
         mDb = FirebaseFirestore.getInstance();
 
         Intent intent = getIntent();
         session = new Session(EventMainCopy.this);
         eventID = intent.getStringExtra("eventID");
         isOwnerOfEvent = intent.getBooleanExtra("isOwnerOfEvent", false);
-        if(!isOwnerOfEvent)  btn_DeleteEvent.setVisibility(View.INVISIBLE);
+        if(!isOwnerOfEvent) btn_DeleteEvent.setVisibility(View.INVISIBLE);
+        if(!isOwnerOfEvent || session.getEvent().isClosed())   btn_closeEvent.setVisibility(View.INVISIBLE);
+
         if(eventID == null){
             Log.d(TAG, " Error getting Event");
             startActivity(new Intent(EventMainCopy.this, DashboardActivity.class));
@@ -82,6 +85,13 @@ public class EventMainCopy extends AppCompatActivity {
                                                }
                                            });
 
+        btn_closeEvent.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                closeEvent();
+            }
+        });
+
         btn_GoToMap.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -104,13 +114,34 @@ public class EventMainCopy extends AppCompatActivity {
 
     }
 
+    private void closeEvent() {
+     DocumentReference eventDocument =   mDb.collection("Events").document(eventID);
+        HashMap<String,Object> closeEventHashMap = new HashMap();
+        closeEventHashMap.put("isClosed", true);
+        eventDocument.update(closeEventHashMap).addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                if (task.isSuccessful()) {
+                    Log.d(TAG, "Update Successful");
+                    Toast.makeText(EventMainCopy.this, "Event Closed with success", Toast.LENGTH_SHORT).show();
+                    btn_closeEvent.setVisibility(View.INVISIBLE);
+                    session.getEvent().setClosed(true);
+
+                } else {
+                    Log.w(TAG, "Error updating document", task.getException());
+                }
+            }
+        });
+
+    }
+
     private void leaveEvent() {
         mDb.collection("Events").document(eventID).collection("Users").whereEqualTo("user_id",session.getUser().getUser_id()).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
             public void onComplete(@NonNull Task<QuerySnapshot> task) {
                 for (DocumentSnapshot document : task.getResult()) {
                     mDb.collection("Events").document(eventID).collection("Users").document(document.getId()).delete();
-                    Toast.makeText(EventMainCopy.this, "You are no longer in the Event!", Toast.LENGTH_SHORT);
+                    Toast.makeText(EventMainCopy.this, "You are no longer in the Event!", Toast.LENGTH_SHORT).show();
                     startActivity(new Intent(EventMainCopy.this, EventsListActivity.class));
                 }
             }

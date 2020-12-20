@@ -1,7 +1,6 @@
 package pt.ubi.eventtrackingapp;
 
 import android.Manifest;
-import android.app.Activity;
 import android.app.ActivityManager;
 
 import android.content.Intent;
@@ -14,7 +13,6 @@ import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 
 import android.os.Bundle;
@@ -23,8 +21,6 @@ import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
 import android.view.View;
 import android.widget.LinearLayout;
-import android.widget.Switch;
-import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -42,16 +38,13 @@ import com.google.android.gms.maps.model.PatternItem;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
-import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
-import com.google.firebase.firestore.FirebaseFirestoreSettings;
 import com.google.firebase.firestore.GeoPoint;
 import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
@@ -76,8 +69,6 @@ import java.net.URL;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
@@ -131,6 +122,8 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
     // Create a stroke pattern of a gap followed by a dot.
     private static final List<PatternItem> PATTERN_POLYLINE_DOTTED = Arrays.asList(GAP, DOT);
 
+    private boolean isEventClosed;
+
     DecimalFormat df = new DecimalFormat("###.###");
 
 
@@ -148,6 +141,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         mDb = FirebaseFirestore.getInstance();
         session = new Session(MapActivity.this);
         startLocationService();
+        isEventClosed = session.getEvent().isClosed();
 
         /*
 
@@ -208,6 +202,9 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                 getUsersOfTheEvent();
                 // addMapMarkers();
                 getImageMarkers();
+                if(isEventClosed) {
+                    updateMyCurrentPosition();
+                }
 
             }
         });
@@ -368,8 +365,10 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                             avatar,
                             userLocationParcelable.getUser()
                     );
-                    mClusterManager.addItem(newClusterMarker);
-                    mClusterItems.add(newClusterMarker);
+                    if(checkUserIsCurrentUser(userLocationParcelable.getUser().getUser_id()) || !isEventClosed) {
+                        mClusterManager.addItem(newClusterMarker);
+                        mClusterItems.add(newClusterMarker);
+                    }
                     if(checkUserIsCurrentUser(userLocationParcelable.getUser().getUser_id()))
                         currentClusterItem = newClusterMarker;
                 }catch (NullPointerException e){

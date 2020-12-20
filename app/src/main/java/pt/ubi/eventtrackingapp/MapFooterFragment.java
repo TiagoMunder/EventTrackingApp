@@ -96,7 +96,7 @@ public class MapFooterFragment extends Fragment {
         addImage_btn = view.findViewById(R.id.addImage_btn);
         viewImages_btn = view.findViewById(R.id.viewImages_btn);
         deleteTrack_btn = view.findViewById(R.id.deleteTrack_btn);
-        if(!isAnUserClick || !isOnThisPosition()) {
+        if(!isAnUserClick || !isOnThisPosition() || session.getEvent().isClosed()) {
             hideAddImageButton();
             hideResetTrack();
         }

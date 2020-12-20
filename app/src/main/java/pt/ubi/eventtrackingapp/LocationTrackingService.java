@@ -119,7 +119,7 @@ public class LocationTrackingService extends Service {
 
                         Location location = locationResult.getLastLocation();
 
-                        if (location != null ) {
+                        if (location != null && !session.getEvent().isClosed()) {
                             User user = session.getUser();
                             session.setCurrentLocation(location);
 

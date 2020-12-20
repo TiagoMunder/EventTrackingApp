@@ -55,7 +55,8 @@ public class EventInfoActivity extends AppCompatActivity {
 
                         Event event = new Event(document.get("owner").toString().trim(), document.get("eventName").toString().trim(),document.get("description").toString().trim(),
                                 document.get("street").toString().trim(), document.get("city").toString().trim(),
-                                document.get("country").toString().trim(),document.get("eventChoosenDate").toString().trim());
+                                document.get("country").toString().trim(),document.get("eventChoosenDate").toString().trim(),
+                                document.get("isClosed") != null && (boolean)document.get("isClosed") );
                         setInfo(event);
                     } else {
                         Log.d(TAG, "No such document");

@@ -21,6 +21,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -34,11 +35,13 @@ import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+import com.squareup.picasso.Cache;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Executors;
 
 import static android.app.Activity.RESULT_OK;
 import static pt.ubi.eventtrackingapp.Constants.EVENTSCOLLECTION;
@@ -149,6 +152,7 @@ public class MarkerFragment extends Fragment {
         if(currentImage != null && currentImage.getImageUrl() != null){
             setPreviousInfo();
         }
+
         super.onViewCreated(view, savedInstanceState);
     }
 
@@ -160,14 +164,20 @@ public class MarkerFragment extends Fragment {
     }
 
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
+       // Picasso picasso = new Picasso.Builder(getActivity().getApplicationContext()).executor(Executors.newSingleThreadExecutor()).memoryCache(Cache.NONE).indicatorsEnabled(true).build();
         super.onActivityResult(requestCode, resultCode, data);
         if(requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK
                 && data != null && data.getData() != null) {
             imageHasChanged = true;
             mImageUri = data.getData();
-            mImageView.setImageURI(mImageUri);
+           // picasso.load(mImageUri).fit().centerCrop().into(mImageView);
+            Glide.with(getActivity().getApplicationContext())
+                    .load(mImageUri)
+                    .thumbnail(0.5f)
+                    .into(mImageView);
         }
     }
+
 
     private void setPreviousInfo() {
 
@@ -176,6 +186,8 @@ public class MarkerFragment extends Fragment {
         imageName.setText(currentImage.getImageName());
 
     }
+
+
 
     private String getFileExtension(Uri uri) {
         ContentResolver cR = getContext().getContentResolver();
@@ -226,7 +238,7 @@ public class MarkerFragment extends Fragment {
 
         if(!isNewImage) {
             this.canOnlyViewImage();
-            if (currentImage != null && session.getUser().getUser_id().equals(currentImage.getUser_id()))
+            if (currentImage != null && session.getUser().getUser_id().equals(currentImage.getUser_id()) && !session.getEvent().isClosed())
                 canDeleteImage();
         }
 

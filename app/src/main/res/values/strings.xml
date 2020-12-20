@@ -22,6 +22,7 @@
     <string name="chat">Chat</string>
     <string name="map">Map</string>
     <string name="leave_event">Leave Event</string>
+    <string name="close_event">Close Event</string>
     <string name="email">Email</string>
     <string name="password">Password</string>
     <string name="login">Login</string>

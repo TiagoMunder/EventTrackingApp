@@ -5,23 +5,27 @@ public class Event {
     private String name;
     private String description;
     private String street, city, country, date;
+    private boolean isClosed;
 
     public Event() {}
 
-    public Event(String owner, String name, String description) {
+    public Event(String owner, String name, String description, boolean isClosed) {
         this.owner = owner;
         this.name = name;
         this.description = description;
+        this.isClosed = isClosed;
     }
 
-    public Event(String owner, String name, String description, String eventID) {
+
+    public Event(String owner, String name, String description, String eventID, boolean isClosed) {
         this.eventID =  eventID;
         this.owner = owner;
         this.name = name;
         this.description = description;
+        this.isClosed = isClosed;
     }
 
-    public Event(String owner, String name, String description, String street, String city, String country, String date, String eventID) {
+    public Event(String owner, String name, String description, String street, String city, String country, String date, String eventID, boolean isClosed) {
         this.eventID = eventID;
         this.owner = owner;
         this.name = name;
@@ -30,8 +34,9 @@ public class Event {
         this.city = city;
         this.country = country;
         this.date = date;
+        this.isClosed = isClosed;
     }
-    public Event(String owner, String name, String description, String street, String city, String country, String date) {
+    public Event(String owner, String name, String description, String street, String city, String country, String date, boolean isClosed) {
         this.eventID = eventID;
         this.owner = owner;
         this.name = name;
@@ -40,7 +45,10 @@ public class Event {
         this.city = city;
         this.country = country;
         this.date = date;
+        this.isClosed = isClosed ;
     }
+
+
 
     public String getOwner() {
         return owner;
@@ -104,5 +112,13 @@ public class Event {
 
     public void setEventID(String eventID) {
         this.eventID = eventID;
+    }
+
+    public boolean isClosed() {
+        return isClosed;
+    }
+
+    public void setClosed(boolean closed) {
+        isClosed = closed;
     }
 }

@@ -41,8 +41,15 @@ public class EventsListActivity extends AppCompatActivity {
                         if (task.isSuccessful()) {
                             ListView myListView = (ListView) findViewById(R.id.events_list_View);
                             ArrayList<Event> eventsList = new ArrayList<>();
-                            List<Event> events = task.getResult().toObjects(Event.class);
-                            eventsList.addAll(events);
+                            for (int k=0; k < task.getResult().getDocuments().size(); k++) {
+                              Event event  = task.getResult().getDocuments().get(k).toObject(Event.class);
+                               boolean isClosed =  task.getResult().getDocuments().get(k).get("isClosed")!= null && (boolean) task.getResult().getDocuments().get(k).get("isClosed") ;
+                               if(isClosed) event.setClosed(isClosed);
+                              eventsList.add(event);
+                            }
+                           // List<Event> events = task.getResult().toObjects(Event.class);
+                          //  eventsList.addAll(events);
+
                             EventsListAdapter adapter = new EventsListAdapter(EventsListActivity.this,R.layout.adapter_view_layout,eventsList);
                             myListView.setAdapter(adapter);
 

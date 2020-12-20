@@ -54,6 +54,8 @@ public class ChatActivity extends AppCompatActivity {
 
 
         session = new Session(ChatActivity.this);
+        if(session.getEvent().isClosed())
+            btn_send.setEnabled(false);
         btn_send.setOnClickListener( new View.OnClickListener() {
 
             @Override

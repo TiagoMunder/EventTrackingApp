@@ -118,7 +118,7 @@ public class CreateEvent extends AppCompatActivity {
             return;
         }
 
-        Event event = new Event(owner, eventName,description,street,city,country, eventChoosenDate.toString());
+        Event event = new Event(owner, eventName,description,street,city,country, eventChoosenDate.toString(), false);
 
         FirebaseFirestoreSettings settings = new FirebaseFirestoreSettings.Builder()
                 .setTimestampsInSnapshotsEnabled(true)

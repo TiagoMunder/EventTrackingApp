@@ -734,6 +734,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         }, LOCATION_UPDATE_INTERVAL);
     }
 
+
     private void stopLocationUpdates(){
         mHandler.removeCallbacks(mRunnable);
         isUserLocationRunning = false;
@@ -899,10 +900,8 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
 
     private void retrieveUserLocations(){
         Log.d(TAG, "retrieveUserLocations: retrieving location of all users in the Event.");
-
         try{
             for(final MyClusterItem clusterItem: mClusterItems){
-
                 DocumentReference userLocationRef = FirebaseFirestore.getInstance()
                         .collection("User Locations")
                         .document(clusterItem.getUser().getUser_id());
@@ -911,20 +910,22 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                     @Override
                     public void onComplete(@NonNull Task<DocumentSnapshot> task) {
                         if(task.isSuccessful()){
-
-                            final UserLocation updatedUserLocation = task.getResult().toObject(UserLocation.class);
-
+                            final UserLocation updatedUserLocation =
+                                    task.getResult().toObject(UserLocation.class);
                             // update the location
                             for (int i = 0; i < mClusterItems.size(); i++) {
                                 try {
-                                    if (mClusterItems.get(i).getUser().getUser_id().equals(updatedUserLocation.getUser().getUser_id())) {
+                                    if (mClusterItems.get(i).getUser().getUser_id().
+                                            equals(updatedUserLocation.getUser().getUser_id())) {
 
                                         LatLng updatedLatLng = new LatLng(
                                                 updatedUserLocation.getGeoPoint().getLatitude(),
                                                 updatedUserLocation.getGeoPoint().getLongitude()
                                         );
-                                        boolean hasChanges = !mClusterItems.get(i).getPosition().equals(updatedLatLng);
-                                        if((drawFirstTime || hasChanges) && mClusterItems.get(i).getUser().getUser_id().equals(session.getUser().getUser_id())) {
+                                        boolean hasChanges = !mClusterItems.get(i).getPosition()
+                                                .equals(updatedLatLng);
+                                        if((drawFirstTime || hasChanges) && mClusterItems.get(i).getUser().
+                                                getUser_id().equals(session.getUser().getUser_id())) {
                                             updateMyCurrentPosition();
                                             drawFirstTime = false;
                                         }
@@ -933,8 +934,6 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                                         clusterManagerRenderer.setUpdateMarker(mClusterItems.get(i));
 
                                     }
-
-
                                 } catch (NullPointerException e) {
                                     Log.e(TAG, "retrieveUserLocations: NullPointerException: " + e.getMessage());
                                 }
@@ -946,7 +945,6 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         }catch (IllegalStateException e){
             Log.e(TAG, "retrieveUserLocations: Fragment was destroyed during Firestore query. Ending query." + e.getMessage() );
         }
-
     }
 
     private void startLocationService(){

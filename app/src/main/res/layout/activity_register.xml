@@ -86,7 +86,7 @@
         android:layout_marginTop="30dp"
         android:text="@string/register"
         android:textColor="@android:color/white"
-        android:backgroundTint="@color/colorPrimary2"/>
+        android:backgroundTint="@color/colorPrimary"/>
 
 
 </LinearLayout>

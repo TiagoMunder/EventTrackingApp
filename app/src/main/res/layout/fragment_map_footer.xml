@@ -15,17 +15,20 @@
          android:layout_width="wrap_content"
          android:layout_height="wrap_content"
          android:text="@string/view_images"
-         android:id="@+id/viewImages_btn"/>
+         android:id="@+id/viewImages_btn"
+         android:backgroundTint="@color/colorPrimary"/>
      <Button
          android:layout_width="wrap_content"
          android:layout_height="wrap_content"
          android:text="@string/add_edit_image"
-         android:id="@+id/addImage_btn"/>
+         android:id="@+id/addImage_btn"
+         android:backgroundTint="@color/colorPrimary"/>
      <Button
          android:layout_width="wrap_content"
          android:layout_height="wrap_content"
          android:text="@string/delete_own_track"
-         android:id="@+id/deleteTrack_btn"/>
+         android:id="@+id/deleteTrack_btn"
+         android:backgroundTint="@color/colorPrimary"/>
      </LinearLayout>
  </RelativeLayout>
 

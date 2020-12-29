@@ -217,7 +217,6 @@ public class LocationTrackingService extends Service {
 
     }
 
-
     private void addUserPosition(final User user, final String EventID,final Location location, final CustomGeoPoint geoPoint) {
         final String key =  user.getUser_id() + '_' + EventID;
          FirebaseFirestore.getInstance().collection(USERPOSITIONSINEVENT).whereEqualTo(USERPOSITIONKEY, key).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
@@ -248,7 +247,5 @@ public class LocationTrackingService extends Service {
                 });
 
     }
-
-
 
 }

@@ -99,7 +99,7 @@
         android:layout_marginTop="30dp"
         android:text="@string/create_event"
         android:textColor="@android:color/white"
-        android:backgroundTint="@color/colorPrimary2"/>
+        android:backgroundTint="@color/colorPrimary"/>
 
     <Button
         android:id ="@+id/btn_cancel"
@@ -108,7 +108,7 @@
         android:layout_marginTop="30dp"
         android:text="@string/cancel"
         android:textColor="@android:color/white"
-        android:backgroundTint="@color/colorPrimary2"/>
+        android:backgroundTint="@color/colorPrimary"/>
 
 
 </LinearLayout>

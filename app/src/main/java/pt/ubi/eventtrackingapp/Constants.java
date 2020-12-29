@@ -18,5 +18,6 @@ public class Constants {
     public static final String USERPOSITION = "UserPosition";
     public static final String EVENTSCOLLECTION = "Events";
     public static final String IMAGEMARKERSCOLLECTION = "ImageMarkers";
+    public static final String CHATCOLLECTION = "Chat";
 
 }

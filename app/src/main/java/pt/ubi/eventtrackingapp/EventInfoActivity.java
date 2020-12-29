@@ -52,8 +52,9 @@ public class EventInfoActivity extends AppCompatActivity {
                     DocumentSnapshot document = task.getResult();
                     if (document.exists()) {
                         Log.d(TAG, "DocumentSnapshot data: " + document.getData());
-
-                        Event event = new Event(document.get("owner").toString().trim(), document.get("eventName").toString().trim(),document.get("description").toString().trim(),
+                        Event event = new Event(document.get("owner").toString().trim(),
+                                document.get("eventName").toString().trim(),
+                                document.get("description").toString().trim(),
                                 document.get("street").toString().trim(), document.get("city").toString().trim(),
                                 document.get("country").toString().trim(),document.get("eventChoosenDate").toString().trim(),
                                 document.get("isClosed") != null && (boolean)document.get("isClosed") );

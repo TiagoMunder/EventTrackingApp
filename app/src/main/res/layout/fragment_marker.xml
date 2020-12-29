@@ -83,7 +83,8 @@
                 android:layout_marginBottom="80dp"
                 android:layout_gravity="end"
                 android:text="@string/cancel"
-                android:textAlignment="center" />
+                android:textAlignment="center"
+                android:backgroundTint="@color/colorPrimary"/>
         <Button
             android:id="@+id/button_save"
             android:layout_width="wrap_content"
@@ -95,6 +96,7 @@
             android:layout_marginBottom="80dp"
             android:layout_gravity="left"
             android:text="@string/save"
-            android:textAlignment="center" />
+            android:textAlignment="center"
+            android:backgroundTint="@color/colorPrimary"/>
     </LinearLayout>
 </LinearLayout>

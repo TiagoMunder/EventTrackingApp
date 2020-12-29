@@ -123,10 +123,10 @@ public class EventMainCopy extends AppCompatActivity {
             public void onComplete(@NonNull Task<Void> task) {
                 if (task.isSuccessful()) {
                     Log.d(TAG, "Update Successful");
-                    Toast.makeText(EventMainCopy.this, "Event Closed with success", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(EventMainCopy.this, "Event Closed with success",
+                            Toast.LENGTH_SHORT).show();
                     btn_closeEvent.setVisibility(View.INVISIBLE);
                     session.getEvent().setClosed(true);
-
                 } else {
                     Log.w(TAG, "Error updating document", task.getException());
                 }

@@ -43,6 +43,12 @@ public class CreateEvent extends AppCompatActivity {
     private final String defaultDate =  cal.get(Calendar.YEAR) + "/" + (cal.get(Calendar.MONTH)+1) +"/"
           +  cal.get(Calendar.DAY_OF_MONTH);
 
+    private final Map<String, String> errorTranslations  = new HashMap<String, String>() {{
+        put("eventName", "Event Name");
+        put("description", "description");
+        put("country", "country");
+    }};
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -155,13 +161,11 @@ public class CreateEvent extends AppCompatActivity {
         mandatoryFields.put("country", country);
         for ( String key : mandatoryFields.keySet() ) {
             if (mandatoryFields.get(key).getText().length() == 0) {
-                mandatoryFields.get(key).setError("Please Enter a " + key +"!" );
+                mandatoryFields.get(key).setError("It's missing the " + errorTranslations.get(key) +"!" );
                 return false;
             }
         }
 
         return true;
-
-
     }
 }

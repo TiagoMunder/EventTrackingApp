@@ -25,6 +25,9 @@ import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 
+import static pt.ubi.eventtrackingapp.Constants.CHATCOLLECTION;
+import static pt.ubi.eventtrackingapp.Constants.EVENTSCOLLECTION;
+
 public class ChatActivity extends AppCompatActivity {
 
     private EditText editChatForm;
@@ -76,7 +79,7 @@ public class ChatActivity extends AppCompatActivity {
     private void addMessage(String messageBody) {
         Long tsLong = System.currentTimeMillis()/1000;
         MessageServer message = new MessageServer(currentUser, messageBody, eventID, tsLong.toString());
-        DocumentReference newMessageRef = mDb.collection("Chat").document();
+        DocumentReference newMessageRef = mDb.collection(EVENTSCOLLECTION).document(eventID).collection(CHATCOLLECTION).document();
 
         newMessageRef.set(message).addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
@@ -91,7 +94,7 @@ public class ChatActivity extends AppCompatActivity {
     }
 
     protected void getMessagesFromServer() {
-        mDb.collection("Chat")
+        mDb.collection(EVENTSCOLLECTION).document(eventID).collection(CHATCOLLECTION)
                 .whereEqualTo("eventId", eventID).orderBy("time")
                 .addSnapshotListener(ChatActivity.this, new EventListener<QuerySnapshot>() {
                     @Override
@@ -108,7 +111,8 @@ public class ChatActivity extends AppCompatActivity {
                             if (doc.get("messageBody") != null && doc.get("sender") != null  && doc.get("time") != null) {
                                 boolean sendByUs = doc.get("sender").equals(currentUser);
                                 boolean isAdmin = doc.get("sender").equals(session.getEvent().getOwner());
-                                Message message = new Message(doc.get("sender").toString(), doc.get("messageBody").toString(),sendByUs, doc.get("eventId").toString(), doc.get("time").toString(), isAdmin);
+                                Message message = new Message(doc.get("sender").toString(), doc.get("messageBody").toString(),
+                                        sendByUs, doc.get("eventId").toString(), doc.get("time").toString(), isAdmin);
                                 messageList.add(message);
                             }
                         }

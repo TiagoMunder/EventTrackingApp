@@ -12,7 +12,7 @@ import com.google.firebase.auth.FirebaseUser;
 
 public class DashboardActivity extends AppCompatActivity {
 
-    private Button btn_createEvent, btn_ListEvents, btn_participateEvent,btn_showUserInfo;
+    private Button btn_createEvent, btn_ListEvents,btn_showUserInfo;
     private String username;
     private TextView link_logOut;
     private FirebaseAuth mAuth;
@@ -21,11 +21,9 @@ public class DashboardActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         session = new Session(DashboardActivity.this);
-
         setContentView(R.layout.activity_dashboard);
         btn_createEvent = findViewById(R.id.btn_createEvent);
         btn_ListEvents = findViewById(R.id.btn_listEvents);
-        btn_participateEvent = findViewById(R.id.btn_participateEvent);
         btn_showUserInfo = findViewById(R.id.btn_showUserInfo);
         link_logOut = findViewById(R.id.link_logOut);
 
@@ -40,13 +38,6 @@ public class DashboardActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 startActivity(new Intent(DashboardActivity.this, CreateEvent.class));
-            }
-        });
-
-        btn_participateEvent.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // ainda não sei se vou fazer alguma coisa com isto
             }
         });
 

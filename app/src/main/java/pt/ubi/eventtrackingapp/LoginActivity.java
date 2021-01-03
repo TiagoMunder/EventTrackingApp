@@ -110,7 +110,7 @@ public class LoginActivity extends AppCompatActivity {
             startActivity(new Intent(LoginActivity.this, DashboardActivity.class));
         }
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestIdToken(getString(R.string.default_web_client_id))
+       //         .requestIdToken(getString(R.string.default_web_client_id))
                 .requestEmail()
                 .build();
 
@@ -128,6 +128,8 @@ public class LoginActivity extends AppCompatActivity {
             btn_login.setEnabled(false);
         }
         */
+        if(FirebaseAuth.getInstance() != null)
+            FirebaseAuth.getInstance().signOut();
 
         btn_login.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -388,8 +390,6 @@ public class LoginActivity extends AppCompatActivity {
         Intent signInIntent = mGoogleSignInClient.getSignInIntent();
         startActivityForResult(signInIntent, RC_SIGN_IN);
     }
-
-    @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         Log.d(TAG, "onActivityResult: called.");
@@ -398,9 +398,6 @@ public class LoginActivity extends AppCompatActivity {
                 if(mLocationPermissionGranted){
                     isEverythingOK = true;
                     getUserDetails();
-                }
-                if (requestCode == RC_SIGN_IN) {
-
                 }
                 else{
                     getLocationPermission();
@@ -412,7 +409,7 @@ public class LoginActivity extends AppCompatActivity {
                 try {
                     // Google Sign In was successful, authenticate with Firebase
                     GoogleSignInAccount account = task.getResult(ApiException.class);
-                    Log.d(TAG, "firebaseAuthWithGoogle:" + account.getId());
+              //      Log.d(TAG, "firebaseAuthWithGoogle:" + account.getId());
                     firebaseAuthWithGoogle(account.getIdToken());
                 } catch (ApiException e) {
                     // Google Sign In failed, update UI appropriately

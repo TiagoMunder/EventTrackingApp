@@ -47,7 +47,18 @@
         android:backgroundTint="@color/colorPrimary"
         android:layout_below="@id/layoutpassword"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:textColor="@android:color/white"/>
+
+    <Button
+        android:id="@+id/btn_login_google"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/layoutpassword"
+        android:layout_marginTop="128dp"
+        android:backgroundTint="@color/colorPrimary"
+        android:text="@string/login_google"
+        android:textColor="@android:color/white" />
 
     <ProgressBar
         android:id="@+id/progressBar1"
@@ -55,7 +66,7 @@
         android:layout_width="334dp"
         android:layout_height="wrap_content"
         android:layout_below="@id/btn_login"
-        android:layout_marginTop="22dp" />
+        android:layout_marginTop="137dp" />
 
     <TextView
         android:id="@+id/link_regist"

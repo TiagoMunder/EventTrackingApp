@@ -110,7 +110,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
     private boolean drawFirstTime = true;
 
     private Session session;
-    private DecimalFormat df = new DecimalFormat("#");
+    private DecimalFormat decimalFormat = new DecimalFormat("#");
     private static final int PATTERN_GAP_LENGTH_PX = 20;
     private ArrayList<Polyline>  polyLines = new ArrayList<Polyline>();
     private static final PatternItem DOT = new Dot();
@@ -296,7 +296,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                 try{
                     String snippet = "";
                     if(checkUserIsCurrentUser(userLocationParcelable.getUser().getUser_id())){
-                        snippet = "Distance traveled: " + df.format((session.getCurrentDistanceTraveled()));
+                        snippet = "Distance traveled: " + decimalFormat.format((session.getCurrentDistanceTraveled()));
                     }
 
                     String avatar = null;
@@ -347,7 +347,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                     String snippet = "";
                     if(checkUserIsCurrentUser(userLocationParcelable.getUser().getUser_id())){
                         float trimDistance = Float.parseFloat(session.getCurrentDistanceTraveled());
-                        snippet = "Distance traveled: " + df.format(trimDistance) + 'm';
+                        snippet = "Distance traveled: " + decimalFormat.format(trimDistance) + 'm';
                     }
 
                     String avatar = null;
@@ -484,7 +484,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                     Log.d(TAG, doc.get("distanceTraveled").toString());
                     if(currentClusterItem != null) {
                         float trimDistance = Float.parseFloat(doc.get("distanceTraveled").toString());
-                        String newDistance = "Distance traveled: " + df.format(trimDistance) + "m";
+                        String newDistance = "Distance traveled: " + decimalFormat.format(trimDistance) + "m";
                         clusterManagerRenderer.setUpdateMarkerSnippet(currentClusterItem, newDistance);
                         session.setCurrentDistanceTraveled(doc.get("distanceTraveled").toString());
                     }

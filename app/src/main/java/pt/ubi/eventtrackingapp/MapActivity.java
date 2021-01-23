@@ -110,7 +110,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
     private boolean drawFirstTime = true;
 
     private Session session;
-
+    private DecimalFormat df = new DecimalFormat("#");
     private static final int PATTERN_GAP_LENGTH_PX = 20;
     private ArrayList<Polyline>  polyLines = new ArrayList<Polyline>();
     private static final PatternItem DOT = new Dot();
@@ -120,7 +120,6 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
 
     private boolean isEventClosed;
 
-    DecimalFormat df = new DecimalFormat("###.###");
 
 
     @Override
@@ -348,7 +347,6 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                     String snippet = "";
                     if(checkUserIsCurrentUser(userLocationParcelable.getUser().getUser_id())){
                         float trimDistance = Float.parseFloat(session.getCurrentDistanceTraveled());
-                        DecimalFormat df = new DecimalFormat("###.###");
                         snippet = "Distance traveled: " + df.format(trimDistance) + 'm';
                     }
 

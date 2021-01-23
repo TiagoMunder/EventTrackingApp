@@ -62,7 +62,6 @@
         android:drawableLeft="@drawable/ic_google_seeklogo_com"
         android:gravity="center|center_vertical"
         android:text="@string/login_google"
-        android:drawablePadding="6dp"
         android:textColor="@android:color/white" />
 
     <ProgressBar

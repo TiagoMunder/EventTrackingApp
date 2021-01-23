@@ -77,12 +77,10 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         MarkerFragment.OnFragmentInteractionListener, MapFooterFragment.OnFragmentInteractionListener,ImageTabsFragment.OnFragmentInteractionListener,GoogleMap.OnMapLongClickListener, MapFooterFragment.ButtonCallback {
 
     private static final String TAG = "MapFragmentActivity";
-    private MapView mMapView;
     private FirebaseFirestore mDb;
     private ArrayList<UserLocationParcelable> mUserLocations = new ArrayList<>();
     private ArrayList<MarkerObject> mImageMarkersList = new ArrayList<>();
     private GoogleMap mGoogleMap;
-    private LatLngBounds mMapBoundary;
     private UserLocationParcelable mUserLocation;
     private myClusterManagerRenderer clusterManagerRenderer;
     private ClusterManager<MyClusterItem> mClusterManager;
@@ -108,9 +106,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
     private boolean isUserLocationRunning = false;
 
     private MyClusterItem currentClusterItem;
-    private String distanceTraveled = "0";
 
-    private boolean isFirstTime = true;
     private boolean drawFirstTime = true;
 
     private Session session;
@@ -469,7 +465,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
 
     private void setCameraView() {
 
-        CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(new LatLng(mUserLocation.getGeoPoint().getLatitude(), mUserLocation.getGeoPoint().getLongitude() ), 13);
+        CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(new LatLng(mUserLocation.getGeoPoint().getLatitude(), mUserLocation.getGeoPoint().getLongitude() ), 19);
         mGoogleMap.animateCamera(cameraUpdate);
 
     }
@@ -491,7 +487,6 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                     if(currentClusterItem != null) {
                         float trimDistance = Float.parseFloat(doc.get("distanceTraveled").toString());
                         String newDistance = "Distance traveled: " + df.format(trimDistance) + "m";
-                        distanceTraveled = newDistance;
                         clusterManagerRenderer.setUpdateMarkerSnippet(currentClusterItem, newDistance);
                         session.setCurrentDistanceTraveled(doc.get("distanceTraveled").toString());
                     }

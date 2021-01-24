@@ -295,10 +295,6 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                 Log.d(TAG, "addMapMarkers: location: " + userLocationParcelable.getGeoPoint().toString());
                 try{
                     String snippet = "";
-                    if(checkUserIsCurrentUser(userLocationParcelable.getUser().getUser_id())){
-                        snippet = "Distance traveled: " + decimalFormat.format((session.getCurrentDistanceTraveled()));
-                    }
-
                     String avatar = null;
                     avatar = userLocationParcelable.getUser().getmImageUrl();
                     MyClusterItem newClusterMarker = new MyClusterItem(

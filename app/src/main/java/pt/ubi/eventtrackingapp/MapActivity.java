@@ -6,6 +6,7 @@ import android.app.ActivityManager;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.graphics.Typeface;
 import android.location.Location;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -19,8 +20,10 @@ import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -77,6 +80,9 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         MarkerFragment.OnFragmentInteractionListener, MapFooterFragment.OnFragmentInteractionListener,ImageTabsFragment.OnFragmentInteractionListener,GoogleMap.OnMapLongClickListener, MapFooterFragment.ButtonCallback {
 
     private static final String TAG = "MapFragmentActivity";
+    private static final int slowPathMaxTimeInMin = 5;
+    private static final int LOCATION_UPDATE_INTERVAL = 3000;
+
     private FirebaseFirestore mDb;
     private ArrayList<UserLocationParcelable> mUserLocations = new ArrayList<>();
     private ArrayList<MarkerObject> mImageMarkersList = new ArrayList<>();
@@ -96,7 +102,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
 
     private Handler mHandler = new Handler();
     private Runnable mRunnable;
-    private static final int LOCATION_UPDATE_INTERVAL = 3000;
+
     private String eventID;
 
     private boolean isOnMarkerFragment = false;
@@ -111,6 +117,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
 
     private Session session;
     private DecimalFormat decimalFormat = new DecimalFormat("#");
+
     private static final int PATTERN_GAP_LENGTH_PX = 20;
     private ArrayList<Polyline>  polyLines = new ArrayList<Polyline>();
     private static final PatternItem DOT = new Dot();
@@ -119,6 +126,8 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
     private static final List<PatternItem> PATTERN_POLYLINE_DOTTED = Arrays.asList(GAP, DOT);
 
     private boolean isEventClosed;
+
+
 
 
 
@@ -176,6 +185,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         listenerImages.remove();
         listenUserPositions.remove();
         listenUsers.remove();
+        currentClusterItem = null;
 
     }
 
@@ -212,14 +222,90 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
 
         mGoogleMap.setOnMarkerClickListener(this);
         mGoogleMap.setOnMapLongClickListener(this);
+        mGoogleMap.setInfoWindowAdapter(new GoogleMap.InfoWindowAdapter() {
+
+            @Override
+            public View getInfoWindow(Marker arg0) {
+                return null;
+            }
+
+            @Override
+            public View getInfoContents(Marker marker) {
+
+                LinearLayout info = new LinearLayout(MapActivity.this);
+                info.setOrientation(LinearLayout.VERTICAL);
+
+                TextView title = new TextView(MapActivity.this);
+                title.setTextColor(Color.BLACK);
+                title.setGravity(Gravity.CENTER);
+                title.setTypeface(null, Typeface.BOLD);
+                title.setText(marker.getTitle());
+
+                TextView snippet = new TextView(MapActivity.this);
+                snippet.setTextColor(Color.GRAY);
+                snippet.setText(marker.getSnippet());
+
+                info.addView(title);
+                info.addView(snippet);
+
+                return info;
+            }
+        });
 
        // listenMyCurrentPositionChanged();
 
 
     }
 
+
+
     private boolean checkUserIsCurrentUser(String userId) {
         return userId.equals(FirebaseAuth.getInstance().getUid());
+    }
+
+    private void addMapMarkersDynamically(UserLocationParcelable userLocationParcelable) {
+
+        if(mGoogleMap != null){
+
+            if(mClusterManager == null){
+                mClusterManager = new ClusterManager<MyClusterItem>(getApplicationContext(), mGoogleMap);
+            }
+            if(clusterManagerRenderer == null){
+                clusterManagerRenderer = new myClusterManagerRenderer(
+                        this,
+                        mGoogleMap,
+                        mClusterManager
+                );
+                mClusterManager.setRenderer(clusterManagerRenderer);
+            }
+
+            Log.d(TAG, "addMapMarkers: location: " + userLocationParcelable.getGeoPoint().toString());
+            try{
+                String snippet = "";
+                String avatar = null;
+                avatar = userLocationParcelable.getUser().getmImageUrl();
+                MyClusterItem newClusterMarker = new MyClusterItem(
+                        new LatLng(userLocationParcelable.getGeoPoint().getLatitude(), userLocationParcelable.getGeoPoint().getLongitude()),
+                        userLocationParcelable.getUser().getUsername(),
+                        snippet,
+                        avatar,
+                        userLocationParcelable.getUser()
+                );
+                if(checkUserIsCurrentUser(userLocationParcelable.getUser().getUser_id()) || !isEventClosed) {
+                    mClusterManager.addItem(newClusterMarker);
+                    mClusterItems.add(newClusterMarker);
+                }
+                if(checkUserIsCurrentUser(userLocationParcelable.getUser().getUser_id()))
+                    currentClusterItem = newClusterMarker;
+            }catch (NullPointerException e){
+                Log.e(TAG, "addMapMarkers: NullPointerException: " + e.getMessage() );
+            }
+
+            setUserPosition();
+            mClusterManager.cluster();
+            updateDistanceTraveled();
+
+        }
     }
 
     public void getUserLocation(User user) {
@@ -236,8 +322,6 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                         UserLocationParcelable newUserLocation = new UserLocationParcelable(geoPoint, task.getResult().toObject(UserLocation.class).getTimestamp(), user);
                         mUserLocations.add(newUserLocation);
                         addMapMarkersDynamically(newUserLocation);
-
-
 
                     }
                 }
@@ -263,9 +347,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                             if (doc.get("username") != null && doc.get("email") != null) {
 
                                 User user = new User(doc.get("email").toString(), doc.get("username").toString(),doc.get("user_id").toString(),doc.get("mImageUrl")!=null ? doc.get("mImageUrl").toString() : null);
-
                                 getUserLocation(user);
-
                             }
                         }
 
@@ -273,7 +355,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                 });
 
     }
-
+/*
     private void addMapMarkers() {
 
         if(mGoogleMap != null) {
@@ -321,58 +403,10 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
 
         }
     }
-
-    private void addMapMarkersDynamically(UserLocationParcelable userLocationParcelable) {
-
-        if(mGoogleMap != null){
-
-            if(mClusterManager == null){
-                mClusterManager = new ClusterManager<MyClusterItem>(getApplicationContext(), mGoogleMap);
-            }
-            if(clusterManagerRenderer == null){
-                clusterManagerRenderer = new myClusterManagerRenderer(
-                        this,
-                        mGoogleMap,
-                        mClusterManager
-                );
-                mClusterManager.setRenderer(clusterManagerRenderer);
-            }
-
-                Log.d(TAG, "addMapMarkers: location: " + userLocationParcelable.getGeoPoint().toString());
-                try{
-                    String snippet = "";
-                    if(checkUserIsCurrentUser(userLocationParcelable.getUser().getUser_id())){
-                        float trimDistance = Float.parseFloat(session.getCurrentDistanceTraveled());
-                        snippet = "Distance traveled: " + decimalFormat.format(trimDistance) + 'm';
-                    }
-
-                    String avatar = null;
-                    avatar = userLocationParcelable.getUser().getmImageUrl();
-                    MyClusterItem newClusterMarker = new MyClusterItem(
-                            new LatLng(userLocationParcelable.getGeoPoint().getLatitude(), userLocationParcelable.getGeoPoint().getLongitude()),
-                            userLocationParcelable.getUser().getUsername(),
-                            snippet,
-                            avatar,
-                            userLocationParcelable.getUser()
-                    );
-                    if(checkUserIsCurrentUser(userLocationParcelable.getUser().getUser_id()) || !isEventClosed) {
-                        mClusterManager.addItem(newClusterMarker);
-                        mClusterItems.add(newClusterMarker);
-                    }
-                    if(checkUserIsCurrentUser(userLocationParcelable.getUser().getUser_id()))
-                        currentClusterItem = newClusterMarker;
-                }catch (NullPointerException e){
-                    Log.e(TAG, "addMapMarkers: NullPointerException: " + e.getMessage() );
-                }
+    */
 
 
 
-            setUserPosition();
-            mClusterManager.cluster();
-            updateDistanceTraveled();
-
-        }
-    }
 
     private void filterImagesByGeoPoint(GeoPoint geoPoint, Marker marker, ImageMarkerClusterItem imageMarker, MyClusterItem userMarker) {
         filteredImages.clear();
@@ -464,6 +498,10 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
 
     }
 
+    private String velocityInKMh(String velocity) {
+        return String.valueOf(decimalFormat.format(Float.parseFloat(velocity) * 3.6));
+    }
+
     private void updateDistanceTraveled() {
         final String key =  session.getUser().getUser_id() + '_' + this.eventID;
         listenUserPositions = FirebaseFirestore.getInstance().collection(USERPOSITIONSINEVENT).whereEqualTo(USERPOSITIONKEY, key).addSnapshotListener( new EventListener<QuerySnapshot>() {
@@ -480,8 +518,10 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                     Log.d(TAG, doc.get("distanceTraveled").toString());
                     if(currentClusterItem != null) {
                         float trimDistance = Float.parseFloat(doc.get("distanceTraveled").toString());
-                        String newDistance = "Distance traveled: " + decimalFormat.format(trimDistance) + "m";
-                        clusterManagerRenderer.setUpdateMarkerSnippet(currentClusterItem, newDistance);
+                        String velocity = doc.get("velocity").toString();
+                        String velocityKM = velocityInKMh(doc.get("velocity").toString());
+                        String newSnippet = "Distance traveled: " + decimalFormat.format(trimDistance) + "m\n Velocidade: " + velocity + "m/s" + "\n"+ "Velocity: " + velocityKM +"km/h";
+                        clusterManagerRenderer.setUpdateMarkerSnippet(currentClusterItem, newSnippet);
                         session.setCurrentDistanceTraveled(doc.get("distanceTraveled").toString());
                     }
                 }
@@ -551,11 +591,14 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
 
     }
 
+    /*
     public boolean verifyOwnerOfImage(ImageMarkerClusterItem imageMarker) {
         if(imageMarker == null)
             return true;
        return imageMarker.getUser_id().equals(session.getUser().getUser_id());
     }
+
+     */
 
     public void addMapFooter(Marker marker, ImageMarkerClusterItem imageMarker, MyClusterItem userMarker) {
 
@@ -650,7 +693,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         }
 
     private void calculatePathToUser(CustomGeoPoint dist) {
-        Location origin = session.getCurrentLocation();
+        CustomGeoPoint origin = session.getCurrentLocation();
         LatLng originLatLng = new LatLng(origin.getLatitude(), origin.getLongitude());
         LatLng distLatLng = new LatLng(dist.getLatitude(), dist.getLongitude());
 
@@ -768,7 +811,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
             points.add(position);
            int timeMax = calculateMinutesDiffBetweenPoints(myPositions.get(i).getTime(), oldTime);
 
-            if(timeMax >= 20 && !isSlow) {
+            if(timeMax >= slowPathMaxTimeInMin && !isSlow) {
                 points.remove(points.size()-1);
                 lineOptions.addAll(points);
                 lineOptions.width(10);
@@ -782,7 +825,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                 if(oldPoint != null)
                     points.add( oldPoint);
             }
-            if(timeMax < 20 && isSlow) {
+            if(timeMax < slowPathMaxTimeInMin && isSlow) {
                 points.remove(points.size()-1);
                 lineOptions.addAll(points);
                 lineOptions.width(10);

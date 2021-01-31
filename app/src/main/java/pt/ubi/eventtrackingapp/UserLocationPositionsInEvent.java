@@ -7,13 +7,15 @@ public class UserLocationPositionsInEvent {
     private String userPositionKey;
     private float distanceTraveled;
     private GeoPoint lastPosition;
+    private float velocity;
 
 
-    public UserLocationPositionsInEvent(String userPositionKey, float distanceDone, GeoPoint lastPosition) {
+    public UserLocationPositionsInEvent(String userPositionKey, float distanceDone, GeoPoint lastPosition, float velocity) {
         this.userPositionKey = userPositionKey;
 
         this.distanceTraveled = distanceDone;
         this.lastPosition = lastPosition;
+        this.velocity = velocity;
     }
 
     public float getDistanceTraveled() {
@@ -39,5 +41,13 @@ public class UserLocationPositionsInEvent {
 
     public void setLastPosition(GeoPoint lastPosition) {
         this.lastPosition = lastPosition;
+    }
+
+    public float getVelocity() {
+        return velocity;
+    }
+
+    public void setVelocity(float velocity) {
+        this.velocity = velocity;
     }
 }

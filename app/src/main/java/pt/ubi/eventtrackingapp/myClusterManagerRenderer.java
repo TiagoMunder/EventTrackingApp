@@ -83,7 +83,7 @@ public class myClusterManagerRenderer extends DefaultClusterRenderer<MyClusterIt
         Marker marker = getMarker(clusterMarker);
         if (marker != null) {
             marker.setSnippet(snippet);
-        }
+        } else clusterMarker.setSnippet(snippet);
     }
 
     public  HashMap<String, MyClusterItem> getExtraMarkerInfo() {

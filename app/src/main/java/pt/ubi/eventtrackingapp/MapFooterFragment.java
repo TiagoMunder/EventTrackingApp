@@ -74,7 +74,7 @@ public class MapFooterFragment extends Fragment {
     }
 
     public boolean isOnThisPosition() {
-        Location currentPosition =session.getCurrentLocation();
+        CustomGeoPoint currentPosition =session.getCurrentLocation();
         return geoPoint.getLatitude() == currentPosition.getLatitude()  && geoPoint.getLongitude() == currentPosition.getLongitude();
     }
 
@@ -102,7 +102,7 @@ public class MapFooterFragment extends Fragment {
         }
 
         if(!hasImages)
-            viewImages_btn.setEnabled(false);
+            viewImages_btn.setVisibility(View.INVISIBLE);
 
         viewImages_btn.setOnClickListener(new View.OnClickListener() {
             @Override

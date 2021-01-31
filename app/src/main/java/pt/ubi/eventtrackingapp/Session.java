@@ -9,6 +9,7 @@ import com.google.gson.Gson;
 
 import static pt.ubi.eventtrackingapp.Constants.CURRENTDISTANCETRAVELED;
 import static pt.ubi.eventtrackingapp.Constants.CURRENTLOCATION;
+import static pt.ubi.eventtrackingapp.Constants.CURRENTVELOCITY;
 
 public class Session {
     private SharedPreferences prefs;
@@ -37,14 +38,14 @@ public class Session {
         return obj;
     }
 
-    public Location getCurrentLocation() {
+    public CustomGeoPoint getCurrentLocation() {
         String currentlocation = prefs.getString(CURRENTLOCATION,"");
         Gson gson = new Gson();
-        Location obj = gson.fromJson(currentlocation, Location.class);
+        CustomGeoPoint obj = gson.fromJson(currentlocation, CustomGeoPoint.class);
         return obj;
     }
 
-    public void setCurrentLocation(Location currentLocation) {
+    public void setCurrentLocation(CustomGeoPoint currentLocation) {
         Gson gson = new Gson();
         String jsonCurrentLocation = gson.toJson(currentLocation);
         prefs.edit().putString(CURRENTLOCATION, jsonCurrentLocation).apply();
@@ -61,6 +62,19 @@ public class Session {
         Gson gson = new Gson();
         String jsonCurrentDistanceTraveled = gson.toJson(currentDistanceTraveled);
         prefs.edit().putString(CURRENTDISTANCETRAVELED, jsonCurrentDistanceTraveled).apply();
+    }
+
+    public String getCurrentVelocity() {
+        String currentDistanceTraveled = prefs.getString(CURRENTVELOCITY,"0");
+        Gson gson = new Gson();
+        String obj = gson.fromJson(currentDistanceTraveled, String.class);
+        return obj;
+    }
+
+    public void setCurrentVelocity(String currentDistanceTraveled) {
+        Gson gson = new Gson();
+        String jsonCurrentDistanceTraveled = gson.toJson(currentDistanceTraveled);
+        prefs.edit().putString(CURRENTVELOCITY, jsonCurrentDistanceTraveled).apply();
     }
 
     public void setEvent(Event event) {

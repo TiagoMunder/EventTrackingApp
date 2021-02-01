@@ -499,7 +499,8 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
     }
 
     private String velocityInKMh(String velocity) {
-        return String.valueOf(decimalFormat.format(Float.parseFloat(velocity) * 3.6));
+        DecimalFormat decimalFormat2decimals = new DecimalFormat("#.#");
+        return String.valueOf(decimalFormat2decimals.format(Float.parseFloat(velocity) * 3.6));
     }
 
     private void updateDistanceTraveled() {
@@ -518,9 +519,8 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                     Log.d(TAG, doc.get("distanceTraveled").toString());
                     if(currentClusterItem != null) {
                         float trimDistance = Float.parseFloat(doc.get("distanceTraveled").toString());
-                        String velocity = doc.get("velocity").toString();
                         String velocityKM = velocityInKMh(doc.get("velocity").toString());
-                        String newSnippet = "Distance traveled: " + decimalFormat.format(trimDistance) + "m\n Velocidade: " + velocity + "m/s" + "\n"+ "Velocity: " + velocityKM +"km/h";
+                        String newSnippet = "Distance traveled: " + decimalFormat.format(trimDistance) + "m"+ "\n"+ "Velocity: " + velocityKM +"km/h";
                         clusterManagerRenderer.setUpdateMarkerSnippet(currentClusterItem, newSnippet);
                         session.setCurrentDistanceTraveled(doc.get("distanceTraveled").toString());
                     }

@@ -53,12 +53,15 @@ public class ChatActivity extends AppCompatActivity {
             Log.d(TAG, " Error getting Event");
             startActivity(new Intent(ChatActivity.this, DashboardActivity.class));
         }
-        getMessagesFromServer();
+
 
 
         session = new Session(ChatActivity.this);
-        if(session.getEvent().isClosed())
-            btn_send.setEnabled(false);
+        if(session.getEvent().isClosed()){
+            editChatForm.setVisibility(View.INVISIBLE);
+            btn_send.setVisibility(View.INVISIBLE);
+        }
+
         btn_send.setOnClickListener( new View.OnClickListener() {
 
             @Override
@@ -74,6 +77,11 @@ public class ChatActivity extends AppCompatActivity {
             }
         });
 
+    }
+
+    protected void onResume() {
+        super.onResume();
+        getMessagesFromServer();
     }
 
     private void addMessage(String messageBody) {

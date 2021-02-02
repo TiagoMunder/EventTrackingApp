@@ -29,8 +29,14 @@ public class EventsListActivity extends AppCompatActivity {
         session = new Session(this);
         setContentView(R.layout.activity_events_list);
         mDb = FirebaseFirestore.getInstance();
+
+    }
+
+    protected void onResume() {
+        super.onResume();
         getEvents();
     }
+
 
     private void getEvents() {
         mDb.collection("Events")

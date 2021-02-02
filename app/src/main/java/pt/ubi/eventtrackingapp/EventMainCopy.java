@@ -126,7 +126,9 @@ public class EventMainCopy extends AppCompatActivity {
                     Toast.makeText(EventMainCopy.this, "Event Closed with success",
                             Toast.LENGTH_SHORT).show();
                     btn_closeEvent.setVisibility(View.INVISIBLE);
-                    session.getEvent().setClosed(true);
+                   Event closedEvent = session.getEvent();
+                    closedEvent.setClosed(true);
+                    session.setEvent(closedEvent);
                 } else {
                     Log.w(TAG, "Error updating document", task.getException());
                 }

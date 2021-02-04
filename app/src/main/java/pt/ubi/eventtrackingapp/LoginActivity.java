@@ -19,6 +19,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
@@ -56,6 +57,7 @@ public class LoginActivity extends AppCompatActivity {
     private Session session;
     private EditText email, password;
     private Button btn_login, btn_login_google;
+    private RelativeLayout rl_loading, rl_body;
     private TextView link_regist;
     private static final String TAG = "LoginActivity";
     private FirebaseFirestore mDb;
@@ -64,7 +66,6 @@ public class LoginActivity extends AppCompatActivity {
     private FusedLocationProviderClient mFusedLocationClient;
     private UserLocation mUserLocation;
     private ProgressBar spinner;
-    private boolean loading = false;
     private final int RC_SIGN_IN = 3;
     private GoogleSignInClient mGoogleSignInClient;
     private GoogleSignInAccount account;
@@ -78,6 +79,8 @@ public class LoginActivity extends AppCompatActivity {
         btn_login = findViewById(R.id.btn_login);
         btn_login_google = findViewById(R.id.btn_login_google);
         link_regist = findViewById(R.id.link_regist);
+        rl_loading = findViewById(R.id.loading);
+        rl_body= findViewById(R.id.body);
         mDb = FirebaseFirestore.getInstance();
         mAuth = FirebaseAuth.getInstance();
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
@@ -98,32 +101,12 @@ public class LoginActivity extends AppCompatActivity {
 
         mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
 
-        spinner = (ProgressBar)findViewById(R.id.progressBar1);
-        spinner.setVisibility(View.GONE);
-        email.setEnabled(true);
-        password.setEnabled(true);
-        btn_login.setEnabled(true);
-        password.setVisibility(View.VISIBLE);
-        email.setVisibility(View.VISIBLE);
-        btn_login.setVisibility(View.VISIBLE);
-
         if (user != null && createdEmail != null && createdUsername != null) {
-            loading = true;
             saveUser(user.getEmail());
             startActivity(new Intent(LoginActivity.this, DashboardActivity.class));
         }
 
-        /* No Need to use this
-        if(loading) {
-            spinner.setVisibility(View.VISIBLE);
-            email.setEnabled(false);
-            email.setVisibility(View.GONE);
-            password.setEnabled(false);
-            password.setVisibility(View.GONE);
-            btn_login.setVisibility(View.GONE);
-            btn_login.setEnabled(false);
-        }
-        */
+
 
         btn_login.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -157,6 +140,19 @@ public class LoginActivity extends AppCompatActivity {
         });
 
     }
+
+    private void setLoading()  {
+        rl_loading.setVisibility(View.VISIBLE);
+        rl_body.setVisibility(View.INVISIBLE);
+
+    }
+
+    private void turnLoadingOff()  {
+        rl_loading.setVisibility(View.INVISIBLE);
+        rl_body.setVisibility(View.VISIBLE);
+
+    }
+
 
     private void LoginWithGoogle() {
         Intent signInIntent = mGoogleSignInClient.getSignInIntent();
@@ -209,14 +205,16 @@ public class LoginActivity extends AppCompatActivity {
         }
     }
 
+
+
     private void getUserDetails() {
         if(FirebaseAuth.getInstance().getUid() != null){
+            setLoading();
             mUserLocation = new UserLocation();
             FirebaseFirestoreSettings settings = new FirebaseFirestoreSettings.Builder()
                     .setTimestampsInSnapshotsEnabled(true)
                     .build();
             mDb.setFirestoreSettings(settings);
-
             DocumentReference userRef = mDb.collection("Users").document(FirebaseAuth.getInstance().getUid());
             userRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
                 @Override
@@ -227,11 +225,16 @@ public class LoginActivity extends AppCompatActivity {
                         if(user == null) {
                             Toast.makeText(LoginActivity.this, "There was a problem getting the User!",
                                     Toast.LENGTH_SHORT).show();
+                            turnLoadingOff();
                             return;
                         }
                         saveUser(user.getEmail());
                         mUserLocation.setUser(user);
                         getLastKnownLocation();
+                    } else {
+                        turnLoadingOff();
+                        Toast.makeText(LoginActivity.this, "There was a problem getting the User!",
+                                Toast.LENGTH_SHORT).show();
                     }
                 }
             });
@@ -297,7 +300,7 @@ public class LoginActivity extends AppCompatActivity {
                                 }
                             } else {
                                 Log.d(TAG, "Error getting documents: ", task.getException());
-                                loading = false;
+
                             }
                         }
                     });
@@ -461,6 +464,7 @@ public class LoginActivity extends AppCompatActivity {
 
     private void firebaseAuthWithGoogle(String idToken) {
         AuthCredential credential = GoogleAuthProvider.getCredential(idToken, null);
+        setLoading();
         mAuth.signInWithCredential(credential)
                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                     @Override
@@ -470,6 +474,7 @@ public class LoginActivity extends AppCompatActivity {
                             setUserInfoWithGoogle();
                         } else {
                             Log.w(TAG, "signInWithCredential:failure", task.getException());
+                            turnLoadingOff();
 
                         }
                     }

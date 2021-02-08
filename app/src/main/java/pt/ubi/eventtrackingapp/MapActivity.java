@@ -43,6 +43,7 @@ import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
@@ -50,6 +51,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.GeoPoint;
 import com.google.firebase.firestore.ListenerRegistration;
+import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.maps.android.clustering.ClusterManager;
@@ -57,9 +59,9 @@ import com.google.maps.android.clustering.ClusterManager;
 import static pt.ubi.eventtrackingapp.Constants.EVENTSCOLLECTION;
 import static pt.ubi.eventtrackingapp.Constants.GOOGLE_MAP_API_KEY;
 import static pt.ubi.eventtrackingapp.Constants.IMAGEMARKERSCOLLECTION;
-import static pt.ubi.eventtrackingapp.Constants.USERPOSITION;
-import static pt.ubi.eventtrackingapp.Constants.USERPOSITIONKEY;
-import static pt.ubi.eventtrackingapp.Constants.USERPOSITIONSINEVENT;
+import static pt.ubi.eventtrackingapp.Constants.POSITIONSCOLLECTION;
+import static pt.ubi.eventtrackingapp.Constants.USERPOSITIONS;
+import static pt.ubi.eventtrackingapp.Constants.USERSCOLLECTION;
 
 import org.json.JSONObject;
 
@@ -129,8 +131,6 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
 
 
 
-
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -146,15 +146,6 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         session = new Session(MapActivity.this);
         startLocationService();
         isEventClosed = session.getEvent().isClosed();
-
-        /*
-
-        for (UserLocation userLocation: mUserLocations) {
-            Log.d(TAG, "onCreateView: User Location Longitude: " + userLocation.getGeoPoint().getLongitude()
-                    + " User Location Latitude: "+ userLocation.getGeoPoint().getLongitude());
-        }
-        */
-
     }
 
 
@@ -202,10 +193,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         googleMap.setOnMapLoadedCallback(new GoogleMap.OnMapLoadedCallback() {
             @Override
             public void onMapLoaded() {
-                // for( User user: mUsersList)
-                //  getUserLocation(user);
                 getUsersOfTheEvent();
-                // addMapMarkers();
                 getImageMarkers();
                 if(isEventClosed) {
                     updateMyCurrentPosition();
@@ -251,10 +239,6 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                 return info;
             }
         });
-
-       // listenMyCurrentPositionChanged();
-
-
     }
 
 
@@ -355,58 +339,6 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                 });
 
     }
-/*
-    private void addMapMarkers() {
-
-        if(mGoogleMap != null) {
-
-            if(mClusterManager == null){
-                mClusterManager = new ClusterManager<MyClusterItem>(getApplicationContext(), mGoogleMap);
-            }
-            if(clusterManagerRenderer == null){
-                clusterManagerRenderer = new myClusterManagerRenderer(
-                        this,
-                        mGoogleMap,
-                        mClusterManager
-                );
-                mClusterManager.setRenderer(clusterManagerRenderer);
-            }
-
-            for(UserLocationParcelable userLocationParcelable: mUserLocations){
-
-                Log.d(TAG, "addMapMarkers: location: " + userLocationParcelable.getGeoPoint().toString());
-                try{
-                    String snippet = "";
-                    String avatar = null;
-                    avatar = userLocationParcelable.getUser().getmImageUrl();
-                    MyClusterItem newClusterMarker = new MyClusterItem(
-                            new LatLng(userLocationParcelable.getGeoPoint().getLatitude(), userLocationParcelable.getGeoPoint().getLongitude()),
-                            userLocationParcelable.getUser().getUsername(),
-                            snippet,
-                            avatar,
-                            userLocationParcelable.getUser()
-                    );
-                    mClusterManager.addItem(newClusterMarker);
-                    mClusterItems.add(newClusterMarker);
-                    if(checkUserIsCurrentUser(userLocationParcelable.getUser().getUser_id()))
-                        currentClusterItem = newClusterMarker;
-                }catch (NullPointerException e){
-                    Log.e(TAG, "addMapMarkers: NullPointerException: " + e.getMessage() );
-                }
-
-            }
-
-            setUserPosition();
-
-            mClusterManager.cluster();
-            updateDistanceTraveled();
-
-        }
-    }
-    */
-
-
-
 
     private void filterImagesByGeoPoint(GeoPoint geoPoint, Marker marker, ImageMarkerClusterItem imageMarker, MyClusterItem userMarker) {
         filteredImages.clear();
@@ -499,44 +431,57 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
     }
 
     private String velocityInKMh(String velocity) {
-        DecimalFormat decimalFormat2decimals = new DecimalFormat("#.#");
+        DecimalFormat decimalFormat2decimals = new DecimalFormat("#.##");
         return String.valueOf(decimalFormat2decimals.format(Float.parseFloat(velocity) * 3.6));
+    }
+    private Query getUserPathInfo() {
+        DocumentReference eventCollectionRef = FirebaseFirestore.getInstance().collection(EVENTSCOLLECTION).document(session.getEvent().getEventID());
+       return eventCollectionRef.collection(USERSCOLLECTION).whereEqualTo("user_id", session.getUser().getUser_id());
     }
 
     private void updateDistanceTraveled() {
-        final String key =  session.getUser().getUser_id() + '_' + this.eventID;
-        listenUserPositions = FirebaseFirestore.getInstance().collection(USERPOSITIONSINEVENT).whereEqualTo(USERPOSITIONKEY, key).addSnapshotListener( new EventListener<QuerySnapshot>() {
+        getUserPathInfo().get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
-            public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
-                if (e != null) {
-                    Log.w(TAG, "Listen failed.", e);
-                    return;
-                }
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                if(task.getResult().getDocuments().size() != 0 ) {
+                     task.getResult().getDocuments().get(0).getReference().collection(USERPOSITIONS).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                        @Override
+                        public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                            if(task.getResult().getDocuments().size() != 0 ) {
+                                DocumentReference documentReference = task.getResult().getDocuments().get(0).getReference();
+                                listenUserPositions =  documentReference.addSnapshotListener(new EventListener<DocumentSnapshot>() {
+                                    @Override
+                                    public void onEvent(@javax.annotation.Nullable DocumentSnapshot documentSnapshot, @javax.annotation.Nullable FirebaseFirestoreException e) {
+                                        if (e != null) {
+                                            Log.w(TAG, "Listen failed.", e);
+                                            return;
+                                        }
+                                        if(documentSnapshot.get("distanceTraveled") != null) {
+                                            Log.d(TAG, documentSnapshot.get("distanceTraveled").toString());
+                                            if(currentClusterItem != null) {
+                                                float trimDistance = Float.parseFloat(documentSnapshot.get("distanceTraveled").toString());
+                                                String velocityKM = velocityInKMh(documentSnapshot.get("velocity").toString());
+                                                String newSnippet = "Distance traveled: " + decimalFormat.format(trimDistance) + "m"+ "\n"+ "Velocity: " + velocityKM +"km/h";
+                                                clusterManagerRenderer.setUpdateMarkerSnippet(currentClusterItem, newSnippet);
+                                                session.setCurrentDistanceTraveled(documentSnapshot.get("distanceTraveled").toString());
+                                            }
+                                        }
+                                    }
+                                });
 
-                for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
+                            }
+                        }
+                    });
 
-                if(doc.get("distanceTraveled") != null) {
-                    Log.d(TAG, doc.get("distanceTraveled").toString());
-                    if(currentClusterItem != null) {
-                        float trimDistance = Float.parseFloat(doc.get("distanceTraveled").toString());
-                        String velocityKM = velocityInKMh(doc.get("velocity").toString());
-                        String newSnippet = "Distance traveled: " + decimalFormat.format(trimDistance) + "m"+ "\n"+ "Velocity: " + velocityKM +"km/h";
-                        clusterManagerRenderer.setUpdateMarkerSnippet(currentClusterItem, newSnippet);
-                        session.setCurrentDistanceTraveled(doc.get("distanceTraveled").toString());
-                    }
-                }
-
+                }else {
+                    Log.d(TAG, "Error!!!!!" );
                 }
             }
         });
     }
 
-
-
     @Override
     public boolean onMarkerClick(Marker marker) {
-        // mMapView.setVisibility(View.VISIBLE);  // show again
-      //  mMapView.setVisibility(View.GONE); // hide map
         MapFooterFragment footer = (MapFooterFragment) getSupportFragmentManager().findFragmentByTag("fragmentFooter");
         if (footer != null && footer.isVisible()) {
             onBackPressed();
@@ -590,15 +535,6 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
     public void onFragmentInteraction(Uri uri) {
 
     }
-
-    /*
-    public boolean verifyOwnerOfImage(ImageMarkerClusterItem imageMarker) {
-        if(imageMarker == null)
-            return true;
-       return imageMarker.getUser_id().equals(session.getUser().getUser_id());
-    }
-
-     */
 
     public void addMapFooter(Marker marker, ImageMarkerClusterItem imageMarker, MyClusterItem userMarker) {
 
@@ -706,18 +642,26 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
     }
 
     public void deleteOwnTrack() {
-        final String key =  session.getUser().getUser_id() + '_' + eventID;
-        FirebaseFirestore.getInstance().collection(USERPOSITIONSINEVENT).whereEqualTo(USERPOSITIONKEY, key).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+
+        getUserPathInfo().get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
             public void onComplete(@NonNull Task<QuerySnapshot> task) {
                 if(task.getResult().getDocuments().size() != 0 ) {
-                    DocumentReference userPositionDocumentReference =  task.getResult().getDocuments().get(0).getReference();
-                    userPositionDocumentReference.update("distanceTraveled", 0);
-                    userPositionDocumentReference.collection(USERPOSITION).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    task.getResult().getDocuments().get(0).getReference().collection(USERPOSITIONS).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                         @Override
                         public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                            for(int i = 0; task.getResult().getDocuments().size() > i ; i++){
-                                task.getResult().getDocuments().get(i).getReference().delete();
+                          if(task.getResult().getDocuments().size() != 0) {
+                                task.getResult().getDocuments().get(0).getReference().update("distanceTraveled", 0);
+                                task.getResult().getDocuments().get(0).getReference().update("velocity", 0);
+                                task.getResult().getDocuments().get(0).getReference().collection(POSITIONSCOLLECTION).orderBy("time" , Query.Direction.valueOf("ASCENDING")).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                                    @Override
+                                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                                        int eliminateAllExceptCurrentPosition = task.getResult().getDocuments().size() -1;
+                                        for(int i = 0; eliminateAllExceptCurrentPosition > i ; i++){
+                                            task.getResult().getDocuments().get(i).getReference().delete();
+                                        }
+                                    }
+                                });
                             }
                             if(polyLines != null && polyLines.size() > 0){
                                 for(int k=0; k< polyLines.size(); k++)
@@ -743,9 +687,6 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                 break;
             case 3:
                 deleteOwnTrack();
-                break;
-            case 4:
-                // deleteImageMarker(imageMarker);
                 break;
             default:
                 return;
@@ -862,48 +803,21 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         }
     }
 
-    /*
-    private void listenMyCurrentPositionChanged() {
+    private void updateMyCurrentPosition() {
         final String key =  session.getUser().getUser_id() + '_' + eventID;
-        FirebaseFirestore.getInstance().collection(USERPOSITIONSINEVENT).whereEqualTo(USERPOSITIONKEY, key).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+        getUserPathInfo().get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
             public void onComplete(@NonNull Task<QuerySnapshot> task) {
                 if(task.getResult().getDocuments().size() != 0 ) {
-                    final DocumentReference documentReference = task.getResult().getDocuments().get(0).getReference();
-                    documentReference.addSnapshotListener( new EventListener<DocumentSnapshot>() {
+                    task.getResult().getDocuments().get(0).getReference().collection(USERPOSITIONS).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                         @Override
-                        public void onEvent(@javax.annotation.Nullable DocumentSnapshot documentSnapshot, @javax.annotation.Nullable FirebaseFirestoreException e) {
-                            retrieveCurrentUserPositions(documentSnapshot);
+                        public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                            if(task.getResult().getDocuments().size() != 0 ) {
+                                retrieveCurrentUserPositions(task.getResult().getDocuments().get(0));
+                            }
                         }
                     });
 
-                }else {
-                    Log.d(TAG, "Can't get any position");
-                }
-            }
-        });
-
-    }
-    */
-
-    private void updateMyCurrentPosition() {
-        final String key =  session.getUser().getUser_id() + '_' + eventID;
-        FirebaseFirestore.getInstance().collection(USERPOSITIONSINEVENT).whereEqualTo(USERPOSITIONKEY, key).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-            @Override
-            public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                if(task.getResult().getDocuments().size() != 0 ) {
-                    final DocumentReference documentReference = task.getResult().getDocuments().get(0).getReference();
-
-                  documentReference.get().addOnCompleteListener(
-                          new OnCompleteListener<DocumentSnapshot>() {
-
-                              @Override
-                              public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                                  retrieveCurrentUserPositions(task.getResult());
-                              }
-                          }
-                  );
-
 
                 }else {
                     Log.d(TAG, "Can't get any position");
@@ -912,13 +826,10 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         });
 
     }
-
 
     private void retrieveCurrentUserPositions(DocumentSnapshot documentSnapshot) {
 
-
-
-        documentSnapshot.getReference().collection(USERPOSITION).orderBy("time").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+        documentSnapshot.getReference().collection(POSITIONSCOLLECTION).orderBy("time").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
             public void onComplete(@NonNull Task<QuerySnapshot> task) {
                 List<DocumentSnapshot>  documents = task.getResult().getDocuments();

@@ -10,8 +10,7 @@ public class UserLocationPositionsInEvent {
     private float velocity;
 
 
-    public UserLocationPositionsInEvent(String userPositionKey, float distanceDone, GeoPoint lastPosition, float velocity) {
-        this.userPositionKey = userPositionKey;
+    public UserLocationPositionsInEvent( float distanceDone, GeoPoint lastPosition, float velocity) {
 
         this.distanceTraveled = distanceDone;
         this.lastPosition = lastPosition;

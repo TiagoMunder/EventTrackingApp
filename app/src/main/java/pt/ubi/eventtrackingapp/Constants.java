@@ -14,11 +14,11 @@ public class Constants {
 
     // Firebase Collections
     // Will place here all FireBase collections
-    public static final String USERPOSITIONSINEVENT = "UserPositionsInEvent";
-    public static final String USERPOSITIONKEY = "userPositionKey";
-    public static final String USERPOSITION = "UserPosition";
     public static final String EVENTSCOLLECTION = "Events";
     public static final String IMAGEMARKERSCOLLECTION = "ImageMarkers";
     public static final String CHATCOLLECTION = "Chat";
+    public static final String USERSCOLLECTION = "Users";
+    public static final String USERPOSITIONS = "UserPositions";
+    public static final String POSITIONSCOLLECTION = "Positions";
 
 }

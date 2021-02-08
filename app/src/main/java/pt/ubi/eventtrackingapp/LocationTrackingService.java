@@ -26,6 +26,7 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
@@ -38,13 +39,15 @@ import com.google.firebase.firestore.QuerySnapshot;
 
 import org.w3c.dom.Document;
 
+import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static pt.ubi.eventtrackingapp.Constants.USERPOSITION;
-import static pt.ubi.eventtrackingapp.Constants.USERPOSITIONKEY;
-import static pt.ubi.eventtrackingapp.Constants.USERPOSITIONSINEVENT;
+import static pt.ubi.eventtrackingapp.Constants.EVENTSCOLLECTION;
+import static pt.ubi.eventtrackingapp.Constants.POSITIONSCOLLECTION;
+import static pt.ubi.eventtrackingapp.Constants.USERPOSITIONS;
+import static pt.ubi.eventtrackingapp.Constants.USERSCOLLECTION;
 
 public class LocationTrackingService extends Service {
     private final static String TAG = "LocationTrackingService";
@@ -55,7 +58,7 @@ public class LocationTrackingService extends Service {
     private Session session;
     private Location lastLocation;
     private static  final String CHANNEL_ID = "channel_location_tracking_1";
-
+    private DecimalFormat decimalFormat = new DecimalFormat("#.##");
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
@@ -102,61 +105,64 @@ public class LocationTrackingService extends Service {
     }
 
     public void updateVelocity(final DocumentReference documentReference ,final Location dist,final Long  currentTime) {
-        documentReference.collection(USERPOSITION)
-                .orderBy("time")
+        documentReference.collection(POSITIONSCOLLECTION)
+                .orderBy("time", Query.Direction.valueOf("ASCENDING"))
                 .limit(1)
                 .get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
             public void onComplete(@NonNull Task<QuerySnapshot> task) {
                 if( task.getResult().getDocuments().size() == 1) {
                     UserPosition firstPosition = task.getResult().getDocuments().get(0).toObject(UserPosition.class);
-                    float secondsBetweenPoints = (float)((( currentTime) - ( Float.parseFloat(firstPosition.getTime()))) / 1000);
+                    long secondsBetweenPoints =((( currentTime) - ( Long.parseLong(firstPosition.getTime()))) / 1000);
                     float distanceTraveled = getmetersToLocation(dist, firstPosition.getGeoPoint().getLatitude(), firstPosition.getGeoPoint().getLongitude());
-                    documentReference.update("velocity", String.valueOf((int) distanceTraveled/secondsBetweenPoints));
+                    documentReference.update("velocity", String.valueOf( decimalFormat.format(distanceTraveled/secondsBetweenPoints)));
                 }
 
             }
         });
 
     }
-    /*
-    public void updateVelocity( DocumentReference documentReference, DocumentSnapshot document , Location dist, Long currentTime) {
-        UserPosition origen = getFirstPosition(documentReference);
-        float secondsBetweenPoints = Float.parseFloat(origen.getTime()) - currentTime;
-        float distanceTraveled = getmetersToLocation(dist, origen.getGeoPoint().getLatitude(), origen.getGeoPoint().getLongitude());
-        documentReference.update("velocity", distanceTraveled/secondsBetweenPoints);
-        //session.setCurrentDistanceTraveled(String.valueOf(newDistanceTraveled));
-
-    }
-
-     */
 
     private void addUserPosition(final User user, final String EventID,final Location location, final CustomGeoPoint geoPoint) {
-        final String key =  user.getUser_id() + '_' + EventID;
-        FirebaseFirestore.getInstance().collection(USERPOSITIONSINEVENT).whereEqualTo(USERPOSITIONKEY, key).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+        // final String key =  user.getUser_id() + '_' + EventID;
+       DocumentReference eventCollectionRef = FirebaseFirestore.getInstance().collection(EVENTSCOLLECTION).document(session.getEvent().getEventID());
+        eventCollectionRef.collection(USERSCOLLECTION).whereEqualTo("user_id", session.getUser().getUser_id()).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
             public void onComplete(@NonNull Task<QuerySnapshot> task) {
                 if(task.getResult().getDocuments().size() != 0 ) {
-                    DocumentReference documentReference = task.getResult().getDocuments().get(0).getReference();
+                    final DocumentReference  documentReference = task.getResult().getDocuments().get(0).getReference();
                     DocumentSnapshot document = task.getResult().getDocuments().get(0);
-                    if(checkUserMoved(document, location)) {
-                        Long tsLong = System.currentTimeMillis();
-                        UserPosition customGeoPoint  = new UserPosition(location.getLatitude(), location.getLongitude(), tsLong.toString());
-                        documentReference.collection(USERPOSITION).add(customGeoPoint);
-                        documentReference.update("lastPosition",convertLocationToCustomGeoPoint(location));
-                        updateDistanceTraveled(documentReference, document, location);
-                        updateVelocity(documentReference, location, tsLong);
-                    }
-                }else {
-                    UserLocationPositionsInEvent docInfo = new UserLocationPositionsInEvent(key, 0, geoPoint, 0);
-                    FirebaseFirestore.getInstance().collection(USERPOSITIONSINEVENT).add(docInfo).addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
+                    documentReference.collection(USERPOSITIONS).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                         @Override
-                        public void onComplete(@NonNull Task<DocumentReference> task) {
-                            Long tsLong = System.currentTimeMillis();
-                            UserPosition customGeoPoint = new UserPosition(location.getLatitude(), location.getLongitude(), tsLong.toString());
-                            task.getResult().collection(USERPOSITION).add(customGeoPoint);
+                        public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                            if(task.getResult().getDocuments().size() != 0 ) {
+                                DocumentReference documentReference = task.getResult().getDocuments().get(0).getReference();
+                                DocumentSnapshot document = task.getResult().getDocuments().get(0);
+                                if(checkUserMoved(document, location)) {
+                                    Long tsLong = System.currentTimeMillis();
+                                    UserPosition customGeoPoint  = new UserPosition(location.getLatitude(), location.getLongitude(), tsLong.toString());
+                                    documentReference.collection(POSITIONSCOLLECTION).add(customGeoPoint);
+                                    documentReference.update("lastPosition",convertLocationToCustomGeoPoint(location));
+                                    updateDistanceTraveled(documentReference, document, location);
+                                    updateVelocity(documentReference, location, tsLong);
+                                }
+                            }else {
+                                UserLocationPositionsInEvent docInfo = new UserLocationPositionsInEvent( 0, geoPoint, 0);
+                                documentReference.collection(USERPOSITIONS).add(docInfo).addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
+                                    @Override
+                                    public void onComplete(@NonNull Task<DocumentReference> task) {
+                                        Long tsLong = System.currentTimeMillis();
+                                        UserPosition customGeoPoint = new UserPosition(location.getLatitude(), location.getLongitude(), tsLong.toString());
+                                        task.getResult().collection(POSITIONSCOLLECTION).add(customGeoPoint);
+                                    }
+                                });
+                            }
                         }
                     });
+
+                }else {
+                    Log.d(TAG, "Error finding User in Event!" );
+                 // TODO check if i need to add user to event here
                 }
             }
         });

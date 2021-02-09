@@ -183,7 +183,9 @@ public class LoginActivity extends AppCompatActivity {
                         mUserLocation.setTimestamp(null);
                         saveUserLocation();
                         startActivity(new Intent(LoginActivity.this, DashboardActivity.class));
-                    }
+                    } else turnLoadingOff();
+                } else {
+                    turnLoadingOff();
                 }
             }
         });

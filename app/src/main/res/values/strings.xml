@@ -10,6 +10,7 @@
     <string name="event_name">Event Name</string>
     <string name="description">Description</string>
     <string name="event_date">Event Date</string>
+    <string name="event_time">Event Time</string>
     <string name="country">Country</string>
     <string name="city">City</string>
     <string name="street">Street</string>

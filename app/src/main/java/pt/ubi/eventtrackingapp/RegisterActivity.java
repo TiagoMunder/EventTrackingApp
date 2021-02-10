@@ -129,6 +129,11 @@ public class RegisterActivity extends AppCompatActivity {
             Toast.makeText(RegisterActivity.this, "The passwords do not match! " , Toast.LENGTH_SHORT).show();
             return false;
         }
+        if(this.username.getText().toString().isEmpty() || this.email.getText().toString().isEmpty()) {
+            Log.d(TAG, "Missing Username or Email!");
+            Toast.makeText(RegisterActivity.this, "Missing Username or Email!" , Toast.LENGTH_SHORT).show();
+            return false;
+        }
 
         return true;
     }

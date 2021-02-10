@@ -11,19 +11,22 @@ import android.location.Location;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Handler;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.FragmentActivity;
+
 
 import android.os.Bundle;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentTransaction;
+
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.core.app.ActivityCompat;
+import androidx.fragment.app.FragmentActivity;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -432,6 +435,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
 
     private String velocityInKMh(String velocity) {
         DecimalFormat decimalFormat2decimals = new DecimalFormat("#.##");
+        velocity = velocity.replaceAll(",", ".");
         return String.valueOf(decimalFormat2decimals.format(Float.parseFloat(velocity) * 3.6));
     }
     private Query getUserPathInfo() {

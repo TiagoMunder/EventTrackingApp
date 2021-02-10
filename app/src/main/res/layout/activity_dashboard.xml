@@ -36,7 +36,8 @@
         android:text="@string/list_events"
         android:textColor="@android:color/white"
         android:backgroundTint="@color/colorPrimary"/>
-    <android.support.constraint.ConstraintLayout
+
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_height="match_parent"
         android:layout_width="match_parent">
     <TextView
@@ -49,6 +50,6 @@
         android:text="@string/logout"
         android:textColor="@color/red"
         android:layout_marginBottom="30dp"/>
-    </android.support.constraint.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 </LinearLayout>

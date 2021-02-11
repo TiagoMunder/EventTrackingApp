@@ -307,7 +307,7 @@ public class MarkerFragment extends Fragment {
                 ).addOnFailureListener(new OnFailureListener() {
                     @Override
                     public void onFailure(@NonNull Exception e) {
-                        Toast.makeText(getContext(), "Failed to save image in Storage! ", Toast.LENGTH_SHORT);
+                        Toast.makeText(getContext(), "Failed to save image in Storage! ", Toast.LENGTH_SHORT).show();
                     }
                 });
             } else  saveEditMarkerObject(null);

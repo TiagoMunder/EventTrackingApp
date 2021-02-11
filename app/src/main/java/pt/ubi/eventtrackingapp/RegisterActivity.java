@@ -30,6 +30,7 @@ import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
 import java.net.URI;
+import java.util.Objects;
 
 
 public class RegisterActivity extends AppCompatActivity {
@@ -181,8 +182,8 @@ public class RegisterActivity extends AppCompatActivity {
 
    public void createUserWithFirebase(Uri imageURL) {
         final String imageURLFinal = imageURL.toString();
-       final String email=this.email.getText().toString().trim();
-       final String password=this.password.getText().toString().trim();
+       final String email= Objects.requireNonNull(this.email.getText()).toString().trim();
+       final String password= Objects.requireNonNull(this.password.getText()).toString().trim();
 
        FirebaseAuth.getInstance().createUserWithEmailAndPassword(email, password)
                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
@@ -190,10 +191,10 @@ public class RegisterActivity extends AppCompatActivity {
                    public void onComplete(@NonNull Task<AuthResult> task) {
                        Log.d(TAG, "createUserWithEmail:onComplete:" + task.isSuccessful());
                        if (task.isSuccessful()){
-                           Log.d(TAG, "onComplete: AuthState: " + FirebaseAuth.getInstance().getCurrentUser().getUid());
+                           Log.d(TAG, "onComplete: AuthState: " + Objects.requireNonNull(FirebaseAuth.getInstance().getCurrentUser()).getUid());
                            User user = new User();
                            user.setEmail(email);
-                           user.setUsername(username.getText().toString().trim());
+                           user.setUsername(Objects.requireNonNull(username.getText()).toString().trim());
                            user.setUser_id(FirebaseAuth.getInstance().getUid());
                           user.setmImageUrl(imageURLFinal);
 
@@ -202,7 +203,7 @@ public class RegisterActivity extends AppCompatActivity {
 
                            DocumentReference newUserRef = mDb
                                    .collection(getString(R.string.fire_store_users))
-                                   .document(FirebaseAuth.getInstance().getUid());
+                                   .document(Objects.requireNonNull(FirebaseAuth.getInstance().getUid()));
 
                            FirebaseUser userteste = FirebaseAuth.getInstance().getCurrentUser();
                            if (userteste != null) {
@@ -221,14 +222,14 @@ public class RegisterActivity extends AppCompatActivity {
                                        loginIntent.putExtra("username", username.getText().toString().trim());
                                        startActivity(loginIntent);
                                    }else{
-                                       Toast.makeText(RegisterActivity.this, "Register Failed! " , Toast.LENGTH_SHORT);
+                                       Toast.makeText(RegisterActivity.this, "Register Failed! " , Toast.LENGTH_SHORT).show();
                                    }
                                }
                            });
                        }
                        else {
 
-                           Toast.makeText(RegisterActivity.this, "Register Failed!", Toast.LENGTH_SHORT);
+                           Toast.makeText(RegisterActivity.this, "Register Failed!", Toast.LENGTH_SHORT).show();
                            btn_regist.setVisibility(View.VISIBLE);
                        }
 

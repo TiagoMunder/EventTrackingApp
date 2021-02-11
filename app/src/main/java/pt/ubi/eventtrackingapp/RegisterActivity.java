@@ -25,6 +25,8 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.perf.FirebasePerformance;
+import com.google.firebase.perf.metrics.Trace;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
@@ -53,11 +55,15 @@ public class RegisterActivity extends AppCompatActivity {
     private static final String TAG = "RegisterActivity";
     private static final int PICK_IMAGE_REQUEST = 1;
     private static final String default_user_image = "https://firebasestorage.googleapis.com/v0/b/eventtacking.appspot.com/o/uploads%2F1600170472363.jpg?alt=media&token=737e774c-8d36-4cd9-b084-67737ce8c6a7";
+    private Trace full_t_create_user,creating_user, creating_user_default_image;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
+        full_t_create_user = FirebasePerformance.getInstance().newTrace("full_T_create_user");
+        full_t_create_user.start();
 
         mStorageRef = FirebaseStorage.getInstance().getReference("uploads");
         // name = findViewById(R.id.name);
@@ -84,6 +90,13 @@ public class RegisterActivity extends AppCompatActivity {
         btn_regist.setOnClickListener( new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if(mImageUri!=null) {
+                    creating_user = FirebasePerformance.getInstance().newTrace("creating_user");
+                    creating_user.start();
+                } else {
+                    creating_user_default_image = FirebasePerformance.getInstance().newTrace("creating_user_default_image");
+                    creating_user_default_image.start();
+                }
                 if(validateInfo())
                 registerNewEmail();
             }
@@ -145,8 +158,6 @@ public class RegisterActivity extends AppCompatActivity {
         return mime.getExtensionFromMimeType(cR.getType(uri));
     }
 
-
-
     public void registerNewEmail() {
         // i will change this because i need to send default image if the user doesn't upload any image
         // what i will probably do is have a default image in Storage and just send the imageUrl of that image in that case
@@ -205,12 +216,6 @@ public class RegisterActivity extends AppCompatActivity {
                                    .collection(getString(R.string.fire_store_users))
                                    .document(Objects.requireNonNull(FirebaseAuth.getInstance().getUid()));
 
-                           FirebaseUser userteste = FirebaseAuth.getInstance().getCurrentUser();
-                           if (userteste != null) {
-                               Log.d(TAG,"working");
-
-                           }
-
                            newUserRef.set(user).addOnCompleteListener(new OnCompleteListener<Void>() {
                                @Override
                                public void onComplete(@NonNull Task<Void> task) {
@@ -220,6 +225,9 @@ public class RegisterActivity extends AppCompatActivity {
                                        Intent loginIntent = new Intent(RegisterActivity.this, LoginActivity.class);
                                        loginIntent.putExtra("email",email);
                                        loginIntent.putExtra("username", username.getText().toString().trim());
+                                       if(mImageUri != null) creating_user.stop();
+                                       else creating_user_default_image.stop();
+                                       full_t_create_user.stop();
                                        startActivity(loginIntent);
                                    }else{
                                        Toast.makeText(RegisterActivity.this, "Register Failed! " , Toast.LENGTH_SHORT).show();

@@ -3,6 +3,7 @@ package pt.ubi.eventtrackingapp;
 import android.content.Intent;
 
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
@@ -24,6 +25,8 @@ import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.FirebaseFirestoreSettings;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.perf.FirebasePerformance;
+import com.google.firebase.perf.metrics.Trace;
 
 import java.util.ArrayList;
 
@@ -39,10 +42,15 @@ public class ChatActivity extends AppCompatActivity {
     private Session session;
     private String  eventID;
     private String currentUser;
+    private Trace open_chat_load_all_trace;
+    private boolean first_load = true;
+    public static String END_LOAD;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        open_chat_load_all_trace = FirebasePerformance.getInstance().newTrace("open_chat_load_all_messages");
+        open_chat_load_all_trace.start();
         setContentView(R.layout.activity_chat);
         editChatForm = (EditText) findViewById(R.id.chatForm);
         btn_send = (ImageButton) findViewById(R.id.btn_send);
@@ -51,6 +59,7 @@ public class ChatActivity extends AppCompatActivity {
         currentUser = this.session.getUsername();
         Intent intent = getIntent();
         eventID = intent.getStringExtra("eventID");
+        END_LOAD = null;
         if(eventID == null){
             Log.d(TAG, " Error getting Event");
             startActivity(new Intent(ChatActivity.this, DashboardActivity.class));
@@ -83,6 +92,7 @@ public class ChatActivity extends AppCompatActivity {
 
     protected void onResume() {
         super.onResume();
+        new Thread(runnable).start();
         getMessagesFromServer();
     }
 
@@ -104,6 +114,7 @@ public class ChatActivity extends AppCompatActivity {
     }
 
     protected void getMessagesFromServer() {
+
         mDb.collection(EVENTSCOLLECTION).document(eventID).collection(CHATCOLLECTION)
                 .whereEqualTo("eventId", eventID).orderBy("time")
                 .addSnapshotListener(ChatActivity.this, new EventListener<QuerySnapshot>() {
@@ -128,9 +139,24 @@ public class ChatActivity extends AppCompatActivity {
                         }
                         MessageAdapter adapter = new MessageAdapter(ChatActivity.this,0, messageList);
                         myListView.setAdapter(adapter);
+
+
                     }
                 });
     }
+
+    Runnable runnable = new Runnable() {
+        @Override
+        public void run() {
+            while (END_LOAD == null || END_LOAD .equals("") ) { // your conditions
+            }
+            open_chat_load_all_trace.stop();
+        }
+    };
+
+
+
+
 
 
 }

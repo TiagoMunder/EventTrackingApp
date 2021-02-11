@@ -27,6 +27,8 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreSettings;
+import com.google.firebase.perf.FirebasePerformance;
+import com.google.firebase.perf.metrics.Trace;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -55,6 +57,8 @@ public class CreateEvent extends AppCompatActivity {
         put("description", "description");
         put("country", "country");
     }};
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

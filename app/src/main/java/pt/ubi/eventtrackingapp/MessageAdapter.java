@@ -16,6 +16,8 @@ import androidx.annotation.Nullable;
 
 import java.util.ArrayList;
 
+import static pt.ubi.eventtrackingapp.ChatActivity.END_LOAD;
+
 public class MessageAdapter extends ArrayAdapter<Message> {
     private Context mContext;
     private static final String TAG = "MessageAdapter";
@@ -75,7 +77,7 @@ public class MessageAdapter extends ArrayAdapter<Message> {
                 (position> lastPosition) ? R.anim.loading_down_anim : R.anim.loading_up_anim);
         result.startAnimation(animation);
         lastPosition = position;
-
+        END_LOAD = "ended";
         return convertView;
     }
 }

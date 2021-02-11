@@ -29,24 +29,18 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.FirebaseFirestoreSettings;
-import com.google.firebase.firestore.GeoPoint;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
-import com.squareup.picasso.Cache;
 import com.squareup.picasso.Picasso;
-
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.Executors;
 
 import static android.app.Activity.RESULT_OK;
 import static pt.ubi.eventtrackingapp.Constants.EVENTSCOLLECTION;
 import static pt.ubi.eventtrackingapp.Constants.IMAGEMARKERSCOLLECTION;
+import com.google.firebase.perf.FirebasePerformance;
+import com.google.firebase.perf.metrics.Trace;
 
 
 /**
@@ -99,6 +93,8 @@ public class MarkerFragment extends Fragment {
 
     private String eventID;
 
+   private Trace full_t_add_image, adding_image_trace;
+
     public MarkerFragment() {
         // Required empty public constructor
     }
@@ -127,6 +123,8 @@ public class MarkerFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+         full_t_add_image = FirebasePerformance.getInstance().newTrace("full_T_add_image");
+        full_t_add_image.start();
         mDb = FirebaseFirestore.getInstance();
         if (getArguments() != null) {
             geoPoint = getArguments().getParcelable(ARG_PARAM1);
@@ -287,6 +285,8 @@ public class MarkerFragment extends Fragment {
     }
 
     public void SaveImage() {
+        adding_image_trace = FirebasePerformance.getInstance().newTrace("adding_image");
+        adding_image_trace.start();
             if(imageHasChanged) {
                 fileReference = mStorageRef.child(System.currentTimeMillis()
                         + "." + getFileExtension(mImageUri));
@@ -339,8 +339,6 @@ public class MarkerFragment extends Fragment {
                 Toast.makeText(getContext(), "There was a problem getting the image Marker!", Toast.LENGTH_SHORT).show();
             }
         } else {
-
-
             // Não sei se é muito correcto o objecto ter o id a null neste caso apesar de eu depois ir buscar o id ao document e não ao objecto
             MarkerObject markerObject = new MarkerObject(geoPoint, session.getUser().getUser_id(), uri.toString(), session.getEvent().getEventID(),
                     imageDescription.getText().toString(), imageName.getText().toString(), null, null);
@@ -366,6 +364,8 @@ public class MarkerFragment extends Fragment {
 
 
     public void goBack() {
+        full_t_add_image.stop();
+        adding_image_trace.stop();
         getActivity().onBackPressed();
 
     }

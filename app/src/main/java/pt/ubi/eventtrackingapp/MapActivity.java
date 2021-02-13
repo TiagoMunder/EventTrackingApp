@@ -134,7 +134,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
     // Create a stroke pattern of a gap followed by a dot.
     private static final List<PatternItem> PATTERN_POLYLINE_DOTTED = Arrays.asList(GAP, DOT);
 
-    private boolean isEventClosed;
+    private boolean isEventClosed, newImageAdded = false;
 
 
 
@@ -203,7 +203,8 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
             @Override
             public void onMapLoaded() {
                 getUsersOfTheEvent();
-                getImageMarkers();
+                if(listenerImages == null)
+                    getImageMarkers();
                 if(isEventClosed) {
                     updateMyCurrentPosition();
                 }
@@ -617,7 +618,10 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                                 Log.w(TAG, "Listen failed.", e);
                                 return;
                             }
+                            int auxNumberOfImages = mImageMarkersList.size();
                             mImageMarkersList.clear();
+                            if(!newImageAdded)
+                                newImageAdded = (value != null ? value.size() : 0) > auxNumberOfImages ;
 
                             for (QueryDocumentSnapshot doc : value) {
 
@@ -892,6 +896,11 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                                         }
                                         if(!hasChanges) continue;
                                         mClusterItems.get(i).setPosition(updatedLatLng);
+                                        if(mClusterItems.get(i).getUser().
+                                                getUser_id().equals(session.getUser().getUser_id()) && newImageAdded){
+                                            addImageMarkers();
+                                            newImageAdded = false;
+                                        }
                                         clusterManagerRenderer.setUpdateMarker(mClusterItems.get(i));
 
                                     }

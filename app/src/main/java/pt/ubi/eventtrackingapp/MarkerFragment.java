@@ -91,6 +91,8 @@ public class MarkerFragment extends Fragment {
     private int currentPosition;
     private MarkerObject currentImage;
 
+    private Context fragmentContext;
+
     private String eventID;
 
    private Trace full_t_add_image, adding_image_trace;
@@ -123,8 +125,9 @@ public class MarkerFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-         full_t_add_image = FirebasePerformance.getInstance().newTrace("full_T_add_image");
-        full_t_add_image.start();
+        // full_t_add_image = FirebasePerformance.getInstance().newTrace("full_T_add_image");
+       // full_t_add_image.start();
+        fragmentContext = getContext();
         mDb = FirebaseFirestore.getInstance();
         if (getArguments() != null) {
             geoPoint = getArguments().getParcelable(ARG_PARAM1);
@@ -285,8 +288,9 @@ public class MarkerFragment extends Fragment {
     }
 
     public void SaveImage() {
-        adding_image_trace = FirebasePerformance.getInstance().newTrace("adding_image");
-        adding_image_trace.start();
+      //  adding_image_trace = FirebasePerformance.getInstance().newTrace("adding_image");
+      //  adding_image_trace.start();
+
             if(imageHasChanged) {
                 fileReference = mStorageRef.child(System.currentTimeMillis()
                         + "." + getFileExtension(mImageUri));
@@ -307,10 +311,12 @@ public class MarkerFragment extends Fragment {
                 ).addOnFailureListener(new OnFailureListener() {
                     @Override
                     public void onFailure(@NonNull Exception e) {
-                        Toast.makeText(getContext(), "Failed to save image in Storage! ", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getContext(), "Failed to save image in Storage! Please try again later!", Toast.LENGTH_SHORT).show();
                     }
                 });
             } else  saveEditMarkerObject(null);
+
+            goBack();
     }
 
     @SuppressWarnings("unchecked")
@@ -328,15 +334,17 @@ public class MarkerFragment extends Fragment {
                     public void onComplete(@NonNull Task<Void> task) {
                         if (task.isSuccessful()) {
                             Log.d(TAG, "Update Successful");
-                            goBack();
+                            Toast.makeText(fragmentContext,"Image addeded with Success!", Toast.LENGTH_LONG).show();
+                           // goBack();
                         } else {
                             Log.w(TAG, "Error updating document", task.getException());
+                            Toast.makeText(fragmentContext,"Failed to Add Image! Please try again later!", Toast.LENGTH_LONG).show();
                         }
                     }
                 });
 
             } else {
-                Toast.makeText(getContext(), "There was a problem getting the image Marker!", Toast.LENGTH_SHORT).show();
+                Toast.makeText(fragmentContext, "There was a problem getting the image Marker!", Toast.LENGTH_SHORT).show();
             }
         } else {
             // Não sei se é muito correcto o objecto ter o id a null neste caso apesar de eu depois ir buscar o id ao document e não ao objecto
@@ -350,13 +358,14 @@ public class MarkerFragment extends Fragment {
                         public void onSuccess(DocumentReference documentReference) {
 
                             Log.d(TAG, "DocumentSnapshot written with ID: " + documentReference.getId());
-                            goBack();
+                            Toast.makeText(fragmentContext,"Image addeded with Success!", Toast.LENGTH_LONG).show();
+                          //  goBack();
                         }
                     })
                     .addOnFailureListener(new OnFailureListener() {
                         @Override
                         public void onFailure(@NonNull Exception e) {
-                            Log.w(TAG, "Error adding document", e);
+                            Toast.makeText(fragmentContext,"Failed to Add Image! Please try again later", Toast.LENGTH_LONG).show();
                         }
                     });
         }
@@ -364,8 +373,8 @@ public class MarkerFragment extends Fragment {
 
 
     public void goBack() {
-        full_t_add_image.stop();
-        adding_image_trace.stop();
+        // full_t_add_image.stop();
+       // adding_image_trace.stop();
         getActivity().onBackPressed();
 
     }

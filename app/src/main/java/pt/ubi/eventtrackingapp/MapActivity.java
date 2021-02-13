@@ -87,6 +87,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
     private static final String TAG = "MapFragmentActivity";
     private static final int slowPathMaxTimeInMin = 5;
     private static final int LOCATION_UPDATE_INTERVAL = 3000;
+    private static final int CHECK_USER_POSITIONS_INTERVAL = 3000;
 
     private FirebaseFirestore mDb;
     private ArrayList<UserLocationParcelable> mUserLocations = new ArrayList<>();
@@ -107,6 +108,9 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
 
     private Handler mHandler = new Handler();
     private Runnable mRunnable;
+
+    private Handler mhandlePositionsListener = new Handler();
+    private Runnable mRunPositionsListener;
 
     private String eventID;
 
@@ -158,6 +162,8 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         super.onStart();
         if(!isUserLocationRunning)
             startUserLocationsRunnable();
+        if(listenUserPositions == null)
+            startCheckingUserPositions();
     }
 
     protected void onResume() {
@@ -386,13 +392,12 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                     continue;
                 Log.d(TAG, "addMapMarkers: location: " + imageMarker.getGeoPoint().toString());
                 try{
-                    String snippet = "Not sure what to place here"; // TODO
+                    String snippet = !imageMarker.getDescription().isEmpty() ? imageMarker.getDescription() : "";
 
-                    String avatar = null;
+                    String avatar = imageMarker.getImageUrl();
 
-                    String title = imageMarker.getImageName() != null ? imageMarker.getImageName() : "TODO";
+                    String title = imageMarker.getImageName() != null ? imageMarker.getImageName() : "";
 
-                    avatar = imageMarker.getImageUrl();
                     ImageMarkerClusterItem newClusterMarker = new ImageMarkerClusterItem(
                             new LatLng(imageMarker.getGeoPoint().getLatitude(), imageMarker.getGeoPoint().getLongitude()),
                             title,
@@ -491,7 +496,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
             onBackPressed();
         }
         GeoPoint geoPoint = new GeoPoint(marker.getPosition().latitude,marker.getPosition().longitude);
-        if(marker != null && marker.getTag() != null  && marker.getTag().hashCode()== MyClusterItem.class.hashCode()){
+        if(marker.getTag() != null  && marker.getTag().hashCode()== MyClusterItem.class.hashCode()){
             Log.d(TAG, "This is an User!");
             MyClusterItem userMarker = clusterManagerRenderer.getExtraMarkerInfo().get(marker.getId());
             filterImagesByGeoPoint(geoPoint, marker, null, userMarker);
@@ -697,6 +702,15 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         }
     }
 
+    private void startCheckingUserPositions() {
+        mhandlePositionsListener.postDelayed(mRunPositionsListener = new Runnable() {
+            @Override
+            public void run() {
+                updateDistanceTraveled();
+                if(listenUserPositions == null) mhandlePositionsListener.postDelayed(mRunPositionsListener, CHECK_USER_POSITIONS_INTERVAL);
+            }
+        }, CHECK_USER_POSITIONS_INTERVAL);
+    }
 
 
     private void startUserLocationsRunnable(){

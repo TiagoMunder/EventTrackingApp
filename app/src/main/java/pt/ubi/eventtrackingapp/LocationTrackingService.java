@@ -37,6 +37,8 @@ import com.google.firebase.firestore.GeoPoint;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.perf.FirebasePerformance;
+import com.google.firebase.perf.metrics.Trace;
 
 import org.w3c.dom.Document;
 
@@ -60,6 +62,7 @@ public class LocationTrackingService extends Service {
     private Location lastLocation;
     private static  final String CHANNEL_ID = "channel_location_tracking_1";
     private DecimalFormat decimalFormat = new DecimalFormat("#.##");
+    private Trace time_to_update_first_distance_trace;
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
@@ -92,6 +95,8 @@ public class LocationTrackingService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.d(TAG, "onStartCommand: called.");
+        time_to_update_first_distance_trace = FirebasePerformance.getInstance().newTrace("time_to_update_first_distance");
+        time_to_update_first_distance_trace.start();
         getLocation();
         return START_NOT_STICKY; // this will make the service run while the getLocation is running
     }
@@ -101,6 +106,7 @@ public class LocationTrackingService extends Service {
         float distanceAlreadyTraveled = getDistanceTraveled(document);
         float newDistanceTraveled = getmetersToLocation(dist, origen.getLatitude(), origen.getLongitude());
         documentReference.update("distanceTraveled", (distanceAlreadyTraveled + newDistanceTraveled));
+        time_to_update_first_distance_trace.stop();
         session.setCurrentDistanceTraveled(String.valueOf(newDistanceTraveled));
 
     }
@@ -124,7 +130,7 @@ public class LocationTrackingService extends Service {
 
     }
 
-    private void addUserPosition(final User user, final String EventID,final Location location, final CustomGeoPoint geoPoint) {
+    private void addUserPosition(final Location location, final CustomGeoPoint geoPoint) {
         // final String key =  user.getUser_id() + '_' + EventID;
        DocumentReference eventCollectionRef = FirebaseFirestore.getInstance().collection(EVENTSCOLLECTION).document(session.getEvent().getEventID());
         eventCollectionRef.collection(USERSCOLLECTION).whereEqualTo("user_id", session.getUser().getUser_id()).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
@@ -163,7 +169,7 @@ public class LocationTrackingService extends Service {
 
                 }else {
                     Log.d(TAG, "Error finding User in Event!" );
-                 // TODO check if i need to add user to event here
+
                 }
             }
         });
@@ -204,7 +210,7 @@ public class LocationTrackingService extends Service {
                             session.setCurrentLocation(geoPoint);
                             UserLocation userLocation = new UserLocation(geoPoint, null, user);
                             saveUserLocation(userLocation);
-                            addUserPosition(user, session.getEvent().getEventID(), location, geoPoint);
+                            addUserPosition(location, geoPoint);
                         }
                     }
                 },

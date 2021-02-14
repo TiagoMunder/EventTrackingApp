@@ -315,7 +315,7 @@ public class MarkerFragment extends Fragment {
                     }
                 });
             } else  saveEditMarkerObject(null);
-            Toast.makeText(fragmentContext, "Adding Image in progress!", Toast.LENGTH_SHORT).show();
+            Toast.makeText(fragmentContext, "Adding Image in progress!", Toast.LENGTH_LONG).show();
             goBack();
     }
 

@@ -82,7 +82,7 @@ import java.util.List;
 
 
 public class MapActivity extends FragmentActivity implements OnMapReadyCallback, GoogleMap.OnMarkerClickListener,
-        MarkerFragment.OnFragmentInteractionListener, MapFooterFragment.OnFragmentInteractionListener,ImageTabsFragment.OnFragmentInteractionListener,GoogleMap.OnMapLongClickListener, MapFooterFragment.ButtonCallback {
+        MarkerFragment.OnFragmentInteractionListener, MapFooterFragment.OnFragmentInteractionListener,ImageTabsFragment.OnFragmentInteractionListener,GoogleMap.OnMapLongClickListener, MapFooterFragment.ButtonCallback{
 
     private static final String TAG = "MapFragmentActivity";
     private static final int slowPathMaxTimeInMin = 5;
@@ -155,9 +155,6 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         startLocationService();
         isEventClosed = session.getEvent().isClosed();
     }
-
-
-
 
     protected void onStart() {
         super.onStart();
@@ -438,7 +435,6 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
 
         CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(new LatLng(mUserLocation.getGeoPoint().getLatitude(), mUserLocation.getGeoPoint().getLongitude() ), 19);
         mGoogleMap.animateCamera(cameraUpdate);
-
     }
 
     private String velocityInKMh(String velocity) {

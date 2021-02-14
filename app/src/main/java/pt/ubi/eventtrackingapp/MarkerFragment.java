@@ -288,8 +288,8 @@ public class MarkerFragment extends Fragment {
     }
 
     public void SaveImage() {
-      //  adding_image_trace = FirebasePerformance.getInstance().newTrace("adding_image");
-      //  adding_image_trace.start();
+        adding_image_trace = FirebasePerformance.getInstance().newTrace("optimistic_adding_image");
+        adding_image_trace.start();
 
             if(imageHasChanged) {
                 fileReference = mStorageRef.child(System.currentTimeMillis()
@@ -315,7 +315,7 @@ public class MarkerFragment extends Fragment {
                     }
                 });
             } else  saveEditMarkerObject(null);
-
+            Toast.makeText(fragmentContext, "Adding Image in progress!", Toast.LENGTH_SHORT).show();
             goBack();
     }
 
@@ -374,7 +374,7 @@ public class MarkerFragment extends Fragment {
 
     public void goBack() {
         // full_t_add_image.stop();
-       // adding_image_trace.stop();
+        adding_image_trace.stop();
         getActivity().onBackPressed();
 
     }

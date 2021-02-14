@@ -15,6 +15,7 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.maps.android.clustering.Cluster;
 import com.google.maps.android.clustering.ClusterManager;
 import com.google.maps.android.clustering.view.DefaultClusterRenderer;
 import com.google.maps.android.ui.IconGenerator;
@@ -41,16 +42,18 @@ public class ImageMarkerClusterManagerRenderer extends DefaultClusterRenderer<Im
         imageView = new ImageView(context.getApplicationContext());
         iconGenerator = new IconGenerator(context.getApplicationContext());
 
-
         markerWidth = (int) context.getResources().getDimension(R.dimen.custom_marker_image);
         markerHeight = (int) context.getResources().getDimension(R.dimen.custom_marker_image);
-
 
     }
 
     @Override
     protected void onBeforeClusterItemRendered(ImageMarkerClusterItem item, MarkerOptions markerOptions) {
         markerOptions.visible(false);
+    }
+
+    protected boolean shouldRenderAsCluster(Cluster<ImageMarkerClusterItem> cluster) {
+      return false;
     }
 
     /**
@@ -71,6 +74,8 @@ public class ImageMarkerClusterManagerRenderer extends DefaultClusterRenderer<Im
     public void clearExtraMarkerInfo() {
         extraMarkerInfo.clear();
     }
+
+
 
     @Override
     protected void onClusterItemRendered(final ImageMarkerClusterItem item, final Marker marker) {

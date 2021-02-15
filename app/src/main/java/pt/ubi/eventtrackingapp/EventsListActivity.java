@@ -30,7 +30,7 @@ public class EventsListActivity extends AppCompatActivity implements AdapterView
     private FirebaseFirestore mDb;
     private Session session;
     private TextInputEditText text_edit_content;
-    private Button btn_filter, btn_clear;
+    private Button btn_filter, btn_clear,btn_myEvents;
 
     private String filterType = "owner";
 
@@ -45,6 +45,7 @@ public class EventsListActivity extends AppCompatActivity implements AdapterView
         text_edit_content = findViewById(R.id.filterContent);
         btn_filter = findViewById(R.id.filter);
         btn_clear = findViewById(R.id.clear);
+        btn_myEvents = findViewById(R.id.myEventsBtn);
 
         String[] items = new String[]{"Owner", "Event Name"};
 
@@ -60,6 +61,12 @@ public class EventsListActivity extends AppCompatActivity implements AdapterView
             public void onClick(View view) {
                 text_edit_content.setText("");
                 getEvents();
+            }
+        });
+        btn_myEvents.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                getMyEvents();
             }
         });
 
@@ -136,6 +143,28 @@ public class EventsListActivity extends AppCompatActivity implements AdapterView
 
     @Override
     public void onNothingSelected(AdapterView<?> adapterView) {
+
+    }
+    public void getMyEvents() {
+        mDb.collection("Events").whereEqualTo("owner", session.getUsername())
+                .get()
+                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        if (task.isSuccessful()) {
+                            ArrayList<Event> eventsList = new ArrayList<>();
+                            for (int k=0; k < task.getResult().getDocuments().size(); k++) {
+                                Event event  = task.getResult().getDocuments().get(k).toObject(Event.class);
+                                boolean isClosed =  task.getResult().getDocuments().get(k).get("isClosed")!= null && (boolean) task.getResult().getDocuments().get(k).get("isClosed") ;
+                                if(isClosed) event.setClosed(isClosed);
+                                eventsList.add(event);
+                            }
+                            populateListWithEvents(eventsList);
+                        } else {
+                            Log.d(TAG, "Error getting documents: ", task.getException());
+                        }
+                    }
+                });
 
     }
 

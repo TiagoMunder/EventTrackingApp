@@ -40,6 +40,7 @@
     <string name="btn_DeleteEvent">Delete Event</string>
     <string name="filter_btn">Filter</string>
     <string name="clear_btn">Clear</string>
+    <string name="myEvents_btn">My Events</string>
 
 
     <string name="fire_store_users">Users</string>

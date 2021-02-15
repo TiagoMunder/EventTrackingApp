@@ -83,7 +83,7 @@ public class ImageMarkerClusterManagerRenderer extends DefaultClusterRenderer<Im
             marker.setTag(ImageMarkerClusterItem.class);
         Picasso picasso = new Picasso.Builder(context).executor(Executors.newSingleThreadExecutor()).memoryCache(Cache.NONE).indicatorsEnabled(true).build();
 
-        picasso.load(item.getIconPicture()).resize(100, 100).centerCrop().into(imageView, new Callback() {
+        picasso.load(item.getIconPicture()).resize(80, 80).centerCrop().into(imageView, new Callback() {
             @Override
             public void onSuccess() {
                 BitmapDrawable drawable = (BitmapDrawable) imageView.getDrawable();

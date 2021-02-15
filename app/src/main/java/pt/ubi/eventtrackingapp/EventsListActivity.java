@@ -47,7 +47,7 @@ public class EventsListActivity extends AppCompatActivity implements AdapterView
         btn_clear = findViewById(R.id.clear);
         btn_myEvents = findViewById(R.id.myEventsBtn);
 
-        String[] items = new String[]{"Owner", "Event Name"};
+        String[] items = new String[]{"Event Owner", "Event Name"};
 
         btn_filter.setOnClickListener(new View.OnClickListener() {
             @Override

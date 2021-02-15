@@ -334,7 +334,7 @@ public class MarkerFragment extends Fragment {
                     public void onComplete(@NonNull Task<Void> task) {
                         if (task.isSuccessful()) {
                             Log.d(TAG, "Update Successful");
-                            Toast.makeText(fragmentContext,"Image addeded with Success!", Toast.LENGTH_LONG).show();
+                            Toast.makeText(fragmentContext,"Image added with Success!", Toast.LENGTH_LONG).show();
                            // goBack();
                         } else {
                             Log.w(TAG, "Error updating document", task.getException());
@@ -358,7 +358,7 @@ public class MarkerFragment extends Fragment {
                         public void onSuccess(DocumentReference documentReference) {
 
                             Log.d(TAG, "DocumentSnapshot written with ID: " + documentReference.getId());
-                            Toast.makeText(fragmentContext,"Image addeded with Success!", Toast.LENGTH_LONG).show();
+                            Toast.makeText(fragmentContext,"Image added with Success!", Toast.LENGTH_LONG).show();
                           //  goBack();
                         }
                     })

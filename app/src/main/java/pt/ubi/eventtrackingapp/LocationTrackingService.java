@@ -111,7 +111,7 @@ public class LocationTrackingService extends Service {
 
     }
 
-    public void updateVelocity(final DocumentReference documentReference ,final Location dist,final Long  currentTime) {
+    public void updateVelocityandDuration(final DocumentReference documentReference ,final Location dist,final Long  currentTime) {
         documentReference.collection(POSITIONSCOLLECTION)
                 .orderBy("time", Query.Direction.valueOf("ASCENDING"))
                 .limit(1)
@@ -123,6 +123,8 @@ public class LocationTrackingService extends Service {
                     long secondsBetweenPoints =((( currentTime) - ( Long.parseLong(firstPosition.getTime()))) / 1000);
                     float distanceTraveled = getmetersToLocation(dist, firstPosition.getGeoPoint().getLatitude(), firstPosition.getGeoPoint().getLongitude());
                     documentReference.update("velocity", String.valueOf( decimalFormat.format(distanceTraveled/secondsBetweenPoints)));
+                    documentReference.update("duration", String.valueOf( decimalFormat.format(secondsBetweenPoints/ 60)));
+
                 }
 
             }
@@ -151,10 +153,10 @@ public class LocationTrackingService extends Service {
                                     documentReference.collection(POSITIONSCOLLECTION).add(customGeoPoint);
                                     documentReference.update("lastPosition",convertLocationToCustomGeoPoint(location));
                                     updateDistanceTraveled(documentReference, document, location);
-                                    updateVelocity(documentReference, location, tsLong);
+                                    updateVelocityandDuration(documentReference, location, tsLong);
                                 }
                             }else {
-                                UserLocationPositionsInEvent docInfo = new UserLocationPositionsInEvent( 0, geoPoint, 0);
+                                UserLocationPositionsInEvent docInfo = new UserLocationPositionsInEvent( 0, geoPoint, 0, 0);
                                 documentReference.collection(USERPOSITIONS).add(docInfo).addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
                                     @Override
                                     public void onComplete(@NonNull Task<DocumentReference> task) {

@@ -447,6 +447,13 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
        return eventCollectionRef.collection(USERSCOLLECTION).whereEqualTo("user_id", session.getUser().getUser_id());
     }
 
+    private String  getDuration(String durationInMinutes) {
+       int auxminutes = Integer.parseInt(durationInMinutes) ;
+        int hours = auxminutes / 60;
+        int minutes = auxminutes % 60;
+      return "Duration: " + hours + "h:" + minutes + "m";
+    }
+
     private void updateDistanceTraveled() {
         getUserPathInfo().get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
@@ -469,7 +476,8 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                                             if(currentClusterItem != null) {
                                                 float trimDistance = Float.parseFloat(documentSnapshot.get("distanceTraveled").toString());
                                                 String velocityKM = velocityInKMh(documentSnapshot.get("velocity").toString());
-                                                String newSnippet = "Distance traveled: " + decimalFormat.format(trimDistance) + "m"+ "\n"+ "Velocity: " + velocityKM +"km/h";
+                                                String newSnippet = "Distance traveled: " + decimalFormat.format(trimDistance) + "m"+ "\n"+ "Velocity: " + velocityKM +"km/h" + "\n"
+                                                        + getDuration(documentSnapshot.get("duration").toString());
                                                 clusterManagerRenderer.setUpdateMarkerSnippet(currentClusterItem, newSnippet);
                                                 session.setCurrentDistanceTraveled(documentSnapshot.get("distanceTraveled").toString());
                                             }
@@ -661,6 +669,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                           if(task.getResult().getDocuments().size() != 0) {
                                 task.getResult().getDocuments().get(0).getReference().update("distanceTraveled", 0);
                                 task.getResult().getDocuments().get(0).getReference().update("velocity", 0);
+                               task.getResult().getDocuments().get(0).getReference().update("duration", 0);
                                 task.getResult().getDocuments().get(0).getReference().collection(POSITIONSCOLLECTION).orderBy("time" , Query.Direction.valueOf("ASCENDING")).get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                                     @Override
                                     public void onComplete(@NonNull Task<QuerySnapshot> task) {
